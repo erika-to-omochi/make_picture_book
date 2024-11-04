@@ -91,6 +91,8 @@ GEM
     debug (1.9.2)
       irb (~> 1.10)
       reline (>= 0.3.8)
+    dockerfile-rails (1.6.23)
+      rails (>= 3.0.0)
     drb (2.2.1)
     erubi (1.13.0)
     globalid (1.2.1)
@@ -126,6 +128,8 @@ GEM
       net-protocol
     nio4r (2.7.4)
     nokogiri (1.16.7-aarch64-linux)
+      racc (~> 1.4)
+    nokogiri (1.16.7-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.16.7-x86_64-linux)
       racc (~> 1.4)
@@ -189,11 +193,13 @@ GEM
 
 PLATFORMS
   aarch64-linux
+  arm64-darwin-23
   x86_64-linux
 
 DEPENDENCIES
   bootsnap
   debug
+  dockerfile-rails (>= 1.6)
   pg (~> 1.1)
   puma (>= 5.0)
   rails (~> 7.1.5)
@@ -203,4 +209,4 @@ RUBY VERSION
    ruby 3.2.2p53
 
 BUNDLED WITH
-   2.5.22
+   2.5.21
