@@ -4,9 +4,9 @@ import { FaBook, FaEdit, FaInfoCircle } from "react-icons/fa";
 export default function Footer() {
   return (
     <footer
-      className="flex justify-center gap-8 p-4"
+      className="flex justify-center gap-8 p-4 text-bodyText text-sm"
       style={{
-        backgroundColor: "rgba(255, 255, 255, 0.5)",
+        backgroundColor: "rgba(255, 255, 255, 0.8)",
         position: "fixed",
         bottom: 0,
         width: "100%",

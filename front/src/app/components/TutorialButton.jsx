@@ -8,14 +8,14 @@ function TutorialButton({ icon, title, description }) {
     >
       <div className="flex items-center">
         {/* アイコン */}
-        <div className="w-12 h-12 flex items-center justify-center mr-4">
+        <div className="w-12 h-12 flex items-center justify-center mr-4 text-icon">
           {React.cloneElement(icon, { size: 36 })}
         </div>
 
         {/* タイトルと説明 */}
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
-          <p className="text-sm text-gray-600">{description}</p>
+          <h3 className="text-lg font-semibold text-heading">{title}</h3>
+          <p className="text-sm text-bodyText">{description}</p>
         </div>
 
         {/* 再生ボタン */}

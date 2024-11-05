@@ -5,7 +5,7 @@ import { FaBook, FaEdit, FaPrint, FaInfoCircle } from 'react-icons/fa';
 
 function App() {
   return (
-    <div className="app min-h-screen p-6">
+    <div className="app min-h-screen p-6 mb-8">
       <BookCard
           title="どんなアプリ？"
           description="オリジナルの絵本を作ったり、見ることができます！"
@@ -13,39 +13,41 @@ function App() {
           altText="Library"
           additionalInfo="チュートリアルから詳細が見れます"
       />
+
       {/* チュートリアルセクション */}
       <div
-      className="tutorial-section p-6 rounded-lg shadow-md max-w-md mx-auto mb-8"
-      style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}>
+        className="tutorial-section p-6 rounded-lg shadow-md max-w-md mx-auto m-8"
+        style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}
+      >
         <div className="flex items-center mb-2">
-          <h2 className="text-2xl font-bold text-gray-700">チュートリアル</h2>
+          <h2 className="text-2xl font-bold text-heading">チュートリアル</h2>
           <FaInfoCircle size={32} className="ml-2 text-icon" />
         </div>
-        <p className="text-sm text-gray-500 mb-4">再生して使い方を見る</p>
+        <p className="text-sm text-bodyText mb-4">再生して使い方を見る</p>
         <TutorialButton
-          icon={<FaBook className="ml-2 text-icon" />}
+          icon={<FaBook className="text-icon" />}
           title="絵本の見方"
           description="再生ボタンを押す"
         />
         <TutorialButton
-          icon={<FaEdit className="ml-2 text-icon" />}
+          icon={<FaEdit className="text-icon" />}
           title="絵本の作り方"
           description="再生ボタンを押す"
         />
         <TutorialButton
-          icon={<FaEdit className="ml-2 text-icon" />}
+          icon={<FaEdit className="text-icon" />}
           title="絵本の編集の仕方"
           description="再生ボタンを押す"
         />
         <TutorialButton
-          icon={<FaPrint className="ml-2 text-icon" />}
+          icon={<FaPrint className="text-icon" />}
           title="絵本の印刷の仕方"
           description="再生ボタンを押す"
         />
       </div>
 
       {/* BookCardセクション */}
-      <div className="book-section grid gap-6 max-w-md mx-auto">
+      <div className="book-section grid gap-6 max-w-md mx-auto mb-8">
         <BookCard
           title="絵本を見てみる"
           description="今までに作られた絵本を見ることができます！"

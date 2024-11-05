@@ -7,14 +7,12 @@ import { FaXTwitter } from "react-icons/fa6";
 
 const Header = ({ userName }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const isLoggedIn = Boolean(userName);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
     <>
-      {/* Header 固定 */}
       <header className="fixed top-0 left-0 w-full flex items-center justify-between p-4 bg-[#494444] text-white z-50 shadow-md">
         <div className="logo">
           <Link href="/">
@@ -51,7 +49,7 @@ const Header = ({ userName }) => {
         {isMenuOpen && (
           <nav
             className="absolute top-20 right-0 text-black rounded shadow-lg p-4 z-10"
-            style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.75)" }}
           >
             {isLoggedIn ? (
               <>
@@ -115,6 +113,7 @@ const Header = ({ userName }) => {
               </p>
             </Link>
             <hr className="border-gray-300 mb-4" />
+
             <footer className="text-center text-gray-600 mt-4 text-xs">
               © 2024 - 絵本がぽんっ
             </footer>
@@ -130,9 +129,7 @@ const Header = ({ userName }) => {
         )}
       </header>
 
-      {/* ヘッダーの高さ分の余白を追加 */}
       <div className="pt-20">
-        {/* メインコンテンツ */}
       </div>
     </>
   );
