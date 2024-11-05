@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaHome, FaBook, FaEdit, FaInfoCircle, FaFileAlt, FaShieldAlt, FaEnvelope, FaUser, FaUserPlus, FaGithub } from 'react-icons/fa';
+import { FaHome, FaBook, FaEdit, FaInfoCircle, FaFileAlt, FaShieldAlt, FaEnvelope, FaUser, FaUserPlus,  FaSignOutAlt, FaGithub } from 'react-icons/fa';
 import { FaXTwitter } from "react-icons/fa6";
 
 const Header = ({ userName }) => {
