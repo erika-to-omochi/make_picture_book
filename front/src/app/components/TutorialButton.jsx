@@ -19,7 +19,10 @@ function TutorialButton({ icon, title, description }) {
         </div>
 
         {/* 再生ボタン */}
-        <button className="btn btn-circle btn-primary text-white ml-4">
+        <button
+          className="btn btn-circle text-white ml-4"
+          style={{ backgroundColor: "#494444" }}
+        >
           ▶
         </button>
       </div>

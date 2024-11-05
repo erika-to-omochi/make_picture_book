@@ -1,7 +1,7 @@
 import React from 'react';
 import BookCard from './components/BookCard';
 import TutorialButton from './components/TutorialButton';
-import { FaBookOpen, FaPlus, FaEdit, FaPrint } from 'react-icons/fa';
+import { FaBook, FaEdit, FaPrint, FaInfoCircle } from 'react-icons/fa';
 
 function App() {
   return (
@@ -17,25 +17,28 @@ function App() {
       <div
       className="tutorial-section p-6 rounded-lg shadow-md max-w-md mx-auto mb-8"
       style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}>
-        <h2 className="text-2xl font-bold text-gray-700 mb-2">チュートリアル</h2>
+        <div className="flex items-center mb-2">
+          <h2 className="text-2xl font-bold text-gray-700">チュートリアル</h2>
+          <FaInfoCircle size={32} className="ml-2 text-icon" />
+        </div>
         <p className="text-sm text-gray-500 mb-4">再生して使い方を見る</p>
         <TutorialButton
-          icon={<FaBookOpen />}
+          icon={<FaBook className="ml-2 text-icon" />}
           title="絵本の見方"
           description="再生ボタンを押す"
         />
         <TutorialButton
-          icon={<FaPlus />}
+          icon={<FaEdit className="ml-2 text-icon" />}
           title="絵本の作り方"
           description="再生ボタンを押す"
         />
         <TutorialButton
-          icon={<FaEdit />}
+          icon={<FaEdit className="ml-2 text-icon" />}
           title="絵本の編集の仕方"
           description="再生ボタンを押す"
         />
         <TutorialButton
-          icon={<FaPrint />}
+          icon={<FaPrint className="ml-2 text-icon" />}
           title="絵本の印刷の仕方"
           description="再生ボタンを押す"
         />
