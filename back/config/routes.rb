@@ -1,3 +1,7 @@
 Rails.application.routes.draw do
-  root to: 'application#health_check'
+  devise_for :users, controllers: {
+    sessions: 'sessions'
+  }
+
+  post '/token/refresh', to: 'tokens#refresh'
 end

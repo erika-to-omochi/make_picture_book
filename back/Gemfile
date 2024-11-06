@@ -46,3 +46,15 @@ end
 
 
 gem "dockerfile-rails", ">= 1.6", :group => :development
+
+# 認証機能の基盤
+gem 'devise'
+
+# JWTを用いたトークン認証
+gem 'devise-jwt'
+
+# Deviseのメッセージを多言語対応させる
+gem 'devise-i18n'
+
+# JSON API形式のレスポンス生成
+gem 'jsonapi-serializer'
