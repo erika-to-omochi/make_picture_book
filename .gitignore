@@ -72,5 +72,3 @@ back/tmp/storage/*
 
 # Ignore master key for decrypting credentials and more.
 back/config/master.key
-back/config/credentials.yml.enc
-

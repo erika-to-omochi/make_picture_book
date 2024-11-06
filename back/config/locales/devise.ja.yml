@@ -1,9 +1,0 @@
-ja:
-  devise:
-    sessions:
-      signed_in: 'ログインしました。'
-      signed_out: 'ログアウトしました。'
-    registrations:
-      signed_up: 'アカウントを作成しました。'
-      updated: 'アカウント情報を更新しました。'
-      destroyed: 'アカウントを削除しました。'
