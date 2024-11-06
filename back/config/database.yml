@@ -10,3 +10,7 @@ development:
   password: password
   database: app_development
   host: db
+
+test:
+  <<: *default
+  database: app_test
