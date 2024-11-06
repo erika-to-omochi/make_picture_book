@@ -19,9 +19,7 @@ Devise.setup do |config|
 
   # JWTの設定
   config.jwt do |jwt|
-    jwt.secret = Rails.application.credentials.dig(:jwt, :secret)
-    raise "JWT Secret Keyが設定されていません。" unless jwt.secret.present?
-
+    jwt.secret = ENV['JWT_SECRET_KEY'] || Rails.application.credentials.dig(:jwt, :secret)
     jwt.dispatch_requests = [
       ['POST', %r{^/login$}]
     ]
