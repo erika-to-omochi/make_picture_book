@@ -49,7 +49,7 @@ const Header = ({ userName }) => {
         {isMenuOpen && (
           <nav
             className="absolute top-20 right-0 text-black rounded shadow-lg p-4 z-10"
-            style={{ backgroundColor: "rgba(255, 255, 255, 0.75)" }}
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.9)" }}
           >
             {isLoggedIn ? (
               <>
