@@ -16,19 +16,17 @@ Devise.setup do |config|
   config.sign_out_via = :delete
   config.responder.error_status = :unprocessable_entity
   config.responder.redirect_status = :see_other
+  config.parent_controller = 'ApplicationController'
 
   # JWTの設定
   config.jwt do |jwt|
     jwt.secret = ENV['JWT_SECRET_KEY'] || Rails.application.credentials.dig(:jwt, :secret)
     jwt.dispatch_requests = [
-      ['POST', %r{^/login$}]
+      ['POST', %r{^/api/v1/auth/login$}]
     ]
     jwt.revocation_requests = [
-      ['DELETE', %r{^/logout$}]
+      ['DELETE', %r{^/api/v1/auth/logout$}]
     ]
     jwt.expiration_time = 1.day.to_i
   end
-
-  # i18nの設定
-  config.parent_controller = 'DeviseController'
 end

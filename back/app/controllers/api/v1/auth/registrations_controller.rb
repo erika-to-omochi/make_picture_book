@@ -1,24 +1,43 @@
-module Api
-  module V1
-    module Auth
-      class RegistrationsController < ApplicationController
-        def create
-          user = User.new(user_params)
+class Api::V1::Auth::RegistrationsController < ApplicationController
 
-          if user.save
-            # 必要に応じて確認メールの送信（メール設定がある場合）
-            render json: { message: 'User registered successfully', user: user }, status: :created
+  def create
+    user = User.new(user_params)
+
+    if user.save
+      access_token = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first
+      render json: {
+        message: 'アカウントを作成しました',
+        access_token: access_token,
+        user: UserSerializer.new(user).serializable_hash
+      }, status: :created
+    else
+      # カスタムエラーメッセージ
+      custom_errors = user.errors.messages.map do |attribute, messages|
+        messages.map do |message|
+          case attribute
+          when :password_confirmation
+            "パスワード（確認用）が一致しません"
+          when :password
+            message.include?("is too short") ? "パスワードは6文字以上である必要があります" : "パスワードに問題があります"
+          when :email
+            "メールアドレスは既に使用されています" if message.include?("has already been taken")
           else
-            render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+            "#{attribute.to_s.humanize}にエラーがあります: #{message}"
           end
         end
+      end.flatten.compact
 
-        private
-
-        def user_params
-          params.permit(:name, :email, :password, :password_confirmation)
-        end
-      end
+      render json: {
+        errors: custom_errors,
+        access_token: nil,
+        user: UserSerializer.new(user).serializable_hash
+      }, status: :unprocessable_entity
     end
+  end
+
+  private
+
+  def user_params
+    params.require(:user).permit(:name, :email, :password, :password_confirmation)
   end
 end

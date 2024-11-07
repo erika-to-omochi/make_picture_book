@@ -1,52 +1,59 @@
-module Api
-  module V1
-    module Auth
-      class SessionsController < Devise::SessionsController
-        respond_to :json
+class Api::V1::Auth::SessionsController < ::ApplicationController
+  # create アクションのみ認証をスキップ
+  skip_before_action :authenticate_user!, only: [:create]
+  respond_to :json
 
-        def create
-          user = User.find_by(email: params[:email])
+  def create
+    # パラメータが session キー内にある場合
+    email = params[:email] || params.dig(:session, :email)
+    password = params[:password] || params.dig(:session, :password)
 
-          if user&.valid_password?(params[:password])
-            # リフレッシュトークンを生成
-            refresh_token = user.refresh_tokens.create!(
-              token: SecureRandom.hex(32),
-              expires_at: 7.days.from_now
-            )
+    user = User.find_by(email: email)
 
-            # JWTアクセストークンを取得
-            access_token = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first
+    if user&.valid_password?(password)
+      # リフレッシュトークンを生成
+      refresh_token = user.refresh_tokens.create!(
+        token: SecureRandom.hex(32),
+        expires_at: 7.days.from_now
+      )
 
-            render json: {
-              access_token: access_token,
-              refresh_token: refresh_token.token,
-              user: UserSerializer.new(user).serializable_hash
-            }, status: :ok
-          else
-            render json: { error: 'Invalid credentials' }, status: :unauthorized
-          end
-        rescue ActiveRecord::RecordInvalid => e
-          render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
-        end
+      # JWTアクセストークンを取得
+      access_token = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first
 
-        def destroy
-          if current_user
-            # リフレッシュトークンの削除
-            current_user.refresh_tokens.find_by(token: params[:refresh_token])&.destroy
-          end
-          render json: { message: 'Logged out successfully' }, status: :ok
-        end
-
-        private
-
-        def respond_with(resource, _opts = {})
-          render json: UserSerializer.new(resource).serializable_hash, status: :ok
-        end
-
-        def respond_to_on_destroy
-          head :no_content
-        end
-      end
+      render json: {
+        access_token: access_token,
+        refresh_token: refresh_token.token,
+        user: UserSerializer.new(user).serializable_hash
+      }, status: :ok
+    else
+      render json: { error: 'メールアドレスまたはパスワードが正しくありません' }, status: :unauthorized
     end
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
+  def destroy
+    if current_user
+      # リフレッシュトークンの削除
+      refresh_token = current_user.refresh_tokens.find_by(token: params[:refresh_token])
+      if refresh_token
+        refresh_token.destroy
+        render json: { message: 'ログアウトしました' }, status: :ok
+      else
+        render json: { error: 'リフレッシュトークンが無効です' }, status: :unprocessable_entity
+      end
+    else
+      render json: { error: 'ユーザーが認証されていません' }, status: :unauthorized
+    end
+  end
+
+  private
+
+  def respond_with(resource, _opts = {})
+    render json: UserSerializer.new(resource).serializable_hash, status: :ok
+  end
+
+  def respond_to_on_destroy
+    head :no_content
   end
 end

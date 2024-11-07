@@ -3,6 +3,7 @@ ja:
     sessions:
       signed_in: 'ログインしました。'
       signed_out: 'ログアウトしました。'
+      already_signed_out: 'すでにログアウトしています。'
     registrations:
       signed_up: 'アカウントを作成しました。'
       updated: 'アカウント情報を更新しました。'

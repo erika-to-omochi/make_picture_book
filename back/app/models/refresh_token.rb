@@ -3,6 +3,9 @@ class RefreshToken < ApplicationRecord
 
   before_create :hash_token
 
+  validates :token, presence: true
+  validates :expires_at, presence: true
+
   def hash_token
     self.token = Digest::SHA256.hexdigest(token)
   end
