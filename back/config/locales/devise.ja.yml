@@ -8,3 +8,15 @@ ja:
       signed_up: 'アカウントを作成しました。'
       updated: 'アカウント情報を更新しました。'
       destroyed: 'アカウントを削除しました。'
+
+  activerecord:
+    errors:
+      models:
+        user:
+          attributes:
+            email:
+              taken: "このメールアドレスは既に使用されています"
+
+  errors:
+    messages:
+      taken: "既に使用されています"

@@ -1,23 +1,18 @@
-class Api::V1::Auth::SessionsController < ::ApplicationController
-  # create アクションのみ認証をスキップ
-  skip_before_action :authenticate_user!, only: [:create]
+class Api::V1::Auth::SessionsController < Devise::SessionsController
   respond_to :json
 
   def create
-    # パラメータが session キー内にある場合
-    email = params[:email] || params.dig(:session, :email)
-    password = params[:password] || params.dig(:session, :password)
+    # ネストされたパラメータからemailとpasswordを取得
+    user = User.find_by(email: params.dig(:user, :email))
 
-    user = User.find_by(email: email)
-
-    if user&.valid_password?(password)
+    if user&.valid_password?(params.dig(:user, :password))
       # リフレッシュトークンを生成
       refresh_token = user.refresh_tokens.create!(
         token: SecureRandom.hex(32),
         expires_at: 7.days.from_now
       )
 
-      # JWTアクセストークンを取得
+      # JWTアクセストークンを生成
       access_token = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first
 
       render json: {
@@ -26,7 +21,7 @@ class Api::V1::Auth::SessionsController < ::ApplicationController
         user: UserSerializer.new(user).serializable_hash
       }, status: :ok
     else
-      render json: { error: 'メールアドレスまたはパスワードが正しくありません' }, status: :unauthorized
+      render json: { error: 'メールアドレスかパスワードが正しくありません' }, status: :unauthorized
     end
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
@@ -35,16 +30,9 @@ class Api::V1::Auth::SessionsController < ::ApplicationController
   def destroy
     if current_user
       # リフレッシュトークンの削除
-      refresh_token = current_user.refresh_tokens.find_by(token: params[:refresh_token])
-      if refresh_token
-        refresh_token.destroy
-        render json: { message: 'ログアウトしました' }, status: :ok
-      else
-        render json: { error: 'リフレッシュトークンが無効です' }, status: :unprocessable_entity
-      end
-    else
-      render json: { error: 'ユーザーが認証されていません' }, status: :unauthorized
+      current_user.refresh_tokens.find_by(token: params[:refresh_token])&.destroy
     end
+    render json: { message: 'ログアウトしました' }, status: :ok
   end
 
   private
