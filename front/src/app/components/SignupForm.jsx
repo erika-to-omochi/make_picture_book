@@ -1,15 +1,45 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 export default function SignupForm() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/v1/auth', {
+        user: {
+          name: name,
+          email: email,
+          password: password,
+          password_confirmation: confirmPassword,
+        },
+      });
+
+      // 成功時の処理
+      setSuccessMessage(response.data.message);
+      setErrorMessage(null);
+
+      // トークンを localStorage に保存
+      localStorage.setItem('accessToken', response.data.access_token);
+      localStorage.setItem('userName', name);
+
+      router.push('/');
+    } catch (error) {
+      // エラー時の処理
+      setErrorMessage(error.response?.data?.errors || '登録に失敗しました');
+      setSuccessMessage(null);
+    }
   };
 
   return (
@@ -20,7 +50,7 @@ export default function SignupForm() {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 border rounded-md text-bodyText focus:outline-none focus:ring-2 focus:ring-blue-400" /* テキストカラー適用 */
+          className="w-full px-3 py-2 border rounded-md text-bodyText focus:outline-none focus:ring-2 focus:ring-blue-400"
           required
         />
       </div>
@@ -42,6 +72,7 @@ export default function SignupForm() {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full px-3 py-2 border rounded-md text-bodyText focus:outline-none focus:ring-2 focus:ring-blue-400"
           required
+          autoComplete="new-password"
         />
       </div>
       <div>
@@ -52,8 +83,11 @@ export default function SignupForm() {
           onChange={(e) => setConfirmPassword(e.target.value)}
           className="w-full px-3 py-2 border rounded-md text-bodyText focus:outline-none focus:ring-2 focus:ring-blue-400"
           required
+          autoComplete="new-password"
         />
-      </div >
+      </div>
+      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+      {successMessage && <p className="text-green-500">{successMessage}</p>}
       <div className="flex justify-center">
         <button
           type="submit"
