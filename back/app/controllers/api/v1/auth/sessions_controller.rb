@@ -3,7 +3,7 @@ class Api::V1::Auth::SessionsController < Devise::SessionsController
 
   def create
     # ネストされたパラメータからemailとpasswordを取得
-    user = User.find_by(email: params.dig(:user, :email))
+    user = User.find_by(email: user_params[:email])
 
     if user&.valid_password?(params.dig(:user, :password))
       # リフレッシュトークンを生成
@@ -36,6 +36,10 @@ class Api::V1::Auth::SessionsController < Devise::SessionsController
   end
 
   private
+
+  def user_params
+    params.require(:user).permit(:email, :password)
+  end
 
   def respond_with(resource, _opts = {})
     render json: UserSerializer.new(resource).serializable_hash, status: :ok
