@@ -13,7 +13,7 @@ module Api
 
             render json: { access_token: new_access_token }, status: :ok
           else
-            render json: { error: 'Invalid or expired refresh token' }, status: :unauthorized
+            render json: { error: 'リフレッシュトークンが無効または期限切れです' }, status: :unauthorized
           end
         end
       end
