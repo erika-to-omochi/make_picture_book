@@ -3,9 +3,12 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import useAuthStore from '../../stores/authStore';
 
 export default function LoginForm() {
   const router = useRouter();
+  const login = useAuthStore((state) => state.login);
+  const showLoginMessage = useAuthStore((state) => state.showLoginMessage);  // 追加
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
@@ -21,12 +24,15 @@ export default function LoginForm() {
         }
       });
 
-      // アクセストークンとユーザー名をlocalStorageに保存
-      localStorage.setItem('accessToken', response.data.access_token);
-      if (response.data.user && response.data.user.data && response.data.user.data.attributes && response.data.user.data.attributes.name) {
-        localStorage.setItem('userName', response.data.user.data.attributes.name);
+      const userName = response.data.user?.data?.attributes?.name;
+      if (userName) {
+        login(userName);  // Zustand の login メソッドを呼び出し
+        localStorage.setItem('userName', userName);
+
+        // ログインメッセージを表示
+        showLoginMessage(userName);
       } else {
-        console.warn("レスポンスに'user.data.attributes.name'が含まれていません");
+        console.warn("レスポンスに 'user.data.attributes.name' が含まれていません");
       }
 
       router.push('/');

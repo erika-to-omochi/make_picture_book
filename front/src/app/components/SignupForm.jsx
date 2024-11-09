@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import useAuthStore from '../../stores/authStore';
 
 export default function SignupForm() {
   const router = useRouter();
+  const login = useAuthStore((state) => state.login);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,16 +28,18 @@ export default function SignupForm() {
         },
       });
 
-      // 成功時の処理
-      setSuccessMessage(response.data.message);
-      setErrorMessages([]); // エラーメッセージをクリア
+      setSuccessMessage("登録が完了しました");
+      setErrorMessages([]);
 
-      localStorage.setItem('accessToken', response.data.access_token);
+      const accessToken = response.data.access_token;
+      localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('userName', name);
+
+      // 状態を更新してヘッダーを即座に切り替える
+      login(name); // 新規登録と同時にログイン状態にする
 
       router.push('/');
     } catch (error) {
-      // エラー時の処理
       if (error.response?.data?.errors) {
         setErrorMessages(error.response.data.errors);
       } else {
