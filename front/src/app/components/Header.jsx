@@ -5,28 +5,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaHome, FaBook, FaEdit, FaInfoCircle, FaFileAlt, FaShieldAlt, FaEnvelope, FaUser, FaUserPlus, FaSignOutAlt, FaGithub } from 'react-icons/fa';
 import { FaXTwitter } from "react-icons/fa6";
+import useAuthStore from '../../stores/authStore';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [userName, setUserName] = useState(null);
+  const { userName, isLoggedIn, logout, loginMessage } = useAuthStore();
   const router = useRouter();
-  const isLoggedIn = Boolean(userName);
-
-  useEffect(() => {
-    const storedUserName = localStorage.getItem("userName");
-    if (storedUserName) {
-      setUserName(storedUserName);
-    }
-  }, []);
+  const [logoutMessage, setLogoutMessage] = useState(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const handleLogout = () => {
+    logout();
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userName");
-    setUserName(null);
+    setLogoutMessage("【ログアウトしました】");
     router.push("/");
-  }
+    setTimeout(() => setLogoutMessage(null), 3000);
+  };
 
   return (
     <>
@@ -37,7 +33,9 @@ const Header = () => {
           </Link>
         </div>
 
-        {/* ハンバーガーアイコン */}
+        {logoutMessage && <p className="text-green-500">{logoutMessage}</p>}
+        {loginMessage && <p className="text-blue-500">{loginMessage}</p>}
+
         <button className="btn btn-circle swap swap-rotate" onClick={toggleMenu}>
           {!isMenuOpen ? (
             <svg
