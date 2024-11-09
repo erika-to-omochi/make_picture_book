@@ -5,9 +5,6 @@ class Api::V1::Auth::RegistrationsController < Devise::RegistrationsController
     build_resource(sign_up_params)
 
     if resource.save
-      # ユーザーを Devise にログインさせ、内部でセッションも作成
-      sign_in(resource)
-
       # JWTアクセストークンを生成
       access_token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
 

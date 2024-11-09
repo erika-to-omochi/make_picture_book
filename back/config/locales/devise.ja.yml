@@ -15,8 +15,14 @@ ja:
         user:
           attributes:
             email:
-              taken: "このメールアドレスは既に使用されています"
+              taken: "アドレスは既に使用されています。"
+            password:
+              too_short: "は%{count}文字以上で入力してください。"
+            password_confirmation:
+              confirmation: "が一致しません。"
 
   errors:
     messages:
-      taken: "既に使用されています"
+      taken: "既に使用されています。"
+      too_short: "%{attribute}は%{count}文字以上で入力してください。"
+      confirmation: "%{attribute}が一致しません。"

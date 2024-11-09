@@ -1,15 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FaHome, FaBook, FaEdit, FaInfoCircle, FaFileAlt, FaShieldAlt, FaEnvelope, FaUser, FaUserPlus, FaSignOutAlt, FaGithub } from 'react-icons/fa';
 import { FaXTwitter } from "react-icons/fa6";
 
-const Header = ({ userName }) => {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userName, setUserName] = useState(null);
+  const router = useRouter();
   const isLoggedIn = Boolean(userName);
 
+  useEffect(() => {
+    const storedUserName = localStorage.getItem("userName");
+    if (storedUserName) {
+      setUserName(storedUserName);
+    }
+  }, []);
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userName");
+    setUserName(null);
+    router.push("/");
+  }
 
   return (
     <>
@@ -58,8 +75,8 @@ const Header = ({ userName }) => {
                     <FaUser className="text-icon" /> {userName}のマイページ
                   </p>
                 </Link>
-                <Link href="/logout">
-                  <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+                <Link href="/">
+                  <p onClick={() => { toggleMenu(); handleLogout(); }} className="flex items-center gap-2 mb-4 cursor-pointer">
                     <FaSignOutAlt className="text-icon" /> ログアウト
                   </p>
                 </Link>

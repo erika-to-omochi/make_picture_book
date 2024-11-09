@@ -16,6 +16,7 @@ class Api::V1::Auth::SessionsController < Devise::SessionsController
       access_token = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first
 
       render json: {
+        message: 'ログインしました',
         access_token: access_token,
         refresh_token: refresh_token.token,
         user: UserSerializer.new(user).serializable_hash
