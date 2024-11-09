@@ -8,6 +8,7 @@ import useAuthStore from '../../stores/authStore';
 export default function SignupForm() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const showLoginMessage = useAuthStore((state) => state.showLoginMessage);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,6 +38,7 @@ export default function SignupForm() {
 
       // 状態を更新してヘッダーを即座に切り替える
       login(name); // 新規登録と同時にログイン状態にする
+      showLoginMessage(name); // ようこそメッセージを表示
 
       router.push('/');
     } catch (error) {
