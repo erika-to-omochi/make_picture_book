@@ -3,8 +3,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Stage, Layer, Rect, Text, Transformer } from 'react-konva';
 
-console.log("Canvas component loaded");
-
 function Canvas({ texts, onSelectText, onDeleteText, onUpdateText }) {
   const [selectedTextIndex, setSelectedTextIndex] = React.useState(null);
   const transformerRef = useRef(null);

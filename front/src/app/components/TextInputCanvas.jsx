@@ -33,7 +33,7 @@ function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
   return (
     <div className="text-input-canvas">
       <div className="flex flex-wrap">
-        <div className="w-full pr-2 mb-2">
+        <div className="w-full pr-2 mb-4">
           <input
             type="text"
             value={inputText}
@@ -48,20 +48,20 @@ function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
             placeholder="フォントサイズ"
-            className="border p-2 mr-2"
-            style={{ width: '10%' }}
+            className="border p-2 mr-4"
+            style={{ width: '20%' }}
           />
           <input
             type="color"
             value={color}
             onChange={(e) => setColor(e.target.value)}
-            className="border p-4 mr-2 mt-1.5"
+            className="border p-4 mr-4 mt-1.5"
             style={{ width: '10%' }}
           />
           <button
             onClick={handleButtonClick}
             className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
-            style={{ width: '30' }}
+            style={{ width: '20' }}
           >
             {selectedText ? 'テキストを更新' : 'キャンバスに追加'}
           </button>
