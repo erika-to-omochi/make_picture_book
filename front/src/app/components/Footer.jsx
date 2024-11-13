@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { FaBook, FaEdit, FaInfoCircle, FaTree, FaUser, FaTextWidth, FaLightbulb } from "react-icons/fa";
 import { usePathname } from "next/navigation";
+import TextInputCanvas from "./TextInputCanvas";
+import Canvas from "./Canvas";
 
-// DefaultFooter（通常ページ用のフッター）
 function DefaultFooter() {
   return (
     <footer
@@ -36,30 +37,58 @@ function DefaultFooter() {
 // CreateBookFooter（CREATE-BOOKページ専用のフッター）
 function CreateBookFooter() {
   const [activePanel, setActivePanel] = useState(null);
+  const [texts, setTexts] = useState([]);
 
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
   };
 
+  const handleAddText = (newText) => {
+    console.log("Text added:", newText);
+    setTexts((prevTexts) => [...prevTexts, newText]);
+  };
+
   return (
     <>
-      {/* 下からスライドインするスタンプパネル */}
+      {/* パネルの内容を切り替えて表示 */}
       {activePanel && (
         <div
           className="fixed left-0 bottom-0 w-full h-1/3 shadow-lg p-4 transition-transform duration-300"
-          style={{ transform: activePanel ? "translateY(0)" : "translateY(100%)", backgroundColor: "rgba(255, 255, 255, 0.8)",
-        }}
+          style={{
+            transform: activePanel ? "translateY(0)" : "translateY(100%)",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+          }}
         >
-          <h2 className="text-lg font-bold mb-4">{activePanel}のスタンプを選択</h2>
+          <h2 className="text-lg font-bold mb-4">{activePanel}の内容</h2>
           <div className="grid grid-cols-4 gap-4">
-            {/* ここにスタンプのリストを表示 */}
-            <div className="w-12 h-12 bg-gray-200 flex items-center justify-center">スタンプ1</div>
-            <div className="w-12 h-12 bg-gray-200 flex items-center justify-center">スタンプ2</div>
-            <div className="w-12 h-12 bg-gray-200 flex items-center justify-center">スタンプ3</div>
-            {/* スタンプを追加 */}
+            {activePanel === "自然" && (
+              <>
+                <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌲</div>
+                <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌿</div>
+                <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌸</div>
+              </>
+            )}
+            {activePanel === "人物" && (
+              <>
+                <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👤</div>
+                <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👥</div>
+                <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👶</div>
+              </>
+            )}
+            {activePanel === '文字' && <TextInputCanvas onAddText={handleAddText} />}
+
+            {activePanel === "もの" && (
+              <>
+                <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">💡</div>
+                <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">📦</div>
+                <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">🎒</div>
+              </>
+            )}
           </div>
         </div>
       )}
+
+      <Canvas texts={texts} />
 
       {/* CREATE-BOOKページ専用のフッター */}
       <footer

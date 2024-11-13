@@ -1,10 +1,16 @@
 'use client';
 import dynamic from 'next/dynamic';
+import React, { useState } from 'react';
 
-const Canvas = dynamic(() => import('../components/canvas'), {
-  ssr: false, // サーバーサイドレンダリングを無効化
+const Canvas = dynamic(() => import('../components/Canvas'), {
+  ssr: false,
 });
 
-export default function Page(props) {
-  return <Canvas />;
+export default function CreateBookPage() {
+  const [texts, setTexts] = useState([]);
+
+  return (
+    <div>
+    </div>
+  );
 }
