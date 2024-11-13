@@ -1,43 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
+// front/src/app/components/Canvas.jsx
+import React, { useEffect, useRef } from 'react';
 import { Stage, Layer, Rect, Text, Transformer } from 'react-konva';
 
-function Canvas({ texts, onSelectText, onDeleteText }) {
-  const [dimensions, setDimensions] = useState({
-    width: typeof window !== "undefined" ? window.innerWidth * 0.9 : 800,
-    height: typeof window !== "undefined" ? window.innerWidth * 0.6 : 600,
-  });
-  const [textPositions, setTextPositions] = useState([]);
-  const [selectedTextIndex, setSelectedTextIndex] = useState(null);
+function Canvas({ texts, onSelectText, onDeleteText, onUpdateText }) {
+  const [selectedTextIndex, setSelectedTextIndex] = React.useState(null);
   const transformerRef = useRef(null);
   const stageRef = useRef(null);
   const textRefs = useRef([]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleResize = () => {
-        const newWidth = window.innerWidth * 0.9;
-        const newHeight = newWidth * 0.6;
-        setDimensions({ width: newWidth, height: newHeight });
-      };
-
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (texts && texts.length > 0) {
-      setTextPositions(
-        texts.map((text) => ({
-          x: dimensions.width / 2,
-          y: dimensions.height / 2,
-          text: text.text,
-          fontSize: text.fontSize || 24,
-          color: text.color || 'black',
-        }))
-      );
-    }
-  }, [texts, dimensions]);
 
   useEffect(() => {
     if (selectedTextIndex !== null && transformerRef.current && textRefs.current[selectedTextIndex]) {
@@ -45,8 +14,9 @@ function Canvas({ texts, onSelectText, onDeleteText }) {
       transformerRef.current.getLayer().batchDraw();
     } else if (transformerRef.current) {
       transformerRef.current.nodes([]);
+      transformerRef.current.getLayer().batchDraw();
     }
-  }, [selectedTextIndex, textPositions]);
+  }, [selectedTextIndex, texts]);
 
   // バックスペースキーで削除
   useEffect(() => {
@@ -61,30 +31,39 @@ function Canvas({ texts, onSelectText, onDeleteText }) {
   }, [selectedTextIndex]);
 
   const handleDragEnd = (index, e) => {
-    const newPositions = [...textPositions];
-    newPositions[index] = { ...newPositions[index], x: e.target.x(), y: e.target.y() };
-    setTextPositions(newPositions);
+    onUpdateText(index, { x: e.target.x(), y: e.target.y() });
   };
 
   const handleTransformEnd = (index, e) => {
     const node = textRefs.current[index];
-    const newPositions = [...textPositions];
-    newPositions[index] = {
-      ...newPositions[index],
-      x: node.x(),
-      y: node.y(),
-      rotation: node.rotation(),
-      scaleX: node.scaleX(),
-      scaleY: node.scaleY(),
-    };
-    setTextPositions(newPositions);
+    const scaleY = node.scaleY();
+
+    // 新しいフォントサイズを計算
+    const newFontSize = Math.round(texts[index].fontSize * scaleY);
+
+    // スケールをリセット
+    node.scaleX(1);
+    node.scaleY(1);
+
+    // 回転角度を取得
+    const rotation = node.rotation();
+
+    // テキストの位置を取得
+    const x = node.x();
+    const y = node.y();
+
+    // 更新されたプロパティを親に通知
+    onUpdateText(index, {
+      x,
+      y,
+      rotation,
+      fontSize: newFontSize,
+    });
   };
 
   const handleTextClick = (index) => {
     setSelectedTextIndex(index);
-    if (typeof onSelectText === 'function') {
-      onSelectText(index);
-    }
+    onSelectText(index);
   };
 
   // 空白をクリックした際に選択解除
@@ -92,19 +71,12 @@ function Canvas({ texts, onSelectText, onDeleteText }) {
     // 背景のRectをクリックした場合
     if (e.target.name() === 'background') {
       setSelectedTextIndex(null);
-      if (typeof onSelectText === 'function') {
-        onSelectText(null);
-      }
+      onSelectText(null);
     }
   };
 
   const handleDeleteText = (index) => {
-    const newPositions = textPositions.filter((_, i) => i !== index);
-    setTextPositions(newPositions);
-    setSelectedTextIndex(null);
-    if (typeof onDeleteText === 'function') {
-      onDeleteText(index);
-    }
+    onDeleteText(index);
   };
 
   return (
@@ -115,21 +87,21 @@ function Canvas({ texts, onSelectText, onDeleteText }) {
     }}>
       <Stage
         ref={stageRef}
-        width={dimensions.width}
-        height={dimensions.height}
+        width={typeof window !== "undefined" ? window.innerWidth * 0.9 : 800}
+        height={typeof window !== "undefined" ? window.innerWidth * 0.6 : 600}
         onMouseDown={handleStageMouseDown} // Stage全体のクリックハンドラ
       >
         <Layer>
           <Rect
             x={0}
             y={0}
-            width={dimensions.width}
-            height={dimensions.height}
+            width={typeof window !== "undefined" ? window.innerWidth * 0.9 : 800}
+            height={typeof window !== "undefined" ? window.innerWidth * 0.6 : 600}
             fill="white"
             onMouseDown={handleStageMouseDown} // 背景のクリックハンドラ
             name="background" // 背景を識別するための名前を付与
           />
-          {textPositions.map((pos, index) => (
+          {texts.map((pos, index) => (
             <Text
               key={index}
               ref={(el) => (textRefs.current[index] = el)}
@@ -143,8 +115,8 @@ function Canvas({ texts, onSelectText, onDeleteText }) {
               fill={pos.color}
               onClick={() => handleTextClick(index)}
               rotation={pos.rotation || 0}
-              scaleX={pos.scaleX || 1}
-              scaleY={pos.scaleY || 1}
+              scaleX={1} // スケールを1に固定
+              scaleY={1} // スケールを1に固定
             />
           ))}
           {selectedTextIndex !== null && (

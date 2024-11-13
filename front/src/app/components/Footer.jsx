@@ -1,3 +1,4 @@
+// front/src/app/components/Footer.jsx
 "use client";
 
 import Link from "next/link";
@@ -33,6 +34,7 @@ function DefaultFooter() {
     </footer>
   );
 }
+
 function CreateBookFooter() {
   const [activePanel, setActivePanel] = useState(null);
   const [texts, setTexts] = useState([]);
@@ -43,7 +45,19 @@ function CreateBookFooter() {
   };
 
   const handleAddText = (newText) => {
-    setTexts((prevTexts) => [...prevTexts, newText]);
+    if (typeof window === "undefined") return;
+
+    const width = window.innerWidth * 0.9;
+    const height = width * 0.6;
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    const textWithPosition = {
+      ...newText,
+      x: centerX,
+      y: centerY
+    };
+    setTexts((prevTexts) => [...prevTexts, textWithPosition]);
   };
 
   const handleSelectText = (index) => {
@@ -52,15 +66,26 @@ function CreateBookFooter() {
 
   const selectedText = selectedTextIndex !== null ? texts[selectedTextIndex] : null;
 
-  const handleUpdateText = (updatedText) => {
+  // テキストプロパティの更新（TextInputCanvas から）
+  const handleUpdateText = (updatedProperties) => {
     if (selectedTextIndex !== null) {
       const updatedTexts = [...texts];
-      updatedTexts[selectedTextIndex] = {
-        ...updatedTexts[selectedTextIndex],
-        ...updatedText,
-      };
+      updatedTexts[selectedTextIndex] = { ...updatedTexts[selectedTextIndex], ...updatedProperties };
       setTexts(updatedTexts);
     }
+  };
+
+  // テキストの位置、回転、フォントサイズの更新（Canvas から）
+  const handleUpdateTextFromCanvas = (index, updatedProperties) => {
+    const updatedTexts = [...texts];
+    updatedTexts[index] = { ...updatedTexts[index], ...updatedProperties };
+    setTexts(updatedTexts);
+  };
+
+  const handleDeleteText = (index) => {
+    const newTexts = texts.filter((_, i) => i !== index);
+    setTexts(newTexts);
+    setSelectedTextIndex(null);
   };
 
   return (
@@ -76,7 +101,7 @@ function CreateBookFooter() {
         >
           <h2 className="text-lg font-bold mb-4">{activePanel}の内容</h2>
           <div className="grid grid-cols-4 gap-4">
-          {activePanel === "文字" && (
+            {activePanel === "文字" && (
               <TextInputCanvas
                 onAddText={handleAddText}
                 onUpdateText={handleUpdateText}
@@ -97,7 +122,6 @@ function CreateBookFooter() {
                 <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👶</div>
               </>
             )}
-
             {activePanel === "もの" && (
               <>
                 <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">💡</div>
@@ -109,7 +133,12 @@ function CreateBookFooter() {
         </div>
       )}
 
-<Canvas texts={texts} onSelectText={handleSelectText} />
+      <Canvas
+        texts={texts}
+        onSelectText={handleSelectText}
+        onDeleteText={handleDeleteText}
+        onUpdateText={handleUpdateTextFromCanvas} // Canvas からの更新用
+      />
 
       {/* CREATE-BOOKページ専用のフッター */}
       <footer

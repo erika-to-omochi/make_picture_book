@@ -1,3 +1,4 @@
+// front/src/app/components/TextInputCanvas.jsx
 import React, { useState, useEffect } from 'react';
 
 function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
