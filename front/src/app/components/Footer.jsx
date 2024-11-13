@@ -1,4 +1,3 @@
-// front/src/app/components/Footer.jsx
 "use client";
 
 import Link from "next/link";
@@ -7,6 +6,8 @@ import { FaBook, FaEdit, FaInfoCircle, FaTree, FaUser, FaTextWidth, FaLightbulb 
 import { usePathname } from "next/navigation";
 import TextInputCanvas from "./TextInputCanvas";
 import Canvas from "./Canvas";
+
+console.log("Canvas imported in Footer.jsx:", Canvas);
 
 function DefaultFooter() {
   return (
@@ -90,54 +91,56 @@ function CreateBookFooter() {
 
   return (
     <>
-      {/* パネルの内容を切り替えて表示 */}
       {activePanel && (
-        <div
-          className="fixed left-0 bottom-0 w-full h-1/3 shadow-lg p-4 transition-transform duration-300"
-          style={{
-            transform: activePanel ? "translateY(0)" : "translateY(100%)",
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
-          }}
-        >
-          <h2 className="text-lg font-bold mb-4">{activePanel}の内容</h2>
-          <div className="grid grid-cols-4 gap-4">
-            {activePanel === "文字" && (
-              <TextInputCanvas
-                onAddText={handleAddText}
-                onUpdateText={handleUpdateText}
-                selectedText={selectedText}
-              />
-            )}
-            {activePanel === "自然" && (
-              <>
-                <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌲</div>
-                <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌿</div>
-                <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌸</div>
-              </>
-            )}
-            {activePanel === "人物" && (
-              <>
-                <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👤</div>
-                <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👥</div>
-                <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👶</div>
-              </>
-            )}
-            {activePanel === "もの" && (
-              <>
-                <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">💡</div>
-                <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">📦</div>
-                <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">🎒</div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+  <div
+    className="fixed left-0 bottom-0 w-full h-1/3 shadow-lg p-4 transition-transform duration-300"
+    style={{
+      transform: activePanel ? "translateY(0)" : "translateY(100%)",
+      backgroundColor: "rgba(255, 255, 255, 0.8)",
+    }}
+  >
+    <h2 className="text-lg font-bold mb-4">{activePanel}の内容</h2>
+
+    {/* "文字" パネルがアクティブのときに TextInputCanvas を表示 */}
+    {activePanel === "文字" ? (
+      <TextInputCanvas
+        onAddText={handleAddText}
+        onUpdateText={handleUpdateText}
+        selectedText={selectedText}
+      />
+    ) : (
+      <div className="grid grid-cols-4 gap-4">
+        {activePanel === "自然" && (
+          <>
+            <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌲</div>
+            <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌿</div>
+            <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌸</div>
+          </>
+        )}
+        {activePanel === "人物" && (
+          <>
+            <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👤</div>
+            <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👥</div>
+            <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👶</div>
+          </>
+        )}
+        {activePanel === "もの" && (
+          <>
+            <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">💡</div>
+            <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">📦</div>
+            <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">🎒</div>
+          </>
+        )}
+      </div>
+    )}
+  </div>
+)}
 
       <Canvas
         texts={texts}
         onSelectText={handleSelectText}
         onDeleteText={handleDeleteText}
-        onUpdateText={handleUpdateTextFromCanvas} // Canvas からの更新用
+        onUpdateText={handleUpdateTextFromCanvas}
       />
 
       {/* CREATE-BOOKページ専用のフッター */}

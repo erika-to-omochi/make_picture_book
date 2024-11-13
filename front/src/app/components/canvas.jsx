@@ -1,12 +1,18 @@
-// front/src/app/components/Canvas.jsx
+"use client";
+
 import React, { useEffect, useRef } from 'react';
 import { Stage, Layer, Rect, Text, Transformer } from 'react-konva';
+
+console.log("Canvas component loaded");
 
 function Canvas({ texts, onSelectText, onDeleteText, onUpdateText }) {
   const [selectedTextIndex, setSelectedTextIndex] = React.useState(null);
   const transformerRef = useRef(null);
   const stageRef = useRef(null);
   const textRefs = useRef([]);
+
+  const stageWidth = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
+  const stageHeight = stageWidth * 0.75;
 
   useEffect(() => {
     if (selectedTextIndex !== null && transformerRef.current && textRefs.current[selectedTextIndex]) {
