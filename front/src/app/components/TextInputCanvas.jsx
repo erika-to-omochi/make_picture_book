@@ -1,14 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function TextInputCanvas({ onAddText }) {
+function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
   const [inputText, setInputText] = useState('');
   const [fontSize, setFontSize] = useState(24);
   const [color, setColor] = useState('#000000');
 
-  const handleAddButtonClick = () => {
-    if (inputText.trim()) {
-      onAddText({ text: inputText, fontSize, color });
+  useEffect(() => {
+    if (selectedText) {
+      setInputText(selectedText.text);
+      setFontSize(selectedText.fontSize);
+      setColor(selectedText.color);
+    } else {
       setInputText('');
+      setFontSize(24);
+      setColor('#000000');
+    }
+  }, [selectedText]);
+
+  const handleButtonClick = () => {
+    if (inputText.trim()) {
+      if (selectedText) {
+        onUpdateText({ text: inputText, fontSize, color });
+      } else {
+        onAddText({ text: inputText, fontSize, color });
+      }
+      setInputText('');
+      setFontSize(24);
+      setColor('#000000');
     }
   };
 
@@ -34,8 +52,8 @@ function TextInputCanvas({ onAddText }) {
         onChange={(e) => setColor(e.target.value)}
         className="border p-2 w-full mt-2"
       />
-      <button onClick={handleAddButtonClick} className="mt-2 p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
-        キャンバスに追加
+      <button onClick={handleButtonClick} className="mt-2 p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
+        {selectedText ? 'テキストを更新' : 'キャンバスに追加'}
       </button>
     </div>
   );

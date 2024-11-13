@@ -33,19 +33,34 @@ function DefaultFooter() {
     </footer>
   );
 }
-
-// CreateBookFooter（CREATE-BOOKページ専用のフッター）
 function CreateBookFooter() {
   const [activePanel, setActivePanel] = useState(null);
   const [texts, setTexts] = useState([]);
+  const [selectedTextIndex, setSelectedTextIndex] = useState(null);
 
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
   };
 
   const handleAddText = (newText) => {
-    console.log("Text added:", newText);
     setTexts((prevTexts) => [...prevTexts, newText]);
+  };
+
+  const handleSelectText = (index) => {
+    setSelectedTextIndex(index);
+  };
+
+  const selectedText = selectedTextIndex !== null ? texts[selectedTextIndex] : null;
+
+  const handleUpdateText = (updatedText) => {
+    if (selectedTextIndex !== null) {
+      const updatedTexts = [...texts];
+      updatedTexts[selectedTextIndex] = {
+        ...updatedTexts[selectedTextIndex],
+        ...updatedText,
+      };
+      setTexts(updatedTexts);
+    }
   };
 
   return (
@@ -61,6 +76,13 @@ function CreateBookFooter() {
         >
           <h2 className="text-lg font-bold mb-4">{activePanel}の内容</h2>
           <div className="grid grid-cols-4 gap-4">
+          {activePanel === "文字" && (
+              <TextInputCanvas
+                onAddText={handleAddText}
+                onUpdateText={handleUpdateText}
+                selectedText={selectedText}
+              />
+            )}
             {activePanel === "自然" && (
               <>
                 <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌲</div>
@@ -75,7 +97,6 @@ function CreateBookFooter() {
                 <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👶</div>
               </>
             )}
-            {activePanel === '文字' && <TextInputCanvas onAddText={handleAddText} />}
 
             {activePanel === "もの" && (
               <>
@@ -88,7 +109,7 @@ function CreateBookFooter() {
         </div>
       )}
 
-      <Canvas texts={texts} />
+<Canvas texts={texts} onSelectText={handleSelectText} />
 
       {/* CREATE-BOOKページ専用のフッター */}
       <footer
