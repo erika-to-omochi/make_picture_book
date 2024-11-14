@@ -1,109 +1,132 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
-import { Stage, Layer, Rect, Text, Transformer } from 'react-konva';
+import React, { useEffect, useRef, useState } from 'react';
+import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
 
-function Canvas({ texts, onSelectText, onDeleteText, onUpdateText }) {
-  const [selectedTextIndex, setSelectedTextIndex] = React.useState(null);
+function Canvas({
+  texts,
+  images,
+  onSelectText,
+  onDeleteText,
+  onUpdateText,
+  onDeleteImage,
+  onUpdateImage,
+  backgroundColor,
+  onComplete,
+  onSaveDraft
+}) {
+  const [selectedTextIndex, setSelectedTextIndex] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [loadedImages, setLoadedImages] = useState([]);
   const transformerRef = useRef(null);
   const stageRef = useRef(null);
   const textRefs = useRef([]);
+  const imageRefs = useRef([]);
 
   const stageWidth = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
   const stageHeight = stageWidth * 0.75;
 
   useEffect(() => {
-    if (selectedTextIndex !== null && transformerRef.current && textRefs.current[selectedTextIndex]) {
-      transformerRef.current.nodes([textRefs.current[selectedTextIndex]]);
-      transformerRef.current.getLayer().batchDraw();
-    } else if (transformerRef.current) {
-      transformerRef.current.nodes([]);
+    const loadImages = async () => {
+      const promises = images.map((img) => {
+        return new Promise((resolve) => {
+          const image = new window.Image();
+          image.src = img.src;
+          image.onload = () => resolve({ ...img, image });
+        });
+      });
+      const results = await Promise.all(promises);
+      setLoadedImages(results);
+    };
+
+    loadImages();
+  }, [images]);
+
+  useEffect(() => {
+    if (transformerRef.current) {
+      if (selectedTextIndex !== null && textRefs.current[selectedTextIndex]) {
+        transformerRef.current.nodes([textRefs.current[selectedTextIndex]]);
+      } else if (selectedImageIndex !== null && imageRefs.current[selectedImageIndex]) {
+        transformerRef.current.nodes([imageRefs.current[selectedImageIndex]]);
+      } else {
+        transformerRef.current.nodes([]);
+      }
       transformerRef.current.getLayer().batchDraw();
     }
-  }, [selectedTextIndex, texts]);
+  }, [selectedTextIndex, selectedImageIndex, texts, loadedImages]);
 
-  // バックスペースキーで削除
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Backspace' && selectedTextIndex !== null) {
-        e.preventDefault();
-        handleDeleteText(selectedTextIndex);
+      if (e.key === 'Backspace') {
+        if (selectedTextIndex !== null) {
+          onDeleteText(selectedTextIndex);
+          setSelectedTextIndex(null);
+        } else if (selectedImageIndex !== null) {
+          onDeleteImage(selectedImageIndex);
+          setSelectedImageIndex(null);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTextIndex]);
+  }, [selectedTextIndex, selectedImageIndex, onDeleteText, onDeleteImage]);
 
-  const handleDragEnd = (index, e) => {
-    onUpdateText(index, { x: e.target.x(), y: e.target.y() });
+  const handleDragEnd = (index, e, type) => {
+    const update = { x: e.target.x(), y: e.target.y() };
+    if (type === 'text') onUpdateText(index, update);
+    else if (type === 'image') onUpdateImage(index, update);
   };
 
-  const handleTransformEnd = (index, e) => {
-    const node = textRefs.current[index];
-    const scaleY = node.scaleY();
-
-    // 新しいフォントサイズを計算
-    const newFontSize = Math.round(texts[index].fontSize * scaleY);
-
-    // スケールをリセット
-    node.scaleX(1);
-    node.scaleY(1);
-
-    // 回転角度を取得
-    const rotation = node.rotation();
-
-    // テキストの位置を取得
-    const x = node.x();
-    const y = node.y();
-
-    // 更新されたプロパティを親に通知
-    onUpdateText(index, {
-      x,
-      y,
-      rotation,
-      fontSize: newFontSize,
-    });
+  const handleTransformEnd = (index, e, type) => {
+    const node = type === 'text' ? textRefs.current[index] : imageRefs.current[index];
+    const newProperties = {
+      x: node.x(),
+      y: node.y(),
+      rotation: node.rotation(),
+      scaleX: node.scaleX(),
+      scaleY: node.scaleY()
+    };
+    if (type === 'text') {
+      newProperties.fontSize = texts[index].fontSize * newProperties.scaleY;
+      node.scaleX(1);
+      node.scaleY(1);
+      onUpdateText(index, newProperties);
+    } else if (type === 'image') {
+      onUpdateImage(index, newProperties);
+    }
   };
 
   const handleTextClick = (index) => {
     setSelectedTextIndex(index);
+    setSelectedImageIndex(null);
     onSelectText(index);
   };
 
-  // 空白をクリックした際に選択解除
   const handleStageMouseDown = (e) => {
-    // 背景のRectをクリックした場合
     if (e.target.name() === 'background') {
       setSelectedTextIndex(null);
+      setSelectedImageIndex(null);
       onSelectText(null);
     }
   };
 
-  const handleDeleteText = (index) => {
-    onDeleteText(index);
-  };
-
   return (
-    <div style={{
-      display: "flex",
-      justifyContent: "center",
-      paddingTop: "20px",
-    }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "20px" }}>
       <Stage
         ref={stageRef}
-        width={typeof window !== "undefined" ? window.innerWidth * 0.9 : 800}
-        height={typeof window !== "undefined" ? window.innerWidth * 0.6 : 600}
-        onMouseDown={handleStageMouseDown} // Stage全体のクリックハンドラ
+        width={stageWidth}
+        height={stageHeight}
+        onMouseDown={handleStageMouseDown}
       >
         <Layer>
           <Rect
             x={0}
             y={0}
-            width={typeof window !== "undefined" ? window.innerWidth * 0.9 : 800}
-            height={typeof window !== "undefined" ? window.innerWidth * 0.6 : 600}
-            fill="white"
-            onMouseDown={handleStageMouseDown} // 背景のクリックハンドラ
-            name="background" // 背景を識別するための名前を付与
+            width={stageWidth}
+            height={stageHeight}
+            fill={backgroundColor}
+            onMouseDown={handleStageMouseDown}
+            name="background"
           />
           {texts.map((pos, index) => (
             <Text
@@ -113,26 +136,46 @@ function Canvas({ texts, onSelectText, onDeleteText, onUpdateText }) {
               x={pos.x}
               y={pos.y}
               draggable
-              onDragEnd={(e) => handleDragEnd(index, e)}
-              onTransformEnd={(e) => handleTransformEnd(index, e)}
+              onDragEnd={(e) => handleDragEnd(index, e, 'text')}
+              onTransformEnd={(e) => handleTransformEnd(index, e, 'text')}
               fontSize={pos.fontSize}
               fill={pos.color}
               onClick={() => handleTextClick(index)}
               rotation={pos.rotation || 0}
-              scaleX={1} // スケールを1に固定
-              scaleY={1} // スケールを1に固定
+              scaleX={1}
+              scaleY={1}
             />
           ))}
-          {selectedTextIndex !== null && (
-            <Transformer
-              ref={transformerRef}
-              anchorSize={8}
-              borderDash={[6, 2]}
-              keepRatio={true}
+          {loadedImages.map((img, index) => (
+            <KonvaImage
+              key={`img-${index}`}
+              ref={(el) => (imageRefs.current[index] = el)}
+              image={img.image}
+              x={img.x}
+              y={img.y}
+              draggable
+              onDragEnd={(e) => handleDragEnd(index, e, 'image')}
+              onTransformEnd={(e) => handleTransformEnd(index, e, 'image')}
+              onClick={() => { setSelectedImageIndex(index); setSelectedTextIndex(null); }}
+              width={img.width}
+              height={img.height}
             />
+          ))}
+          {(selectedTextIndex !== null || selectedImageIndex !== null) && (
+            <Transformer ref={transformerRef} anchorSize={8} borderDash={[6, 2]} keepRatio={true} />
           )}
         </Layer>
       </Stage>
+
+      {/* キャンバスの下にボタンを配置 */}
+      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+        <button onClick={onComplete} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 ml-4">
+          完成
+        </button>
+        <button onClick={onSaveDraft} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 ml-4">
+          下書き保存
+        </button>
+      </div>
     </div>
   );
 }

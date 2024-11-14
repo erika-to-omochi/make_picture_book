@@ -10,7 +10,9 @@ const Canvas = dynamic(() => import('../components/Canvas'), {
 export default function CreateBookPage() {
   const [activePanel, setActivePanel] = useState(null);
   const [texts, setTexts] = useState([]);
+  const [images, setImages] = useState([]);
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
+  const [backgroundColor, setBackgroundColor] = useState("white");
 
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
@@ -30,6 +32,31 @@ export default function CreateBookPage() {
       y: centerY
     };
     setTexts((prevTexts) => [...prevTexts, textWithPosition]);
+  };
+
+  const handleAddImage = (src) => {
+    // 画像を読み込んで元のサイズで追加
+    const img = new window.Image();
+    img.src = src;
+    img.onload = () => {
+      // 読み込み後に自然サイズを取得
+      const newImage = {
+        src,
+        x: 100,
+        y: 100,
+        width: img.naturalWidth / 2 ,
+        height: img.naturalHeight / 2,
+      };
+      setImages((prevImages) => [...prevImages, newImage]);
+    };
+  };
+
+  const handleUpdateImage = (index, updatedProperties) => {
+    setImages((prevImages) => {
+      const updatedImages = [...prevImages];
+      updatedImages[index] = { ...updatedImages[index], ...updatedProperties };
+      return updatedImages;
+    });
   };
 
   const handleSelectText = (index) => {
@@ -60,24 +87,52 @@ export default function CreateBookPage() {
     setSelectedTextIndex(null);
   };
 
+  const handleDeleteImage = (index) => {
+    const newImages = images.filter((_, i) => i !== index);
+    setImages(newImages);
+    setSelectedTextIndex(null);
+  };
+
+    // 「完成」ボタンの処理
+    const onComplete = () => {
+      console.log("Document completed", { texts, images });
+      alert("Document completed!");
+      // 必要に応じてバックエンドへの保存処理などを追加
+    };
+
+    // 「下書き保存」ボタンの処理
+    const onSaveDraft = () => {
+      console.log("Document saved as draft", { texts, images });
+      alert("Draft saved!");
+      // 下書き保存のための処理を追加（例：ローカルストレージやバックエンドに一時保存）
+    };
+
   return (
     <div>
       <Canvas
         texts={texts}
+        images={images}
         onSelectText={handleSelectText}
         onDeleteText={handleDeleteText}
         onUpdateText={handleUpdateTextFromCanvas}
+        onUpdateImage={handleUpdateImage}
+        onDeleteImage={handleDeleteImage}
+        backgroundColor={backgroundColor}
+        onComplete={onComplete}
+        onSaveDraft={onSaveDraft}
       />
 
       <CreateBookFooter
         activePanel={activePanel}
         togglePanel={togglePanel}
         handleAddText={handleAddText}
+        handleAddImage={handleAddImage}
         handleSelectText={handleSelectText}
         handleUpdateText={handleUpdateText}
         handleDeleteText={handleDeleteText}
         texts={texts}
         selectedText={selectedText}
+        setBackgroundColor={setBackgroundColor}
       />
     </div>
   );
