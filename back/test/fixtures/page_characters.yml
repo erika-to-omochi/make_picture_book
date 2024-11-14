@@ -1,0 +1,39 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  page: one
+  character_type: 1
+  simple_path: MyString
+  body_path: MyString
+  hair_path: MyString
+  eye_path: MyString
+  mouth_path: MyString
+  hand_path: MyString
+  foot_path: MyString
+  outfit_path: MyString
+  position_x: 1
+  position_y: 1
+  rotation: 1
+  scale_x: 1.5
+  scale_y: 1.5
+  created_at: 2024-11-14 17:33:29
+  updated_at: 2024-11-14 17:33:29
+
+two:
+  page: two
+  character_type: 1
+  simple_path: MyString
+  body_path: MyString
+  hair_path: MyString
+  eye_path: MyString
+  mouth_path: MyString
+  hand_path: MyString
+  foot_path: MyString
+  outfit_path: MyString
+  position_x: 1
+  position_y: 1
+  rotation: 1
+  scale_x: 1.5
+  scale_y: 1.5
+  created_at: 2024-11-14 17:33:29
+  updated_at: 2024-11-14 17:33:29

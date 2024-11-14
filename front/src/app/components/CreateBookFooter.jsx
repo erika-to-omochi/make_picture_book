@@ -1,6 +1,7 @@
 "use client";
 
-import { FaTree, FaUser, FaTextWidth, FaLightbulb } from "react-icons/fa";
+import { FaTree, FaUser, FaBriefcase } from "react-icons/fa";
+import { MdFormatColorFill, MdOutlineTextFields } from "react-icons/md";
 import TextInputCanvas from "./TextInputCanvas";
 import PeopleImages from "./PeopleImages";
 import NatureImages from "./NatureImages";
@@ -15,7 +16,8 @@ export default function CreateBookFooter({
   handleDeleteText,
   texts,
   selectedText,
-  handleAddImage
+  handleAddImage,
+  setBackgroundColor
 }) {
   // パネルごとのコンテンツを関数として定義
   const renderPanelContent = () => {
@@ -34,6 +36,17 @@ export default function CreateBookFooter({
         return <PeopleImages onImageSelect={handleImageSelect} />;
       case "もの":
         return <ObjectImages onImageSelect={handleImageSelect} />;
+        case "背景色":
+          return (
+            <div className="flex items-center p-4 gap-2">
+              <label>背景色を選択:</label>
+              <input
+                type="color"
+                onChange={(e) => setBackgroundColor(e.target.value)}
+                className="w-12 h-12"
+              />
+            </div>
+          );
       default:
         return null;
     }
@@ -54,7 +67,7 @@ export default function CreateBookFooter({
             backgroundColor: "rgba(255, 255, 255, 0.8)",
           }}
         >
-          <h2 className="text-lg font-bold mb-4">{activePanel}の内容</h2>
+          <h2 className="text-lg font-bold mb-4">{activePanel}を選ぶ</h2>
           {renderPanelContent()}
         </div>
       )}
@@ -69,21 +82,25 @@ export default function CreateBookFooter({
           width: "100%",
         }}
       >
-        <button onClick={() => togglePanel("自然")} className="flex flex-col items-center mx-2">
-          <FaTree size={32} className="text-icon" />
-          <span>自然</span>
-        </button>
         <button onClick={() => togglePanel("人物")} className="flex flex-col items-center mx-2">
           <FaUser size={32} className="text-icon" />
           <span>人物</span>
         </button>
-        <button onClick={() => togglePanel("文字")} className="flex flex-col items-center mx-2">
-          <FaTextWidth size={32} className="text-icon" />
-          <span>文字</span>
+        <button onClick={() => togglePanel("自然")} className="flex flex-col items-center mx-2">
+          <FaTree size={32} className="text-icon" />
+          <span>自然</span>
         </button>
         <button onClick={() => togglePanel("もの")} className="flex flex-col items-center mx-2">
-          <FaLightbulb size={32} className="text-icon" />
+          <FaBriefcase size={32} className="text-icon" />
           <span>もの</span>
+        </button>
+        <button onClick={() => togglePanel("文字")} className="flex flex-col items-center mx-2">
+          <MdOutlineTextFields size={32} className="text-icon" />
+          <span>文字</span>
+        </button>
+        <button onClick={() => togglePanel("背景色")} className="flex flex-col items-center">
+          <MdFormatColorFill size={32} className="text-icon" />
+          <span>背景</span>
         </button>
       </footer>
     </>
