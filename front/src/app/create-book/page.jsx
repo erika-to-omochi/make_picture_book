@@ -10,6 +10,7 @@ const Canvas = dynamic(() => import('../components/Canvas'), {
 export default function CreateBookPage() {
   const [activePanel, setActivePanel] = useState(null);
   const [texts, setTexts] = useState([]);
+  const [images, setImages] = useState([]);
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
 
   const togglePanel = (panelName) => {
@@ -30,6 +31,31 @@ export default function CreateBookPage() {
       y: centerY
     };
     setTexts((prevTexts) => [...prevTexts, textWithPosition]);
+  };
+
+  const handleAddImage = (src) => {
+    // 画像を読み込んで元のサイズで追加
+    const img = new window.Image();
+    img.src = src;
+    img.onload = () => {
+      // 読み込み後に自然サイズを取得
+      const newImage = {
+        src,
+        x: 100,
+        y: 100,
+        width: img.naturalWidth / 2 ,
+        height: img.naturalHeight / 2,
+      };
+      setImages((prevImages) => [...prevImages, newImage]);
+    };
+  };
+
+  const handleUpdateImage = (index, updatedProperties) => {
+    setImages((prevImages) => {
+      const updatedImages = [...prevImages];
+      updatedImages[index] = { ...updatedImages[index], ...updatedProperties };
+      return updatedImages;
+    });
   };
 
   const handleSelectText = (index) => {
@@ -60,19 +86,29 @@ export default function CreateBookPage() {
     setSelectedTextIndex(null);
   };
 
+  const handleDeleteImage = (index) => {
+    const newImages = images.filter((_, i) => i !== index);
+    setImages(newImages);
+    setSelectedTextIndex(null);
+  };
+
   return (
     <div>
       <Canvas
         texts={texts}
+        images={images}
         onSelectText={handleSelectText}
         onDeleteText={handleDeleteText}
         onUpdateText={handleUpdateTextFromCanvas}
+        onUpdateImage={handleUpdateImage}
+        onDeleteImage={handleDeleteImage}
       />
 
       <CreateBookFooter
         activePanel={activePanel}
         togglePanel={togglePanel}
         handleAddText={handleAddText}
+        handleAddImage={handleAddImage}
         handleSelectText={handleSelectText}
         handleUpdateText={handleUpdateText}
         handleDeleteText={handleDeleteText}

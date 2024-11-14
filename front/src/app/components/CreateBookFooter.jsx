@@ -2,6 +2,9 @@
 
 import { FaTree, FaUser, FaTextWidth, FaLightbulb } from "react-icons/fa";
 import TextInputCanvas from "./TextInputCanvas";
+import PeopleImages from "./PeopleImages";
+import NatureImages from "./NatureImages";
+import ObjectImages from "./ObjectImages";
 
 export default function CreateBookFooter({
   activePanel,
@@ -11,8 +14,36 @@ export default function CreateBookFooter({
   handleUpdateText,
   handleDeleteText,
   texts,
-  selectedText
+  selectedText,
+  handleAddImage
 }) {
+  // パネルごとのコンテンツを関数として定義
+  const renderPanelContent = () => {
+    switch (activePanel) {
+      case "文字":
+        return (
+          <TextInputCanvas
+            onAddText={handleAddText}
+            onUpdateText={handleUpdateText}
+            selectedText={selectedText}
+          />
+        );
+      case "自然":
+        return <NatureImages onImageSelect={handleImageSelect} />;
+      case "人物":
+        return <PeopleImages onImageSelect={handleImageSelect} />;
+      case "もの":
+        return <ObjectImages onImageSelect={handleImageSelect} />;
+      default:
+        return null;
+    }
+  };
+
+  const handleImageSelect = (src) => {
+    // 選択した画像パスを handleAddImage に渡す
+    handleAddImage(src);
+  };
+
   return (
     <>
       {activePanel && (
@@ -24,39 +55,7 @@ export default function CreateBookFooter({
           }}
         >
           <h2 className="text-lg font-bold mb-4">{activePanel}の内容</h2>
-
-          {/* "文字" パネルがアクティブのときに TextInputCanvas を表示 */}
-          {activePanel === "文字" ? (
-            <TextInputCanvas
-              onAddText={handleAddText}
-              onUpdateText={handleUpdateText}
-              selectedText={selectedText}
-            />
-          ) : (
-            <div className="grid grid-cols-4 gap-4">
-              {activePanel === "自然" && (
-                <>
-                  <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌲</div>
-                  <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌿</div>
-                  <div className="w-12 h-12 bg-green-300 flex items-center justify-center">🌸</div>
-                </>
-              )}
-              {activePanel === "人物" && (
-                <>
-                  <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👤</div>
-                  <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👥</div>
-                  <div className="w-12 h-12 bg-blue-300 flex items-center justify-center">👶</div>
-                </>
-              )}
-              {activePanel === "もの" && (
-                <>
-                  <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">💡</div>
-                  <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">📦</div>
-                  <div className="w-12 h-12 bg-yellow-300 flex items-center justify-center">🎒</div>
-                </>
-              )}
-            </div>
-          )}
+          {renderPanelContent()}
         </div>
       )}
 
