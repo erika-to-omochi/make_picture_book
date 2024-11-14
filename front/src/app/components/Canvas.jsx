@@ -13,6 +13,8 @@ function Canvas({
   onDeleteImage,
   onUpdateImage,
   backgroundColor,
+  onComplete,
+  onSaveDraft
 }) {
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
