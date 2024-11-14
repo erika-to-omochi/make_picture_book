@@ -31,7 +31,10 @@ function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
   };
 
   return (
-    <div className="text-input-canvas">
+    <div
+      className="text-input-canvas overflow-y-scroll"
+      style={{ maxHeight: '250px' }}
+    >
       <div className="flex flex-wrap">
         <div className="w-full pr-2 mb-4">
           <input
@@ -42,7 +45,8 @@ function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
             className="border p-2 w-full"
           />
         </div>
-        <div className="flex w-full">
+        <div className="flex items-center gap-2">
+          <label>サイズ:</label>
           <input
             type="number"
             value={fontSize}
@@ -51,16 +55,18 @@ function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
             className="border p-2 mr-4"
             style={{ width: '20%' }}
           />
-          <input
-            type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            className="border p-4 mr-4 mt-1.5"
-            style={{ width: '10%' }}
-          />
+          <div className="flex items-center p-4 gap-2">
+            <label>文字色:</label>
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="w-12 h-12"
+            />
+          </div>
           <button
             onClick={handleButtonClick}
-            className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
+            className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 ml-4"
             style={{ width: '20' }}
           >
             {selectedText ? 'テキストを更新' : 'キャンバスに追加'}

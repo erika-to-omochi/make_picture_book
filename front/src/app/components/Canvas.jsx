@@ -2,11 +2,28 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
+import Modal from './Modal'; // モーダルをインポート
 
-function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDeleteImage, onUpdateImage }) {
+function Canvas({
+  texts,
+  images,
+  onSelectText,
+  onDeleteText,
+  onUpdateText,
+  onDeleteImage,
+  onUpdateImage,
+  backgroundColor,
+}) {
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [loadedImages, setLoadedImages] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState(null);
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [tags, setTags] = useState("");
+  const [visibility, setVisibility] = useState("public");
+
   const transformerRef = useRef(null);
   const stageRef = useRef(null);
   const textRefs = useRef([]);
@@ -15,6 +32,7 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
   const stageWidth = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
   const stageHeight = stageWidth * 0.75;
 
+  // 画像読み込み
   useEffect(() => {
     const loadImages = async () => {
       const promises = images.map((img) => {
@@ -27,10 +45,10 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
       const results = await Promise.all(promises);
       setLoadedImages(results);
     };
-
     loadImages();
   }, [images]);
 
+  // 選択時にTransformer更新
   useEffect(() => {
     if (transformerRef.current) {
       if (selectedTextIndex !== null && textRefs.current[selectedTextIndex]) {
@@ -44,6 +62,7 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
     }
   }, [selectedTextIndex, selectedImageIndex, texts, loadedImages]);
 
+  // バックスペースキーで削除
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Backspace') {
@@ -73,7 +92,7 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
       y: node.y(),
       rotation: node.rotation(),
       scaleX: node.scaleX(),
-      scaleY: node.scaleY()
+      scaleY: node.scaleY(),
     };
     if (type === 'text') {
       newProperties.fontSize = texts[index].fontSize * newProperties.scaleY;
@@ -99,8 +118,31 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
     }
   };
 
+  const openModal = (type) => {
+    setModalType(type);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleModalSave = () => {
+    const bookData = { title, author, tags, texts, images, backgroundColor };
+
+    if (modalType === "draft") {
+      console.log("Saving as draft", bookData);
+      // API呼び出し処理をここに追加
+    } else if (modalType === "complete") {
+      const completeData = { ...bookData, visibility };
+      console.log("Saving as complete with visibility", completeData);
+      // API呼び出し処理をここに追加
+    }
+    closeModal();
+  };
+
   return (
-    <div style={{ display: "flex", justifyContent: "center", paddingTop: "20px" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "20px" }}>
       <Stage
         ref={stageRef}
         width={stageWidth}
@@ -113,7 +155,7 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
             y={0}
             width={stageWidth}
             height={stageHeight}
-            fill="white"
+            fill={backgroundColor}
             onMouseDown={handleStageMouseDown}
             name="background"
           />
@@ -155,6 +197,32 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
           )}
         </Layer>
       </Stage>
+
+      {/* キャンバスの下にボタンを配置 */}
+      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+        <button onClick={() => openModal("complete")} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
+          完成
+        </button>
+        <button onClick={() => openModal("draft")} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
+          下書き保存
+        </button>
+      </div>
+
+      {/* モーダル */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSave={handleModalSave}
+        modalType={modalType}
+        title={title}
+        setTitle={setTitle}
+        author={author}
+        setAuthor={setAuthor}
+        tags={tags}
+        setTags={setTags}
+        visibility={visibility}
+        setVisibility={setVisibility}
+      />
     </div>
   );
 }
