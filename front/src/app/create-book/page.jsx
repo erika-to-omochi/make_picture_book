@@ -12,6 +12,7 @@ export default function CreateBookPage() {
   const [texts, setTexts] = useState([]);
   const [images, setImages] = useState([]);
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
+  const [backgroundColor, setBackgroundColor] = useState("white");
 
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
@@ -92,6 +93,20 @@ export default function CreateBookPage() {
     setSelectedTextIndex(null);
   };
 
+    // 「完成」ボタンの処理
+    const onComplete = () => {
+      console.log("Document completed", { texts, images });
+      alert("Document completed!");
+      // 必要に応じてバックエンドへの保存処理などを追加
+    };
+
+    // 「下書き保存」ボタンの処理
+    const onSaveDraft = () => {
+      console.log("Document saved as draft", { texts, images });
+      alert("Draft saved!");
+      // 下書き保存のための処理を追加（例：ローカルストレージやバックエンドに一時保存）
+    };
+
   return (
     <div>
       <Canvas
@@ -102,6 +117,9 @@ export default function CreateBookPage() {
         onUpdateText={handleUpdateTextFromCanvas}
         onUpdateImage={handleUpdateImage}
         onDeleteImage={handleDeleteImage}
+        backgroundColor={backgroundColor}
+        onComplete={onComplete}
+        onSaveDraft={onSaveDraft}
       />
 
       <CreateBookFooter
@@ -114,6 +132,7 @@ export default function CreateBookPage() {
         handleDeleteText={handleDeleteText}
         texts={texts}
         selectedText={selectedText}
+        setBackgroundColor={setBackgroundColor}
       />
     </div>
   );
