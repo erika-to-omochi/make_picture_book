@@ -1,4 +1,3 @@
-// src/app/components/CreateBookFooter.jsx
 "use client";
 
 import { FaTree, FaUser, FaTextWidth, FaLightbulb } from "react-icons/fa";
