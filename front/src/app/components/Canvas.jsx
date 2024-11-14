@@ -3,7 +3,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
 
-function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDeleteImage, onUpdateImage }) {
+function Canvas({
+  texts,
+  images,
+  onSelectText,
+  onDeleteText,
+  onUpdateText,
+  onDeleteImage,
+  onUpdateImage,
+  backgroundColor,
+  onComplete,
+  onSaveDraft
+}) {
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [loadedImages, setLoadedImages] = useState([]);
@@ -100,7 +111,7 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", paddingTop: "20px" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "20px" }}>
       <Stage
         ref={stageRef}
         width={stageWidth}
@@ -113,7 +124,7 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
             y={0}
             width={stageWidth}
             height={stageHeight}
-            fill="white"
+            fill={backgroundColor}
             onMouseDown={handleStageMouseDown}
             name="background"
           />
@@ -155,6 +166,16 @@ function Canvas({ texts, images, onSelectText, onDeleteText, onUpdateText, onDel
           )}
         </Layer>
       </Stage>
+
+      {/* キャンバスの下にボタンを配置 */}
+      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+        <button onClick={onComplete} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 ml-4">
+          完成
+        </button>
+        <button onClick={onSaveDraft} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 ml-4">
+          下書き保存
+        </button>
+      </div>
     </div>
   );
 }
