@@ -1,7 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { FaBook, FaEdit, FaInfoCircle } from "react-icons/fa";
+import { usePathname } from 'next/navigation';
 
-export default function Footer() {
+export default function DefaultFooter() {
+  const pathname = usePathname();
+
+  // /create-book ページでは DefaultFooter を表示しない
+  if (pathname === "/create-book") {
+    return null;
+  }
   return (
     <footer
       className="flex justify-center gap-8 p-4 text-bodyText text-sm"
@@ -13,7 +22,7 @@ export default function Footer() {
       }}
     >
       <Link href="/index-books" className="flex flex-col items-center mx-2">
-        <FaBook size={32} className="text-icon"/>
+        <FaBook size={32} className="text-icon" />
         <span>見る</span>
       </Link>
       <Link href="/create-book" className="flex flex-col items-center mx-2">
