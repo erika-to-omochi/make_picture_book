@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
+import Modal from './Modal'; // モーダルをインポート
 
 function Canvas({
   texts,
@@ -18,6 +19,13 @@ function Canvas({
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [loadedImages, setLoadedImages] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState(null);
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [tags, setTags] = useState("");
+  const [visibility, setVisibility] = useState("public");
+
   const transformerRef = useRef(null);
   const stageRef = useRef(null);
   const textRefs = useRef([]);
@@ -26,6 +34,7 @@ function Canvas({
   const stageWidth = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
   const stageHeight = stageWidth * 0.75;
 
+  // 画像読み込み
   useEffect(() => {
     const loadImages = async () => {
       const promises = images.map((img) => {
@@ -38,10 +47,10 @@ function Canvas({
       const results = await Promise.all(promises);
       setLoadedImages(results);
     };
-
     loadImages();
   }, [images]);
 
+  // 選択時にTransformer更新
   useEffect(() => {
     if (transformerRef.current) {
       if (selectedTextIndex !== null && textRefs.current[selectedTextIndex]) {
@@ -55,6 +64,7 @@ function Canvas({
     }
   }, [selectedTextIndex, selectedImageIndex, texts, loadedImages]);
 
+  // バックスペースキーで削除
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Backspace') {
@@ -84,7 +94,7 @@ function Canvas({
       y: node.y(),
       rotation: node.rotation(),
       scaleX: node.scaleX(),
-      scaleY: node.scaleY()
+      scaleY: node.scaleY(),
     };
     if (type === 'text') {
       newProperties.fontSize = texts[index].fontSize * newProperties.scaleY;
@@ -108,6 +118,29 @@ function Canvas({
       setSelectedImageIndex(null);
       onSelectText(null);
     }
+  };
+
+  const openModal = (type) => {
+    setModalType(type);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleModalSave = () => {
+    const bookData = { title, author, tags, texts, images, backgroundColor };
+
+    if (modalType === "draft") {
+      console.log("Saving as draft", bookData);
+      // API呼び出し処理をここに追加
+    } else if (modalType === "complete") {
+      const completeData = { ...bookData, visibility };
+      console.log("Saving as complete with visibility", completeData);
+      // API呼び出し処理をここに追加
+    }
+    closeModal();
   };
 
   return (
@@ -169,13 +202,29 @@ function Canvas({
 
       {/* キャンバスの下にボタンを配置 */}
       <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-        <button onClick={onComplete} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 ml-4">
+        <button onClick={() => openModal("complete")} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
           完成
         </button>
-        <button onClick={onSaveDraft} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 ml-4">
+        <button onClick={() => openModal("draft")} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
           下書き保存
         </button>
       </div>
+
+      {/* モーダル */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSave={handleModalSave}
+        modalType={modalType}
+        title={title}
+        setTitle={setTitle}
+        author={author}
+        setAuthor={setAuthor}
+        tags={tags}
+        setTags={setTags}
+        visibility={visibility}
+        setVisibility={setVisibility}
+      />
     </div>
   );
 }
