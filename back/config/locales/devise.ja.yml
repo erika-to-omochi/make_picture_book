@@ -20,6 +20,19 @@ ja:
               too_short: "は%{count}文字以上で入力してください。"
             password_confirmation:
               confirmation: "が一致しません。"
+        page:
+          attributes:
+            book:
+              required: "関連する本を指定してください"
+              required: "本に関連付けられたページが必要です"
+        book:
+          attributes:
+            user:
+              required: "関連するユーザーを指定してください"
+        page_character:
+          attributes:
+            base:
+              detailed_character_missing_paths: "詳細キャラクターには次のパスが必要です: %{paths}"
 
   errors:
     messages:
