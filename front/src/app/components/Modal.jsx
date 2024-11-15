@@ -1,4 +1,3 @@
-// src/app/components/Modal.jsx
 "use client";
 
 import React from 'react';
