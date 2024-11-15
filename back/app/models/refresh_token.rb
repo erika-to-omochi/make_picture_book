@@ -7,7 +7,9 @@ class RefreshToken < ApplicationRecord
   validates :expires_at, presence: true
 
   def hash_token
-    self.token = Digest::SHA256.hexdigest(token)
+    Rails.logger.debug "Original Token before hashing: #{self.token}"
+    self.token = Digest::SHA256.hexdigest(self.token)
+    Rails.logger.debug "Token after hashing: #{self.token}"
   end
 
   def self.find_by_token(token)
