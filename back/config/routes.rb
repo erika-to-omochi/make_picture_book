@@ -12,6 +12,7 @@ Rails.application.routes.draw do
         post 'refresh', to: 'tokens#refresh'
       end
       resources :books, only: [:show, :create]
+      resources :pages, only: [:create]
     end
   end
 end
