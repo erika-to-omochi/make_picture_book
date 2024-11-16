@@ -10,13 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_11_14_095553) do
+ActiveRecord::Schema[7.1].define(version: 2024_11_16_023043) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   # Custom types defined in this database.
   # Note that some types may not work with other database engines. Be careful if changing database.
-  create_enum "element_type_enum", ["object", "nature", "text", "background"]
+  create_enum "element_type_enum", ["object", "nature", "text", "background", "image"]
 
   create_table "book_tags", force: :cascade do |t|
     t.bigint "book_id", null: false
@@ -76,9 +76,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_14_095553) do
   create_table "pages", force: :cascade do |t|
     t.bigint "book_id", null: false
     t.integer "page_number", null: false
-    t.text "content", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "content", default: {}, null: false
     t.index ["book_id"], name: "index_pages_on_book_id"
   end
 

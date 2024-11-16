@@ -6,7 +6,8 @@ class PageElement < ApplicationRecord
     object: 'object',
     nature: 'nature',
     text: 'text',
-    background: 'background'
+    background: 'background',
+    image: 'image',
   }
 
   validates :element_type, presence: true
