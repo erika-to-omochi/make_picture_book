@@ -25,6 +25,8 @@ ja:
             book:
               required: "関連する本を指定してください"
               required: "本に関連付けられたページが必要です"
+            content:
+              blank: "コンテンツを入力してください"
         book:
           attributes:
             user:
@@ -39,3 +41,6 @@ ja:
       taken: "既に使用されています。"
       too_short: "%{attribute}は%{count}文字以上で入力してください。"
       confirmation: "%{attribute}が一致しません。"
+      blank: "を入力してください"
+      record_invalid: "バリデーションに失敗しました: %{errors}"
+
