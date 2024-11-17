@@ -24,6 +24,68 @@ class Api::V1::PagesController < ApplicationController
   private
 
   def page_params
-    params.require(:page).permit(:book_id, :page_number, content: [:title, :author, :tags, :backgroundColor, :visibility, texts: [:text, :fontSize, :color, :x, :y, :rotation, :scaleX, :scaleY], images: [:src, :x, :y, :width, :height, :rotation, :scaleX, :scaleY]], page_characters_attributes: [:character_type, :simple_path, :body_path, :hair_path, :eye_path, :mouth_path, :hand_path, :foot_path, :outfit_path, :position_x, :position_y, :rotation, :scale_x, :scale_y], page_elements_attributes: [:element_type, content: [:text, :font_size, :font_color, :position_x, :position_y, :src, :width, :height, :rotation, :scaleX, :scaleY]])
+    params.require(:page).permit(
+      :book_id,
+      :page_number,
+      content: [
+        :title,
+        :author,
+        :tags,
+        :backgroundColor,
+        :visibility,
+        texts: [
+          :text,
+          :fontSize,
+          :color,
+          :x,
+          :y,
+          :rotation,
+          :scaleX,
+          :scaleY
+        ],
+        images: [
+          :src,
+          :x,
+          :y,
+          :width,
+          :height,
+          :rotation,
+          :scaleX,
+          :scaleY
+        ]
+      ],
+      page_characters_attributes: [
+        :character_type,
+        :simple_path,
+        :body_path,
+        :hair_path,
+        :eye_path,
+        :mouth_path,
+        :hand_path,
+        :foot_path,
+        :outfit_path,
+        :position_x,
+        :position_y,
+        :rotation,
+        :scale_x,
+        :scale_y
+      ],
+      page_elements_attributes: [
+        :element_type,
+        content: [
+          :text,
+          :font_size,
+          :font_color,
+          :position_x,
+          :position_y,
+          :src,
+          :width,
+          :height,
+          :rotation,
+          :scaleX,
+          :scaleY
+        ]
+      ]
+    )
   end
 end
