@@ -35,9 +35,42 @@ class Api::V1::BooksController < ApplicationController
 
   def book_params
     params.require(:book).permit(
-      :title, :author_name, :description, :visibility, :is_draft,
-      pages_attributes: [:page_number, :content],
-      tag_ids: []
+      :title,
+      :author_name,
+      :description,
+      :visibility,
+      :is_draft,
+      tag_ids: [],
+      pages_attributes: [
+        :page_number,
+        content: [
+          :title,
+          :author,
+          :tags,
+          :backgroundColor,
+          :visibility,
+          texts: [
+            :text,
+            :fontSize,
+            :color,
+            :x,
+            :y,
+            :rotation,
+            :scaleX,
+            :scaleY
+          ],
+          images: [
+            :src,
+            :x,
+            :y,
+            :width,
+            :height,
+            :rotation,
+            :scaleX,
+            :scaleY
+          ]
+        ]
+      ]
     )
   end
 end
