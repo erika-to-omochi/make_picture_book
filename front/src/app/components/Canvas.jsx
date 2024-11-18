@@ -2,7 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
-import Modal from './Modal'; // モーダルをインポート
+import axios from '../../api/axios';
+import Modal from './Modal';
 
 function Canvas({
   texts,
@@ -19,10 +20,12 @@ function Canvas({
   const [loadedImages, setLoadedImages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [tags, setTags] = useState("");
-  const [visibility, setVisibility] = useState("public");
+  const [modalData, setModalData] = useState({
+    title: "",
+    author: "",
+    tags: "",
+    visibility: "public",
+  });
 
   const transformerRef = useRef(null);
   const stageRef = useRef(null);
@@ -32,7 +35,7 @@ function Canvas({
   const stageWidth = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
   const stageHeight = stageWidth * 0.75;
 
-  // 画像読み込み
+  // 画像の読み込み
   useEffect(() => {
     const loadImages = async () => {
       const promises = images.map((img) => {
@@ -48,7 +51,7 @@ function Canvas({
     loadImages();
   }, [images]);
 
-  // 選択時にTransformer更新
+  // Transformerの更新
   useEffect(() => {
     if (transformerRef.current) {
       if (selectedTextIndex !== null && textRefs.current[selectedTextIndex]) {
@@ -62,7 +65,7 @@ function Canvas({
     }
   }, [selectedTextIndex, selectedImageIndex, texts, loadedImages]);
 
-  // バックスペースキーで削除
+  // キーボードイベントの処理
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Backspace') {
@@ -79,12 +82,14 @@ function Canvas({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedTextIndex, selectedImageIndex, onDeleteText, onDeleteImage]);
 
+  // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
     const update = { x: e.target.x(), y: e.target.y() };
     if (type === 'text') onUpdateText(index, update);
     else if (type === 'image') onUpdateImage(index, update);
   };
 
+  // 変形終了時の処理
   const handleTransformEnd = (index, e, type) => {
     const node = type === 'text' ? textRefs.current[index] : imageRefs.current[index];
     const newProperties = {
@@ -104,20 +109,22 @@ function Canvas({
     }
   };
 
+  // テキストクリック時の処理
   const handleTextClick = (index) => {
     setSelectedTextIndex(index);
     setSelectedImageIndex(null);
     onSelectText(index);
   };
 
+  // ステージクリック時の処理
   const handleStageMouseDown = (e) => {
     if (e.target.name() === 'background') {
       setSelectedTextIndex(null);
       setSelectedImageIndex(null);
-      onSelectText(null);
     }
   };
 
+  // モーダルの開閉
   const openModal = (type) => {
     setModalType(type);
     setIsModalOpen(true);
@@ -127,18 +134,126 @@ function Canvas({
     setIsModalOpen(false);
   };
 
-  const handleModalSave = () => {
-    const bookData = { title, author, tags, texts, images, backgroundColor };
-
-    if (modalType === "draft") {
-      console.log("Saving as draft", bookData);
-      // API呼び出し処理をここに追加
-    } else if (modalType === "complete") {
-      const completeData = { ...bookData, visibility };
-      console.log("Saving as complete with visibility", completeData);
-      // API呼び出し処理をここに追加
+  // トークンの有効期限をチェック
+  const checkTokenExpiration = (token) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp < currentTime;
+    } catch (error) {
+      console.error("Failed to parse token:", error);
+      return true; // トークンが無効な場合も期限切れとみなす
     }
+  };
+
+  // リフレッシュトークンを使用してアクセストークンを更新
+  const refreshAccessToken = async () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      console.error("Refresh token is missing.");
+      alert("リフレッシュトークンがありません。再度ログインしてください。");
+      throw new Error("リフレッシュトークンがありません");
+    }
+
+    try {
+      const response = await axios.post('/auth/refresh', {
+        refresh_token: refreshToken, // サーバーで期待されるキー名で送信
+      });
+      const newAccessToken = response.data.access_token;
+      localStorage.setItem('access_token', newAccessToken); // 新しいアクセストークンを保存
+      return newAccessToken;
+    } catch (error) {
+      console.error("Failed to refresh token:", error.response || error);
+      alert("ログインセッションが切れています。再度ログインしてください。");
+      throw error;
+    }
+  };
+
+  // モーダル保存時の処理
+// モーダル保存時の処理
+const handleModalSave = async () => {
+  try {
+    let token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error("Token is missing!");
+      alert("ログイン状態が無効です。再度ログインしてください。");
+      return;
+    }
+
+    if (checkTokenExpiration(token)) {
+      console.log("Token has expired, refreshing...");
+      token = await refreshAccessToken();
+    }
+
+    console.log("Valid Token being sent:", token);
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+
+    // ペイジ番号の重複を避けるため、動的に設定する場合は以下を使用
+    // const pageNumber = await getAvailablePageNumber(2); // 例: book_id=2の場合
+
+    const payload = {
+      page: { // ページ関連データを 'page' キーでラップ
+        book_id: 7, // 適切な book_id を設定
+        page_number: 3, // 適切な page_number を設定（重複しないように）
+        content: {
+          title: modalData.title,
+          author: modalData.author,
+          tags: modalData.tags,
+          texts: texts,
+          images: images,
+          backgroundColor: backgroundColor,
+          visibility: modalData.visibility,
+        },
+        page_elements_attributes: [
+          ...texts.map(text => ({
+            element_type: 'text',
+            content: {
+              text: text.text,
+              font_size: text.fontSize,
+              font_color: text.color,
+              position_x: text.x,
+              position_y: text.y,
+            },
+          })),
+          ...images.map(image => ({
+            element_type: 'image',
+            content: {
+              src: image.src,
+              width: image.width,
+              height: image.height,
+              position_x: image.x,
+              position_y: image.y,
+            },
+          })),
+        ],
+        visibility: modalData.visibility,
+      }
+    };
+
+    console.log('Payload being sent:', payload);
+
+    const response = await axios.post('/api/v1/pages', payload, { headers });
+    console.log('Book saved successfully:', response.data);
+    alert('保存が完了しました');
     closeModal();
+  } catch (error) {
+    console.error('Failed to save book:', error.response || error);
+    if (error.response?.data?.errors) {
+      const errorMessage = error.response.data.errors.join(", ");
+      alert(`保存エラー: ${errorMessage}`);
+    } else {
+      alert('保存中にエラーが発生しました');
+    }
+  }
+};
+
+  // モーダルデータの更新関数
+  const handleModalChange = (field, value) => {
+    setModalData(prevData => ({ ...prevData, [field]: value }));
   };
 
   return (
@@ -197,8 +312,6 @@ function Canvas({
           )}
         </Layer>
       </Stage>
-
-      {/* キャンバスの下にボタンを配置 */}
       <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
         <button onClick={() => openModal("complete")} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
           完成
@@ -207,21 +320,19 @@ function Canvas({
           下書き保存
         </button>
       </div>
-
-      {/* モーダル */}
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
         onSave={handleModalSave}
         modalType={modalType}
-        title={title}
-        setTitle={setTitle}
-        author={author}
-        setAuthor={setAuthor}
-        tags={tags}
-        setTags={setTags}
-        visibility={visibility}
-        setVisibility={setVisibility}
+        title={modalData.title}
+        setTitle={(value) => handleModalChange("title", value)}
+        author={modalData.author}
+        setAuthor={(value) => handleModalChange("author", value)}
+        tags={modalData.tags}
+        setTags={(value) => handleModalChange("tags", value)}
+        visibility={modalData.visibility}
+        setVisibility={(value) => handleModalChange("visibility", value)}
       />
     </div>
   );
