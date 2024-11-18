@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios from '../../api/axios';
 import useAuthStore from '../../stores/authStore';
 
 export default function SignupForm() {
@@ -20,7 +20,7 @@ export default function SignupForm() {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:3000/api/v1/auth', {
+      const response = await axios.post('/api/v1/auth', {
         user: {
           name: name,
           email: email,
