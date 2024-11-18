@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
 import axios from '../../api/axios';
 import Modal from './Modal';
+import useCanvasStore from '../../stores/canvasStore'; // 作成したストアをインポート
 
 function Canvas({
   texts,
@@ -17,17 +18,23 @@ function Canvas({
   onComplete,
   onSaveDraft
 }) {
-  const [selectedTextIndex, setSelectedTextIndex] = useState(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
-  const [loadedImages, setLoadedImages] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null);
-  const [modalData, setModalData] = useState({
-    title: "",
-    author: "",
-    tags: "",
-    visibility: "public",
-  });
+  // Zustand ストアから状態とアクションを取得
+  const {
+    selectedTextIndex,
+    selectedImageIndex,
+    loadedImages,
+    isModalOpen,
+    modalType,
+    modalData,
+    setSelectedTextIndex,
+    setSelectedImageIndex,
+    setLoadedImages,
+    setIsModalOpen,
+    setModalType,
+    setModalData,
+    updateModalDataField,
+    resetSelection,
+  } = useCanvasStore();
 
   const transformerRef = useRef(null);
   const stageRef = useRef(null);
@@ -51,7 +58,7 @@ function Canvas({
       setLoadedImages(results);
     };
     loadImages();
-  }, [images]);
+  }, [images, setLoadedImages]);
 
   // Transformerの更新
   useEffect(() => {
@@ -82,7 +89,7 @@ function Canvas({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTextIndex, selectedImageIndex, onDeleteText, onDeleteImage]);
+  }, [selectedTextIndex, selectedImageIndex, onDeleteText, onDeleteImage, setSelectedTextIndex, setSelectedImageIndex]);
 
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
@@ -121,8 +128,7 @@ function Canvas({
   // ステージクリック時の処理
   const handleStageMouseDown = (e) => {
     if (e.target.name() === 'background') {
-      setSelectedTextIndex(null);
-      setSelectedImageIndex(null);
+      resetSelection();
     }
   };
 
@@ -172,90 +178,89 @@ function Canvas({
   };
 
   // モーダル保存時の処理
-// モーダル保存時の処理
-const handleModalSave = async () => {
-  try {
-    let token = localStorage.getItem('access_token');
-    if (!token) {
-      console.error("Token is missing!");
-      alert("ログイン状態が無効です。再度ログインしてください。");
-      return;
-    }
-
-    if (checkTokenExpiration(token)) {
-      console.log("Token has expired, refreshing...");
-      token = await refreshAccessToken();
-    }
-
-    console.log("Valid Token being sent:", token);
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    };
-
-    // ペイジ番号の重複を避けるため、動的に設定する場合は以下を使用
-    // const pageNumber = await getAvailablePageNumber(2); // 例: book_id=2の場合
-
-    const payload = {
-      page: { // ページ関連データを 'page' キーでラップ
-        book_id: 7, // 適切な book_id を設定
-        page_number: 3, // 適切な page_number を設定（重複しないように）
-        content: {
-          title: modalData.title,
-          author: modalData.author,
-          tags: modalData.tags,
-          texts: texts,
-          images: images,
-          backgroundColor: backgroundColor,
-          visibility: modalData.visibility,
-        },
-        page_elements_attributes: [
-          ...texts.map(text => ({
-            element_type: 'text',
-            content: {
-              text: text.text,
-              font_size: text.fontSize,
-              font_color: text.color,
-              position_x: text.x,
-              position_y: text.y,
-            },
-          })),
-          ...images.map(image => ({
-            element_type: 'image',
-            content: {
-              src: image.src,
-              width: image.width,
-              height: image.height,
-              position_x: image.x,
-              position_y: image.y,
-            },
-          })),
-        ],
-        visibility: modalData.visibility,
+  const handleModalSave = async () => {
+    try {
+      let token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error("Token is missing!");
+        alert("ログイン状態が無効です。再度ログインしてください。");
+        return;
       }
-    };
 
-    console.log('Payload being sent:', payload);
+      if (checkTokenExpiration(token)) {
+        console.log("Token has expired, refreshing...");
+        token = await refreshAccessToken();
+      }
 
-    const response = await axios.post('/api/v1/pages', payload, { headers });
-    console.log('Book saved successfully:', response.data);
-    alert('保存が完了しました');
-    closeModal();
-  } catch (error) {
-    console.error('Failed to save book:', error.response || error);
-    if (error.response?.data?.errors) {
-      const errorMessage = error.response.data.errors.join(", ");
-      alert(`保存エラー: ${errorMessage}`);
-    } else {
-      alert('保存中にエラーが発生しました');
+      console.log("Valid Token being sent:", token);
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+
+      // ページ番号の重複を避けるため、動的に設定する場合は以下を使用
+      // const pageNumber = await getAvailablePageNumber(2); // 例: book_id=2の場合
+
+      const payload = {
+        page: { // ページ関連データを 'page' キーでラップ
+          book_id: 7, // 適切な book_id を設定
+          page_number: 3, // 適切な page_number を設定（重複しないように）
+          content: {
+            title: modalData.title,
+            author: modalData.author,
+            tags: modalData.tags,
+            texts: texts,
+            images: images,
+            backgroundColor: backgroundColor,
+            visibility: modalData.visibility,
+          },
+          page_elements_attributes: [
+            ...texts.map(text => ({
+              element_type: 'text',
+              content: {
+                text: text.text,
+                font_size: text.fontSize,
+                font_color: text.color,
+                position_x: text.x,
+                position_y: text.y,
+              },
+            })),
+            ...images.map(image => ({
+              element_type: 'image',
+              content: {
+                src: image.src,
+                width: image.width,
+                height: image.height,
+                position_x: image.x,
+                position_y: image.y,
+              },
+            })),
+          ],
+          visibility: modalData.visibility,
+        }
+      };
+
+      console.log('Payload being sent:', payload);
+
+      const response = await axios.post('/api/v1/pages', payload, { headers });
+      console.log('Book saved successfully:', response.data);
+      alert('保存が完了しました');
+      closeModal();
+    } catch (error) {
+      console.error('Failed to save book:', error.response || error);
+      if (error.response?.data?.errors) {
+        const errorMessage = error.response.data.errors.join(", ");
+        alert(`保存エラー: ${errorMessage}`);
+      } else {
+        alert('保存中にエラーが発生しました');
+      }
     }
-  }
-};
+  };
 
   // モーダルデータの更新関数
   const handleModalChange = (field, value) => {
-    setModalData(prevData => ({ ...prevData, [field]: value }));
+    updateModalDataField(field, value);
   };
 
   return (

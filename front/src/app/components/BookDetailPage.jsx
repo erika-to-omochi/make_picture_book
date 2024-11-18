@@ -1,43 +1,58 @@
 "use client";
 
-import axios from '../../api/axios';
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { FaRegCommentDots, FaPrint, FaEdit, FaTrash } from 'react-icons/fa';
+import useBookDetailStore from '../../stores/bookDetailStore'; // 新しいストアをインポート
+import useCanvasStore from '../../stores/canvasStore'; // 既存のcanvasStoreも使用
 
 const Canvas = dynamic(() => import("./Canvas"), { ssr: false });
 
-function BookDetailPage({ initialBookData }) {
+function BookDetailPage() {
   const { bookId } = useParams();
-  const [bookData, setBookData] = useState(initialBookData);
-  const [selectedPageIndex, setSelectedPageIndex] = useState(0);
-  const [images, setImages] = useState([]); // images の状態管理
-  const [texts, setTexts] = useState([]); // texts の状態管理
-  const backgroundColor = '#fff';
 
+  // Zustandストアから状態とアクションを取得
+  const {
+    bookData,
+    setBookData,
+    selectedPageIndex,
+    setSelectedPageIndex,
+    fetchBookData,
+  } = useBookDetailStore();
+
+  const {
+    images,
+    setImages,
+    texts,
+    setTexts,
+    updateImage,
+    deleteImage,
+    updateText,
+    deleteText,
+  } = useBookDetailStore();
+
+  // bookDataをフェッチ
   useEffect(() => {
-    if (!bookId || bookData) return;
+    if (bookId && !bookData) {
+      fetchBookData(bookId);
+    }
+  }, [bookId, bookData, fetchBookData]);
 
-    const fetchBookData = async () => {
-      try {
-        const response = await axios.get(`/api/v1/books/${bookId}`);
-        setBookData(response.data);
-      } catch (error) {
-        console.error("Error fetching book data:", error);
-      }
-    };
-
-    fetchBookData();
-  }, [bookId, bookData]);
-
-  const handleUpdateImage = (index, updatedProperties) => {
-    setImages((prevImages) =>
-      prevImages.map((img, i) =>
-        i === index ? { ...img, ...updatedProperties } : img
-      )
-    );
-  };
+  // bookDataが更新されたらimagesとtextsを設定
+  useEffect(() => {
+    if (bookData) {
+      const currentPage = bookData.pages[selectedPageIndex];
+      const loadedImages = currentPage.page_elements
+        .filter((el) => el.element_type === "image")
+        .map((el) => el.content);
+      const loadedTexts = currentPage.page_elements
+        .filter((el) => el.element_type === "text")
+        .map((el) => el.content);
+      setImages(loadedImages);
+      setTexts(loadedTexts);
+    }
+  }, [bookData, selectedPageIndex, setImages, setTexts]);
 
   const handleComment = () => {
     console.log('コメントボタンがクリックされました');
@@ -56,6 +71,7 @@ function BookDetailPage({ initialBookData }) {
   };
 
   if (!bookData) return <p>Loading...</p>;
+
   return (
     <div className="flex flex-col items-center justify-center p-8 space-y-8">
       {/* タイトルと著者 */}
@@ -67,14 +83,17 @@ function BookDetailPage({ initialBookData }) {
       {/* キャンバス */}
       {bookData.pages.length > 0 && (
         <Canvas
-          texts={bookData.pages[selectedPageIndex].page_elements.filter(
-            (el) => el.element_type === "text"
-          ).map((el) => el.content)}
-          images={bookData.pages[selectedPageIndex].page_elements.filter(
-            (el) => el.element_type === "image"
-          ).map((el) => el.content)}
+          texts={texts}
+          images={images}
           backgroundColor="#ffffff"
-          onUpdateImage={handleUpdateImage}
+          onUpdateText={updateText}
+          onUpdateImage={updateImage}
+          onDeleteImage={deleteImage}
+          onDeleteText={deleteText}
+          onSelectText={(index) => {
+            // 既存のcanvasStoreを使用して選択テキストを設定
+            useCanvasStore.getState().setSelectedTextIndex(index);
+          }}
         />
       )}
 
