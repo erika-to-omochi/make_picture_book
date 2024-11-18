@@ -1,68 +1,49 @@
-import React from 'react';
-import { Stage, Layer, Rect, Text, Image as KonvaImage } from 'react-konva';
+// front/src/app/components/PageDetail.jsx
+import React, { useEffect, useState } from 'react';
+import Canvas from '../../stores/canvasStore'; // パスを適宜調整してください
+import axios from '../../api/axios';
 
-function PageDetail({ page, width = 800, height = 600 }) {
-  const stageWidth = width;
-  const stageHeight = height;
+const PageDetail = ({ bookId, pageId }) => {
+  const [pageData, setPageData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // ロード済み画像を管理
-  const [loadedImages, setLoadedImages] = React.useState([]);
-
-  React.useEffect(() => {
-    const loadImages = async () => {
-      const promises = page.page_elements
-        .filter((el) => el.element_type === 'image')
-        .map((imgEl) => {
-          return new Promise((resolve) => {
-            const img = new Image();
-            img.src = imgEl.content.src.startsWith('http')
-              ? imgEl.content.src
-              : `http://localhost:3000${imgEl.content.src}`;
-            img.onload = () => resolve({ ...imgEl, image: img });
-          });
-        });
-
-      const results = await Promise.all(promises);
-      setLoadedImages(results);
+  useEffect(() => {
+    const fetchPageData = async () => {
+      try {
+        const response = await axios.get(`/api/v1/books/${bookId}/pages/${pageId}`);
+        setPageData(response.data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    loadImages();
-  }, [page.page_elements]);
+    fetchPageData();
+  }, [bookId, pageId]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error loading page details.</p>;
+  if (!pageData) return <p>No page data found.</p>;
 
   return (
-    <Stage width={stageWidth} height={stageHeight}>
-      <Layer>
-        {/* 背景 */}
-        <Rect x={0} y={0} width={stageWidth} height={stageHeight} fill="#ffffff" />
-
-        {/* テキスト要素の描画 */}
-        {page.page_elements
-          .filter((el) => el.element_type === 'text')
-          .map((textEl, index) => (
-            <Text
-              key={`text-${index}`}
-              text={textEl.content.text}
-              fontSize={textEl.content.font_size}
-              fill={textEl.content.font_color}
-              x={textEl.content.position_x}
-              y={textEl.content.position_y}
-            />
-          ))}
-
-        {/* 画像要素の描画 */}
-        {loadedImages.map((imgEl, index) => (
-          <KonvaImage
-            key={`image-${index}`}
-            image={imgEl.image}
-            x={imgEl.content.position_x}
-            y={imgEl.content.position_y}
-            width={imgEl.content.width}
-            height={imgEl.content.height}
-          />
-        ))}
-      </Layer>
-    </Stage>
+    <div>
+      <h2>{pageData.title}</h2>
+      <Canvas
+        texts={pageData.content.texts}
+        images={pageData.content.images}
+        backgroundColor={pageData.content.backgroundColor}
+        // 編集や削除の関数は後で実装
+        onSelectText={() => {}}
+        onDeleteText={() => {}}
+        onUpdateText={() => {}}
+        onDeleteImage={() => {}}
+        onUpdateImage={() => {}}
+      />
+      {/* 他のページ詳細情報を表示する場合はここに追加 */}
+    </div>
   );
-}
+};
 
 export default PageDetail;
