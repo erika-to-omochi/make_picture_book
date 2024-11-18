@@ -7,11 +7,12 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins '127.0.0.1:4000', 'localhost:4000', 'https://make-picture-book.vercel.app'
+    origins 'http://127.0.0.1:4000', 'http://localhost:4000', 'https://make-picture-book.vercel.app'
 
     resource "*",
       headers: :any,
       expose: ['Authorization'],
-      methods: [:get, :post, :put, :patch, :delete, :options, :head]
+      methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      credentials: true
   end
 end

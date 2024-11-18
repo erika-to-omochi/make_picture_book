@@ -58,3 +58,5 @@ gem 'devise-i18n'
 
 # JSON API形式のレスポンス生成
 gem 'jsonapi-serializer'
+
+gem 'dotenv-rails', groups: [:development, :test]
