@@ -28,6 +28,7 @@ function Canvas() {
     deleteText,
     deleteImage,
     addImage,
+    updateImage,
   } = useCanvasStore();
 
   const transformerRef = useRef(null);

@@ -29,37 +29,40 @@ const useCanvasStore = create((set, get) => ({
 
   // アクション
   addImage: (imageSrc) => {
-    console.log("addImage called with:", imageSrc);
-    set((state) => {
-      console.log("set is called");
-      console.log("State before adding image:", state);
-
-      const currentPage = state.pages[state.currentPageIndex];
-      if (!currentPage) {
-        console.error("No current page to add image");
-        return {};
-      }
-
-      const newImage = {
-        src: imageSrc,
-        x: 100, // 初期位置を調整
-        y: 100,
-        width: 150, // 初期サイズを調整
-        height: 250,
-      };
-
-      const updatedPages = [...state.pages];
-      updatedPages[state.currentPageIndex] = {
-        ...currentPage,
-        content: {
-          ...currentPage.content,
-          images: [...currentPage.content.images, newImage],
-        },
-      };
-
-      console.log("Updated pages:", updatedPages);
-      return { pages: updatedPages };
-    });
+    const img = new window.Image(); // 新しい Image オブジェクトを作成
+    img.src = imageSrc;
+    img.onload = () => {
+      console.log("Image loaded successfully:", imageSrc);
+      set((state) => {
+        console.log("set is called");
+        console.log("State before adding image:", state);
+        const currentPage = state.pages[state.currentPageIndex];
+        if (!currentPage) {
+          console.error("No current page to add image");
+          return {};
+        }
+        const newImage = {
+          src: imageSrc,
+          x: 100, // 初期位置を調整
+          y: 100,
+          width: img.naturalWidth / 2,
+          height: img.naturalHeight / 2,
+        };
+        const updatedPages = [...state.pages];
+        updatedPages[state.currentPageIndex] = {
+          ...currentPage,
+          content: {
+            ...currentPage.content,
+            images: [...currentPage.content.images, newImage],
+          },
+        };
+        console.log("Updated pages:", updatedPages);
+        return { pages: updatedPages };
+      });
+    };
+    img.onerror = () => {
+      console.error("Failed to load image:", imageSrc);
+    };
   },
 
   addPage: (page) => set((state) => ({
