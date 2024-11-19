@@ -11,8 +11,9 @@ Rails.application.routes.draw do
       namespace :auth do
         post 'refresh', to: 'tokens#refresh'
       end
-      resources :books, only: [:show, :create]
-      resources :pages, only: [:show, :create]
+      resources :books  do
+        resources :pages, only: [:index, :show, :create, :update, :destroy]
+      end
     end
   end
 end

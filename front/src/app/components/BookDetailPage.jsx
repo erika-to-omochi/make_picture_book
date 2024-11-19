@@ -3,9 +3,9 @@
 import React, { useEffect } from "react";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import axios from '../../api/axios';
 import { FaRegCommentDots, FaPrint, FaEdit, FaTrash } from 'react-icons/fa';
-import useBookDetailStore from '../../stores/bookDetailStore'; // 新しいストアをインポート
-import useCanvasStore from '../../stores/canvasStore'; // 既存のcanvasStoreも使用
+import useCanvasStore from '../../stores/canvasStore';
 
 const Canvas = dynamic(() => import("./Canvas"), { ssr: false });
 
@@ -19,9 +19,6 @@ function BookDetailPage() {
     selectedPageIndex,
     setSelectedPageIndex,
     fetchBookData,
-  } = useBookDetailStore();
-
-  const {
     images,
     setImages,
     texts,
@@ -30,19 +27,34 @@ function BookDetailPage() {
     deleteImage,
     updateText,
     deleteText,
-  } = useBookDetailStore();
+    pages,
+    setPages, // Zustandストアの setPages を取得
+  } = useCanvasStore();
 
-  // bookDataをフェッチ
   useEffect(() => {
-    if (bookId && !bookData) {
-      fetchBookData(bookId);
-    }
-  }, [bookId, bookData, fetchBookData]);
+    const fetchBookData = async () => {
+      try {
+        const response = await axios.get(`/api/v1/books/${bookId}/`);
+        console.log("Book data:", response.data);
+        // 書籍データとページデータを Zustand ストアに保存
+        if (response.data) {
+          console.log("Pages:", response.data.pages); // ページデータのログ出力
+          setBookData(response.data); // 書籍データを直接設定
+          setPages(response.data.pages || []); // ページデータを Zustand ストアに保存
+        } else {
+          console.error("Invalid response format: No data found");
+        }
+      } catch (error) {
+        console.error("Error fetching book data:", error);
+      }
+    };
+    fetchBookData();
+  }, [bookId]);
 
   // bookDataが更新されたらimagesとtextsを設定
   useEffect(() => {
-    if (bookData) {
-      const currentPage = bookData.pages[selectedPageIndex];
+    if (pages.length > 0) {
+      const currentPage = pages[selectedPageIndex];
       const loadedImages = currentPage.page_elements
         .filter((el) => el.element_type === "image")
         .map((el) => el.content);
@@ -52,7 +64,7 @@ function BookDetailPage() {
       setImages(loadedImages);
       setTexts(loadedTexts);
     }
-  }, [bookData, selectedPageIndex, setImages, setTexts]);
+  }, [pages, selectedPageIndex, setImages, setTexts]);
 
   const handleComment = () => {
     console.log('コメントボタンがクリックされました');
@@ -81,10 +93,11 @@ function BookDetailPage() {
       </div>
 
       {/* キャンバス */}
-      {bookData.pages.length > 0 && (
+      {pages.length > 0 && (
         <Canvas
           texts={texts}
           images={images}
+          pageData={pages[selectedPageIndex]}
           backgroundColor="#ffffff"
           onUpdateText={updateText}
           onUpdateImage={updateImage}
@@ -99,7 +112,7 @@ function BookDetailPage() {
 
       {/* ページ切り替えボタン */}
       <div className="flex justify-center space-x-4">
-        {bookData.pages.map((_, index) => (
+        {pages.map((_, index) => (
           <button
             key={`page-btn-${index}`}
             onClick={() => setSelectedPageIndex(index)}
