@@ -1,23 +1,21 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
-import axios from '../../api/axios';
 import Modal from './Modal';
 import useCanvasStore from '../../stores/canvasStore';
 import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
+import axios from '../../api/axios';
 
 function Canvas() {
   const {
     selectedTextIndex,
     selectedImageIndex,
-    loadedImages,
     isModalOpen,
     modalType,
     modalData,
     setSelectedTextIndex,
     setSelectedImageIndex,
-    setLoadedImages,
     setIsModalOpen,
     setModalType,
     setModalData,
@@ -29,6 +27,7 @@ function Canvas() {
     setCurrentPageIndex,
     deleteText,
     deleteImage,
+    addImage,
   } = useCanvasStore();
 
   const transformerRef = useRef(null);
@@ -39,6 +38,10 @@ function Canvas() {
   const stageWidth = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
   const stageHeight = stageWidth * 0.75;
 
+  // ローカルステートとして loadedImages を管理
+  const [loadedImages, setLoadedImages] = useState([]);
+
+  console.log("addImage function:", addImage);
 
   // ページの初期化と安全な取得
   const currentPageIndexIsValid =
@@ -56,108 +59,44 @@ function Canvas() {
         page_number: pages.length + 1,
       };
 
-  // デバッグ用ログ
-  console.log("Current pages:", pages);
-  console.log("Current page index:", currentPageIndex);
-  console.log("Current page:", currentPage);
-  console.log("Current Page Images:", currentPage.content.images);
-
-  // 新しいページを追加する関数
-  const handleAddPage = async () => {
-    try {
-      let token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error("Token is missing!");
-        alert("ログイン状態が無効です。再度ログインしてください。");
-        return;
-      }
-
-      // トークンの有効期限を確認してリフレッシュ
-      if (checkTokenExpiration(token)) {
-        console.log("Token has expired, refreshing...");
-        token = await refreshAccessToken();
-      }
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      };
-
-      const newPageNumber = pages.length > 0 ? Math.max(...pages.map(p => p.page_number)) + 1 : 1;
-
-      // 新しいページのデータを構築
-      const newPage = {
-        book_id: currentPage.book_id || 1, // 適切な book_id を設定
-        page_number:  newPageNumber,
-        content: {
-          title: '',
-          author: '',
-          tags: [],
-          backgroundColor: '#ffffff',
-          visibility: 'public',
-          texts: [],
-          images: [],
-        },
-        page_elements_attributes: [],
-        page_characters_attributes: [],
-      };
-
-      // ページ追加APIを呼び出す
-      const payload = { page: newPage };
-      const response = await axios.post(`/api/v1/books/${currentPage.book_id}/pages`, payload, { headers });
-
-      const savedPage = response.data.page;
-
-      // ストアに新しいページを追加
-      addPage(savedPage);
-      alert('新しいページが追加されました');
-    } catch (error) {
-      console.error('Failed to add page:', error.response || error);
-      if (error.response?.data?.errors) {
-        const errorMessage = error.response.data.errors.join(", ");
-        alert(`ページ追加エラー: ${errorMessage}`);
-      } else {
-        alert('ページ追加中にエラーが発生しました');
-      }
-    }
-  };
-
   // 画像の読み込み
-  // 画像の読み込み
-useEffect(() => {
-  let isMounted = true; // マウント状態を追跡
+  useEffect(() => {
+    let isMounted = true; // マウント状態を追跡
 
-  const loadImages = async () => {
-    const promises = currentPage.content.images.map((img) => {
-      return new Promise((resolve) => {
-        const image = new window.Image();
-        image.src = img.src;
-        image.onload = () => resolve({ ...img, image });
-        image.onerror = () => resolve(null); // エラーハンドリング
+    const loadImages = async () => {
+      const promises = currentPage.content.images.map((img) => {
+        return new Promise((resolve) => {
+          const image = new window.Image();
+          image.src = img.src;
+          image.onload = () => resolve({ ...img, image });
+          image.onerror = () => resolve(null); // エラーハンドリング
+        });
       });
-    });
-    const results = await Promise.all(promises);
-    const validResults = results.filter(Boolean); // 有効な画像だけを保持
-    if (isMounted) {
-      // 状態が本当に変わった場合のみ更新
-      setLoadedImages((prev) => {
-        const isSame =
-          prev.length === validResults.length &&
-          prev.every((img, i) => img.src === validResults[i]?.src);
-        return isSame ? prev : validResults;
-      });
+      const results = await Promise.all(promises);
+      const validResults = results.filter(Boolean); // 有効な画像だけを保持
+      if (isMounted) {
+        // 状態が本当に変わった場合のみ更新
+        setLoadedImages((prev) => {
+          const isSame =
+            prev.length === validResults.length &&
+            prev.every((img, i) => img.src === validResults[i]?.src);
+          const newImages = isSame ? prev : validResults;
+          console.log("Setting loadedImages to:", newImages);
+          return newImages;
+        });
+      }
+    };
+
+    if (currentPage.content.images.length > 0) {
+      loadImages();
+    } else {
+      setLoadedImages([]); // 画像がない場合は空配列を設定
     }
-  };
 
-  if (currentPage.content.images.length > 0) {
-    loadImages();
-  }
-
-  return () => {
-    isMounted = false; // クリーンアップ
-  };
-}, [currentPage.content.images]); // `currentPage.content.images` のみを依存関係に
-
+    return () => {
+      isMounted = false; // クリーンアップ
+    };
+  }, [currentPage.content.images]);
 
   // Transformerの更新
   useEffect(() => {
@@ -221,7 +160,6 @@ useEffect(() => {
   const handleTextClick = (index) => {
     setSelectedTextIndex(index);
     setSelectedImageIndex(null);
-    onSelectText(index);
   };
 
   // ステージクリック時の処理
@@ -260,7 +198,7 @@ useEffect(() => {
       console.error("Refresh token is missing.");
       alert("リフレッシュトークンがありません。再度ログインしてください。");
       throw new Error("リフレッシュトークンがありません");
-    }
+    };
 
     try {
       const response = await axios.post('/auth/refresh', {
@@ -284,12 +222,12 @@ useEffect(() => {
         console.error("Token is missing!");
         alert("ログイン状態が無効です。再度ログインしてください。");
         return;
-      }
+      };
 
       if (checkTokenExpiration(token)) {
         console.log("Token has expired, refreshing...");
         token = await refreshAccessToken();
-      }
+      };
 
       console.log("Valid Token being sent:", token);
 
@@ -359,6 +297,14 @@ useEffect(() => {
     updateModalDataField(field, value);
   };
 
+  // ロードされた画像のログ出力
+  useEffect(() => {
+    console.log("Loaded images updated:", loadedImages);
+    loadedImages.forEach((img, index) => {
+      console.log(`Image ${index}:`, img.image);
+    });
+  }, [loadedImages]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "20px" }}>
       <Stage
@@ -366,6 +312,7 @@ useEffect(() => {
         width={stageWidth}
         height={stageHeight}
         onMouseDown={handleStageMouseDown}
+        style={{ border: '1px solid #ccc' }} // 確認用に境界線を追加
       >
         <Layer>
           <Rect
@@ -434,6 +381,7 @@ useEffect(() => {
             if (currentPageIndex < pages.length - 1) {
               setCurrentPageIndex(currentPageIndex + 1);
             } else {
+              // 新しいページを追加して移動
               handleAddPage();
             }
           }}
@@ -441,7 +389,6 @@ useEffect(() => {
         >
           <FaChevronCircleRight size={32} />
         </button>
-
       </div>
       <Modal
         isOpen={isModalOpen}

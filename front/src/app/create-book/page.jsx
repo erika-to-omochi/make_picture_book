@@ -1,7 +1,9 @@
 'use client';
+
 import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 import CreateBookFooter from '../components/CreateBookFooter';
+import useCanvasStore from '../../stores/canvasStore'; // Zustandストアをインポート
 
 const Canvas = dynamic(() => import('../components/Canvas'), {
   ssr: false,
@@ -10,9 +12,11 @@ const Canvas = dynamic(() => import('../components/Canvas'), {
 export default function CreateBookPage() {
   const [activePanel, setActivePanel] = useState(null);
   const [texts, setTexts] = useState([]);
-  const [images, setImages] = useState([]);
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
   const [backgroundColor, setBackgroundColor] = useState("white");
+
+  // ZustandストアからaddImageアクションを取得
+  const addImage = useCanvasStore((state) => state.addImage);
 
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
@@ -35,28 +39,25 @@ export default function CreateBookPage() {
   };
 
   const handleAddImage = (src) => {
-    // 画像を読み込んで元のサイズで追加
+    console.log("handleAddImage called with:", src);
+
     const img = new window.Image();
     img.src = src;
+
     img.onload = () => {
-      // 読み込み後に自然サイズを取得
-      const newImage = {
-        src,
-        x: 100,
-        y: 100,
-        width: img.naturalWidth / 2 ,
-        height: img.naturalHeight / 2,
-      };
-      setImages((prevImages) => [...prevImages, newImage]);
+      console.log("Image loaded successfully:", src);
+      addImage(src); // ZustandのaddImageを呼び出す
+      console.log("Image added to store");
+    };
+
+    img.onerror = () => {
+      console.error("Failed to load image:", src);
     };
   };
 
   const handleUpdateImage = (index, updatedProperties) => {
-    setImages((prevImages) => {
-      const updatedImages = [...prevImages];
-      updatedImages[index] = { ...updatedImages[index], ...updatedProperties };
-      return updatedImages;
-    });
+    // ZustandストアのupdateImageアクションを使用
+    useCanvasStore.getState().updateImage(index, updatedProperties);
   };
 
   const handleSelectText = (index) => {
@@ -88,30 +89,28 @@ export default function CreateBookPage() {
   };
 
   const handleDeleteImage = (index) => {
-    const newImages = images.filter((_, i) => i !== index);
-    setImages(newImages);
+    useCanvasStore.getState().deleteImage(index);
     setSelectedTextIndex(null);
   };
 
-    // 「完成」ボタンの処理
-    const onComplete = () => {
-      console.log("Document completed", { texts, images });
-      alert("Document completed!");
-      // 必要に応じてバックエンドへの保存処理などを追加
-    };
+  // 「完成」ボタンの処理
+  const onComplete = () => {
+    console.log("Document completed", { texts });
+    alert("Document completed!");
+    // 必要に応じてバックエンドへの保存処理などを追加
+  };
 
-    // 「下書き保存」ボタンの処理
-    const onSaveDraft = () => {
-      console.log("Document saved as draft", { texts, images });
-      alert("Draft saved!");
-      // 下書き保存のための処理を追加（例：ローカルストレージやバックエンドに一時保存）
-    };
+  // 「下書き保存」ボタンの処理
+  const onSaveDraft = () => {
+    console.log("Document saved as draft", { texts });
+    alert("Draft saved!");
+    // 下書き保存のための処理を追加（例：ローカルストレージやバックエンドに一時保存）
+  };
 
   return (
     <div>
       <Canvas
         texts={texts}
-        images={images}
         onSelectText={handleSelectText}
         onDeleteText={handleDeleteText}
         onUpdateText={handleUpdateTextFromCanvas}

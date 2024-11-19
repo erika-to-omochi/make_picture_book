@@ -14,10 +14,54 @@ const useCanvasStore = create((set, get) => ({
     tags: "",
     visibility: "public",
   },
-  pages: [], // ページ状態を追加
+  pages: [
+    {
+      content: {
+        images: [],
+        texts: [],
+        backgroundColor: '#ffffff', // 初期背景色
+      },
+      book_id: 1, // 初期book_id
+      page_number: 1, // 初期ページ番号
+    },
+  ], // 初期ページを追加
   currentPageIndex: 0,
 
   // アクション
+  addImage: (imageSrc) => {
+    console.log("addImage called with:", imageSrc);
+    set((state) => {
+      console.log("set is called");
+      console.log("State before adding image:", state);
+
+      const currentPage = state.pages[state.currentPageIndex];
+      if (!currentPage) {
+        console.error("No current page to add image");
+        return {};
+      }
+
+      const newImage = {
+        src: imageSrc,
+        x: 100, // 初期位置を調整
+        y: 100,
+        width: 150, // 初期サイズを調整
+        height: 250,
+      };
+
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        content: {
+          ...currentPage.content,
+          images: [...currentPage.content.images, newImage],
+        },
+      };
+
+      console.log("Updated pages:", updatedPages);
+      return { pages: updatedPages };
+    });
+  },
+
   addPage: (page) => set((state) => ({
     pages: [...state.pages, page],
     currentPageIndex: state.pages.length, // 新しいページに移動
@@ -34,7 +78,7 @@ const useCanvasStore = create((set, get) => ({
   },
   setSelectedTextIndex: (index) => set({ selectedTextIndex: index }),
   setSelectedImageIndex: (index) => set({ selectedImageIndex: index }),
-  setLoadedImages: (images) => set({ loadedImages: images }),
+  // setLoadedImages: (images) => set({ loadedImages: images }), // 削除
   setIsModalOpen: (isOpen) => set({ isModalOpen: isOpen }),
   setModalType: (type) => set({ modalType: type }),
   setModalData: (data) => set({ modalData: { ...data } }),
