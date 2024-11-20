@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import axios from '../api/axios';
 
 const useCanvasStore = create((set, get) => ({
-  // 状態
   selectedTextIndex: null,
   selectedImageIndex: null,
   bookData: null,
@@ -65,20 +64,61 @@ const useCanvasStore = create((set, get) => ({
     };
   },
 
-  addPage: (page) => set((state) => ({
-    pages: [...state.pages, page],
-    currentPageIndex: state.pages.length, // 新しいページに移動
-  })),
+    // 新しいテキストを追加するアクション
+    addText: (newText) => {
+      set((state) => {
+        const currentPage = state.pages[state.currentPageIndex];
+        if (!currentPage) {
+          console.error("No current page to add text");
+          return {};
+        }
+        const updatedPages = [...state.pages];
+        updatedPages[state.currentPageIndex] = {
+          ...currentPage,
+          content: {
+            ...currentPage.content,
+            texts: [...currentPage.content.texts, newText],
+          },
+        };
+        return { pages: updatedPages };
+      });
+    },
 
-  fetchBookData: async (bookId) => {
-    if (get().bookData) return;
-    try {
-      const response = await axios.get(`/api/v1/books/${bookId}`);
-      set({ bookData: response.data });
-    } catch (error) {
-      console.error("Failed to fetch book data:", error);
+  // ページの追加
+  addPage: (newPage) => {
+  set((state) => ({
+    pages: [...state.pages, newPage],
+    currentPageIndex: state.pages.length, // 新しいページに移動
+  }));
+},
+
+
+fetchBookData: async (bookId) => {
+  if (get().bookData) return;
+  try {
+    const response = await axios.get(`/api/v1/books/${bookId}`);
+    const fetchedBookData = response.data;
+
+    // `pages` の構造を確認し、必要に応じて整形
+    if (fetchedBookData.pages && Array.isArray(fetchedBookData.pages)) {
+      const formattedPages = fetchedBookData.pages.map((page) => ({
+        content: {
+          images: page.content.images || [],
+          texts: page.content.texts || [],
+          backgroundColor: page.content.backgroundColor || '#ffffff',
+        },
+        book_id: page.book_id || 1,
+        page_number: page.page_number || 1,
+      }));
+      set({ pages: formattedPages, bookData: fetchedBookData });
+    } else {
+      console.error("Fetched pages data is invalid:", fetchedBookData.pages);
     }
-  },
+  } catch (error) {
+    console.error("Failed to fetch book data:", error);
+  }
+},
+
   setSelectedTextIndex: (index) => set({ selectedTextIndex: index }),
   setSelectedImageIndex: (index) => set({ selectedImageIndex: index }),
   // setLoadedImages: (images) => set({ loadedImages: images }), // 削除
@@ -95,21 +135,21 @@ const useCanvasStore = create((set, get) => ({
   setCurrentPageIndex: (index) => set({ currentPageIndex: index }),
 
   updateText: (index, newProperties) =>
-    set((state) => {
-      const currentPage = state.pages[state.currentPageIndex];
-      const updatedTexts = currentPage.content.texts.map((text, i) =>
-        i === index ? { ...text, ...newProperties } : text
-      );
-      const updatedPages = [...state.pages];
-      updatedPages[state.currentPageIndex] = {
-        ...currentPage,
-        content: {
-          ...currentPage.content,
-          texts: updatedTexts,
-        },
-      };
-      return { pages: updatedPages };
-    }),
+  set((state) => {
+    const currentPage = state.pages[state.currentPageIndex];
+    const updatedTexts = currentPage.content.texts.map((text, i) =>
+      i === index ? { ...text, ...newProperties } : text
+    );
+    const updatedPages = [...state.pages];
+    updatedPages[state.currentPageIndex] = {
+      ...currentPage,
+      content: {
+        ...currentPage.content,
+        texts: updatedTexts,
+      },
+    };
+    return { pages: updatedPages };
+  }),
 
   updateImage: (index, newProperties) =>
     set((state) => {
@@ -157,6 +197,7 @@ const useCanvasStore = create((set, get) => ({
       };
       return { pages: updatedPages };
     }),
+
 
   setPages: (pages) => set({ pages }), // ページ状態を設定するアクションを追加
 }));

@@ -7,7 +7,7 @@ import useCanvasStore from '../../stores/canvasStore';
 import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
 import axios from '../../api/axios';
 
-function Canvas() {
+function Canvas({ handleAddPage }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -29,6 +29,7 @@ function Canvas() {
     deleteImage,
     addImage,
     updateImage,
+    updateText,
   } = useCanvasStore();
 
   const transformerRef = useRef(null);
@@ -41,8 +42,6 @@ function Canvas() {
 
   // ローカルステートとして loadedImages を管理
   const [loadedImages, setLoadedImages] = useState([]);
-
-  console.log("addImage function:", addImage);
 
   // ページの初期化と安全な取得
   const currentPageIndexIsValid =
@@ -60,40 +59,46 @@ function Canvas() {
         page_number: pages.length + 1,
       };
 
+  // content が存在することを保証
+  if (!currentPage.content) {
+    console.error("currentPage.content is undefined", currentPage);
+    currentPage.content = {
+      texts: [],
+      images: [],
+      backgroundColor: '#ffffff',
+    };
+  }
+
   // 画像の読み込み
   useEffect(() => {
     let isMounted = true; // マウント状態を追跡
-
     const loadImages = async () => {
       const promises = currentPage.content.images.map((img) => {
         return new Promise((resolve) => {
           const image = new window.Image();
           image.src = img.src;
           image.onload = () => resolve({ ...img, image });
-          image.onerror = () => resolve(null); // エラーハンドリング
+          image.onerror = () => resolve(null); // エラー時も null を返す
         });
       });
-      const results = await Promise.all(promises);
-      const validResults = results.filter(Boolean); // 有効な画像だけを保持
-      if (isMounted) {
-        // 状態が本当に変わった場合のみ更新
-        setLoadedImages((prev) => {
-          const isSame =
-            prev.length === validResults.length &&
-            prev.every((img, i) => img.src === validResults[i]?.src);
-          const newImages = isSame ? prev : validResults;
-          console.log("Setting loadedImages to:", newImages);
-          return newImages;
-        });
+      try {
+        const results = await Promise.all(promises);
+        const validResults = results.filter(Boolean); // 有効な画像のみ保持
+        if (isMounted) {
+          setLoadedImages(validResults);
+        }
+      } catch (error) {
+        console.error("Error loading images:", error);
+        if (isMounted) {
+          setLoadedImages([]);
+        }
       }
     };
-
-    if (currentPage.content.images.length > 0) {
+    if (currentPage.content.images && currentPage.content.images.length > 0) {
       loadImages();
     } else {
-      setLoadedImages([]); // 画像がない場合は空配列を設定
+      setLoadedImages([]); // 画像がない場合に空配列
     }
-
     return () => {
       isMounted = false; // クリーンアップ
     };
@@ -159,6 +164,7 @@ function Canvas() {
 
   // テキストクリック時の処理
   const handleTextClick = (index) => {
+    console.log("Text clicked at index:", index);
     setSelectedTextIndex(index);
     setSelectedImageIndex(null);
   };
@@ -230,12 +236,17 @@ function Canvas() {
         token = await refreshAccessToken();
       };
 
-      console.log("Valid Token being sent:", token);
-
       const headers = {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       };
+
+      const bookId = currentPage.book_id;
+      if (!bookId) {
+        console.error("Error: bookId is undefined.");
+        alert("本のIDが見つかりません。操作を中止します。");
+        return;
+      }
 
       const payload = {
         page: { // ページ関連データを 'page' キーでラップ
@@ -276,10 +287,8 @@ function Canvas() {
         }
       };
 
-      console.log('Payload being sent:', payload);
-
-      const response = await axios.post('/pages', payload, { headers }); // ベースURLが設定されている場合
-      console.log('Book saved successfully:', response.data);
+      const response = await axios.post(`/api/v1/books/${bookId}/pages`, payload, { headers });
+      console.log(`bookId: ${bookId}`); // bookIdの値を確認
       alert('保存が完了しました');
       closeModal();
     } catch (error) {
@@ -382,7 +391,6 @@ function Canvas() {
             if (currentPageIndex < pages.length - 1) {
               setCurrentPageIndex(currentPageIndex + 1);
             } else {
-              // 新しいページを追加して移動
               handleAddPage();
             }
           }}

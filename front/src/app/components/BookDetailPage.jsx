@@ -16,19 +16,16 @@ function BookDetailPage() {
   const {
     bookData,
     setBookData,
-    selectedPageIndex,
-    setSelectedPageIndex,
+    currentPageIndex,
+    setCurrentPageIndex,
     fetchBookData,
-    images,
-    setImages,
-    texts,
-    setTexts,
     updateImage,
     deleteImage,
     updateText,
     deleteText,
     pages,
-    setPages, // Zustandストアの setPages を取得
+    setPages,
+    addImage,
   } = useCanvasStore();
 
   useEffect(() => {
@@ -36,7 +33,6 @@ function BookDetailPage() {
       try {
         const response = await axios.get(`/api/v1/books/${bookId}/`);
         console.log("Book data:", response.data);
-        // 書籍データとページデータを Zustand ストアに保存
         if (response.data) {
           console.log("Pages:", response.data.pages); // ページデータのログ出力
           setBookData(response.data); // 書籍データを直接設定
@@ -51,20 +47,22 @@ function BookDetailPage() {
     fetchBookData();
   }, [bookId]);
 
-  // bookDataが更新されたらimagesとtextsを設定
   useEffect(() => {
-    if (pages.length > 0) {
-      const currentPage = pages[selectedPageIndex];
-      const loadedImages = currentPage.page_elements
-        .filter((el) => el.element_type === "image")
-        .map((el) => el.content);
-      const loadedTexts = currentPage.page_elements
-        .filter((el) => el.element_type === "text")
-        .map((el) => el.content);
-      setImages(loadedImages);
-      setTexts(loadedTexts);
+    if (pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length) {
+      const currentPage = pages[currentPageIndex];
+      if (currentPage?.content?.images) {
+        console.log("Loaded Images:", currentPage.content.images);
+        // Zustand の addImage を使用
+        currentPage.content.images.forEach((img) => {
+          addImage(img.src);
+        });
+      } else {
+        console.error("currentPage does not have images");
+      }
+    } else {
+      console.error("Invalid pages array or currentPageIndex");
     }
-  }, [pages, selectedPageIndex, setImages, setTexts]);
+  }, [pages, currentPageIndex, addImage]);
 
   const handleComment = () => {
     console.log('コメントボタンがクリックされました');
@@ -95,9 +93,9 @@ function BookDetailPage() {
       {/* キャンバス */}
       {pages.length > 0 && (
         <Canvas
-          texts={texts}
-          images={images}
-          pageData={pages[selectedPageIndex]}
+          texts={pages[currentPageIndex].content.texts}
+          images={pages[currentPageIndex].content.images}
+          pageData={pages[currentPageIndex]}
           backgroundColor="#ffffff"
           onUpdateText={updateText}
           onUpdateImage={updateImage}
@@ -115,9 +113,9 @@ function BookDetailPage() {
         {pages.map((_, index) => (
           <button
             key={`page-btn-${index}`}
-            onClick={() => setSelectedPageIndex(index)}
+            onClick={() => setCurrentPageIndex(index)}
             className={`px-4 py-2 border rounded-md transition ${
-              selectedPageIndex === index
+              currentPageIndex === index
                 ? "bg-bodyText text-white"
                 : "bg-white border-gray-300"
             }`}
