@@ -34,7 +34,7 @@ function BookDetailPage() {
         const response = await axios.get(`/api/v1/books/${bookId}/`);
         console.log("Book data:", response.data);
         if (response.data) {
-          console.log("Pages:", response.data.pages); // ページデータのログ出力
+          console.log("Pages:", response.data.pages);
           // サーバーからのページデータをクライアント側の形式に変換
           const formattedPages = response.data.pages.map((page) => {
             const content = {
@@ -52,7 +52,6 @@ function BookDetailPage() {
                     color: font_color,
                     x: position_x,
                     y: position_y,
-                    // 必要に応じて他のプロパティを追加
                   });
                 } else if (element.element_type === 'image') {
                   const { src, width, height, position_x, position_y } = element.content;
@@ -62,25 +61,19 @@ function BookDetailPage() {
                     height,
                     x: position_x,
                     y: position_y,
-                    // 必要に応じて他のプロパティを追加
                   });
                 }
               });
             }
-            // 背景色がサーバーから提供されている場合はそれを使用
-            if (page.content && page.content.backgroundColor) {
-              content.backgroundColor = page.content.backgroundColor;
-            }
             return {
               page_number: page.page_number,
               content,
-              book_id: page.book_id || 1, // デフォルト値
+              book_id: page.book_id || 1,
             };
           });
-          setBookData(response.data); // 書籍データを直接設定
-          setPages(formattedPages); // ページデータを Zustand ストアに保存
-        } else {
-          console.error("Invalid response format: No data found");
+          // 初期化
+          setBookData(response.data);
+          setPages(formattedPages);
         }
       } catch (error) {
         console.error("Error fetching book data:", error);
@@ -89,14 +82,12 @@ function BookDetailPage() {
     fetchBookData();
   }, [bookId]);
 
+
   useEffect(() => {
     if (pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length) {
       const currentPage = pages[currentPageIndex];
       if (currentPage?.content?.images) {
         console.log("Loaded Images:", currentPage.content.images);
-        currentPage.content.images.forEach((img) => {
-          addImage(img.src);
-        });
       } else {
         console.error("currentPage does not have images");
       }
