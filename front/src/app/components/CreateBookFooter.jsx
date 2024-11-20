@@ -6,6 +6,7 @@ import TextInputCanvas from "./TextInputCanvas";
 import PeopleImages from "./PeopleImages";
 import NatureImages from "./NatureImages";
 import ObjectImages from "./ObjectImages";
+import useCanvasStore from "../../stores/canvasStore";
 
 export default function CreateBookFooter({
   activePanel,
@@ -16,8 +17,8 @@ export default function CreateBookFooter({
   handleDeleteText,
   texts,
   selectedText,
-  handleAddImage, // CreateBookPageから渡された関数を使用
-  setBackgroundColor
+  handleAddImage,
+  setBackgroundColor,
 }) {
   // パネルごとのコンテンツを関数として定義
   const renderPanelContent = () => {
@@ -42,7 +43,10 @@ export default function CreateBookFooter({
             <label>背景色を選択:</label>
             <input
               type="color"
-              onChange={(e) => setBackgroundColor(e.target.value)}
+              onChange={(e) => {
+                console.log("Color selected:", e.target.value);
+                setBackgroundColor(e.target.value)
+              }}
               className="w-12 h-12"
             />
           </div>

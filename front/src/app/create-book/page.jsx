@@ -12,7 +12,6 @@ const Canvas = dynamic(() => import('../components/Canvas'), {
 
 export default function CreateBookPage() {
   const [activePanel, setActivePanel] = useState(null);
-  const [backgroundColor, setBackgroundColor] = useState("white");
 
   const {
     pages,
@@ -26,6 +25,8 @@ export default function CreateBookPage() {
     deleteImage,
     setSelectedTextIndex,
     selectedTextIndex,
+    backgroundColor,
+    setBackgroundColor,
   } = useCanvasStore();
 
   const currentPage = pages[currentPageIndex] || {

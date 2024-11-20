@@ -26,6 +26,25 @@ const useCanvasStore = create((set, get) => ({
   ], // 初期ページを追加
   currentPageIndex: 0,
 
+  setBackgroundColor: (color) => set((state) => {
+    console.log("setBackgroundColor called with color:", color);
+    const currentPage = state.pages[state.currentPageIndex];
+    if (!currentPage) {
+      console.error("No current page to set background color");
+      return {};
+    }
+    const updatedPages = [...state.pages];
+    updatedPages[state.currentPageIndex] = {
+      ...currentPage,
+      content: {
+        ...currentPage.content,
+        backgroundColor: color,
+      },
+    };
+    console.log("Updated Pages:", updatedPages);
+    return { pages: updatedPages };
+  }),
+
   // アクション
   addImage: (imageSrc) => {
     const img = new window.Image(); // 新しい Image オブジェクトを作成

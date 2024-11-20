@@ -69,6 +69,12 @@ function Canvas({ handleAddPage }) {
     };
   }
 
+  // デバック用
+  useEffect(() => {
+    console.log("Current background color:", currentPage.content.backgroundColor); // デバッグ用
+  }, [currentPage.content.backgroundColor]);
+
+
   // 画像の読み込み
   useEffect(() => {
     let isMounted = true; // マウント状態を追跡
@@ -321,6 +327,7 @@ function Canvas({ handleAddPage }) {
         ref={stageRef}
         width={stageWidth}
         height={stageHeight}
+        fill={currentPage.content.backgroundColor}
         onMouseDown={handleStageMouseDown}
         style={{ border: '1px solid #ccc' }} // 確認用に境界線を追加
       >
