@@ -1,6 +1,17 @@
 class Api::V1::BooksController < ApplicationController
   before_action :authenticate_user!, only: [:create]
 
+  def index
+    books = Book.all
+    render json: books.as_json(
+      only: [:id, :title, :author_name, :created_at],
+      include: {
+        pages: { only: [:page_number] },
+        tags: { only: [:name] }
+      }
+    ), status: :ok
+  end
+
   def create
     book = current_user.books.build(book_params)
     if book.save
