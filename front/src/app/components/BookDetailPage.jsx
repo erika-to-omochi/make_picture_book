@@ -35,8 +35,50 @@ function BookDetailPage() {
         console.log("Book data:", response.data);
         if (response.data) {
           console.log("Pages:", response.data.pages); // ページデータのログ出力
+          // サーバーからのページデータをクライアント側の形式に変換
+          const formattedPages = response.data.pages.map((page) => {
+            const content = {
+              texts: [],
+              images: [],
+              backgroundColor: '#ffffff', // デフォルト値
+            };
+            if (page.page_elements && Array.isArray(page.page_elements)) {
+              page.page_elements.forEach((element) => {
+                if (element.element_type === 'text') {
+                  const { text, font_size, font_color, position_x, position_y } = element.content;
+                  content.texts.push({
+                    text,
+                    fontSize: font_size,
+                    color: font_color,
+                    x: position_x,
+                    y: position_y,
+                    // 必要に応じて他のプロパティを追加
+                  });
+                } else if (element.element_type === 'image') {
+                  const { src, width, height, position_x, position_y } = element.content;
+                  content.images.push({
+                    src,
+                    width,
+                    height,
+                    x: position_x,
+                    y: position_y,
+                    // 必要に応じて他のプロパティを追加
+                  });
+                }
+              });
+            }
+            // 背景色がサーバーから提供されている場合はそれを使用
+            if (page.content && page.content.backgroundColor) {
+              content.backgroundColor = page.content.backgroundColor;
+            }
+            return {
+              page_number: page.page_number,
+              content,
+              book_id: page.book_id || 1, // デフォルト値
+            };
+          });
           setBookData(response.data); // 書籍データを直接設定
-          setPages(response.data.pages || []); // ページデータを Zustand ストアに保存
+          setPages(formattedPages); // ページデータを Zustand ストアに保存
         } else {
           console.error("Invalid response format: No data found");
         }
@@ -52,7 +94,6 @@ function BookDetailPage() {
       const currentPage = pages[currentPageIndex];
       if (currentPage?.content?.images) {
         console.log("Loaded Images:", currentPage.content.images);
-        // Zustand の addImage を使用
         currentPage.content.images.forEach((img) => {
           addImage(img.src);
         });
@@ -91,7 +132,7 @@ function BookDetailPage() {
       </div>
 
       {/* キャンバス */}
-      {pages.length > 0 && (
+      {pages.length > 0 && pages[currentPageIndex]?.content?.texts && (
         <Canvas
           texts={pages[currentPageIndex].content.texts}
           images={pages[currentPageIndex].content.images}
@@ -102,7 +143,6 @@ function BookDetailPage() {
           onDeleteImage={deleteImage}
           onDeleteText={deleteText}
           onSelectText={(index) => {
-            // 既存のcanvasStoreを使用して選択テキストを設定
             useCanvasStore.getState().setSelectedTextIndex(index);
           }}
         />
