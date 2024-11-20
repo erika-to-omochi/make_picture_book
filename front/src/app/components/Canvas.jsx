@@ -1,39 +1,35 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
-import axios from '../../api/axios';
 import Modal from './Modal';
-import useCanvasStore from '../../stores/canvasStore'; // 作成したストアをインポート
+import useCanvasStore from '../../stores/canvasStore';
+import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
+import axios from '../../api/axios';
 
-function Canvas({
-  texts,
-  images,
-  onSelectText,
-  onDeleteText,
-  onUpdateText,
-  onDeleteImage,
-  onUpdateImage,
-  backgroundColor,
-  onComplete,
-  onSaveDraft
-}) {
-  // Zustand ストアから状態とアクションを取得
+function Canvas({ handleAddPage }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
-    loadedImages,
     isModalOpen,
     modalType,
     modalData,
     setSelectedTextIndex,
     setSelectedImageIndex,
-    setLoadedImages,
     setIsModalOpen,
     setModalType,
     setModalData,
     updateModalDataField,
     resetSelection,
+    pages,
+    currentPageIndex,
+    addPage,
+    setCurrentPageIndex,
+    deleteText,
+    deleteImage,
+    addImage,
+    updateImage,
+    updateText,
   } = useCanvasStore();
 
   const transformerRef = useRef(null);
@@ -44,21 +40,75 @@ function Canvas({
   const stageWidth = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
   const stageHeight = stageWidth * 0.75;
 
+  // ローカルステートとして loadedImages を管理
+  const [loadedImages, setLoadedImages] = useState([]);
+
+  // ページの初期化と安全な取得
+  const currentPageIndexIsValid =
+    currentPageIndex >= 0 && currentPageIndex < pages.length;
+
+  const currentPage = currentPageIndexIsValid
+    ? pages[currentPageIndex]
+    : {
+        content: {
+          texts: [],
+          images: [],
+          backgroundColor: '#ffffff',
+        },
+        book_id: 1,
+        page_number: pages.length + 1,
+      };
+
+  // content が存在することを保証
+  if (!currentPage.content) {
+    console.error("currentPage.content is undefined", currentPage);
+    currentPage.content = {
+      texts: [],
+      images: [],
+      backgroundColor: '#ffffff',
+    };
+  }
+
+  // デバック用
+  useEffect(() => {
+    console.log("Current background color:", currentPage.content.backgroundColor); // デバッグ用
+  }, [currentPage.content.backgroundColor]);
+
+
   // 画像の読み込み
   useEffect(() => {
+    let isMounted = true; // マウント状態を追跡
     const loadImages = async () => {
-      const promises = images.map((img) => {
+      const promises = currentPage.content.images.map((img) => {
         return new Promise((resolve) => {
           const image = new window.Image();
           image.src = img.src;
           image.onload = () => resolve({ ...img, image });
+          image.onerror = () => resolve(null); // エラー時も null を返す
         });
       });
-      const results = await Promise.all(promises);
-      setLoadedImages(results);
+      try {
+        const results = await Promise.all(promises);
+        const validResults = results.filter(Boolean); // 有効な画像のみ保持
+        if (isMounted) {
+          setLoadedImages(validResults);
+        }
+      } catch (error) {
+        console.error("Error loading images:", error);
+        if (isMounted) {
+          setLoadedImages([]);
+        }
+      }
     };
-    loadImages();
-  }, [images, setLoadedImages]);
+    if (currentPage.content.images && currentPage.content.images.length > 0) {
+      loadImages();
+    } else {
+      setLoadedImages([]); // 画像がない場合に空配列
+    }
+    return () => {
+      isMounted = false; // クリーンアップ
+    };
+  }, [currentPage.content.images]);
 
   // Transformerの更新
   useEffect(() => {
@@ -72,30 +122,30 @@ function Canvas({
       }
       transformerRef.current.getLayer().batchDraw();
     }
-  }, [selectedTextIndex, selectedImageIndex, texts, loadedImages]);
+  }, [selectedTextIndex, selectedImageIndex, currentPage.content.texts, loadedImages]);
 
   // キーボードイベントの処理
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Backspace') {
         if (selectedTextIndex !== null) {
-          onDeleteText(selectedTextIndex);
+          deleteText(selectedTextIndex);
           setSelectedTextIndex(null);
         } else if (selectedImageIndex !== null) {
-          onDeleteImage(selectedImageIndex);
+          deleteImage(selectedImageIndex);
           setSelectedImageIndex(null);
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTextIndex, selectedImageIndex, onDeleteText, onDeleteImage, setSelectedTextIndex, setSelectedImageIndex]);
+  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex]);
 
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
     const update = { x: e.target.x(), y: e.target.y() };
-    if (type === 'text') onUpdateText(index, update);
-    else if (type === 'image') onUpdateImage(index, update);
+    if (type === 'text') updateText(index, update);
+    else if (type === 'image') updateImage(index, update);
   };
 
   // 変形終了時の処理
@@ -109,20 +159,20 @@ function Canvas({
       scaleY: node.scaleY(),
     };
     if (type === 'text') {
-      newProperties.fontSize = texts[index].fontSize * newProperties.scaleY;
+      newProperties.fontSize = currentPage.content.texts[index].fontSize * newProperties.scaleY;
       node.scaleX(1);
       node.scaleY(1);
-      onUpdateText(index, newProperties);
+      updateText(index, newProperties);
     } else if (type === 'image') {
-      onUpdateImage(index, newProperties);
+      updateImage(index, newProperties);
     }
   };
 
   // テキストクリック時の処理
   const handleTextClick = (index) => {
+    console.log("Text clicked at index:", index);
     setSelectedTextIndex(index);
     setSelectedImageIndex(null);
-    onSelectText(index);
   };
 
   // ステージクリック時の処理
@@ -161,7 +211,7 @@ function Canvas({
       console.error("Refresh token is missing.");
       alert("リフレッシュトークンがありません。再度ログインしてください。");
       throw new Error("リフレッシュトークンがありません");
-    }
+    };
 
     try {
       const response = await axios.post('/auth/refresh', {
@@ -185,38 +235,40 @@ function Canvas({
         console.error("Token is missing!");
         alert("ログイン状態が無効です。再度ログインしてください。");
         return;
-      }
+      };
 
       if (checkTokenExpiration(token)) {
         console.log("Token has expired, refreshing...");
         token = await refreshAccessToken();
-      }
-
-      console.log("Valid Token being sent:", token);
+      };
 
       const headers = {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       };
 
-      // ページ番号の重複を避けるため、動的に設定する場合は以下を使用
-      // const pageNumber = await getAvailablePageNumber(2); // 例: book_id=2の場合
+      const bookId = currentPage.book_id;
+      if (!bookId) {
+        console.error("Error: bookId is undefined.");
+        alert("本のIDが見つかりません。操作を中止します。");
+        return;
+      }
 
       const payload = {
         page: { // ページ関連データを 'page' キーでラップ
-          book_id: 7, // 適切な book_id を設定
-          page_number: 3, // 適切な page_number を設定（重複しないように）
+          book_id: currentPage.book_id || 1,
+          page_number: pages.length + 1, // 新しいページ番号
           content: {
             title: modalData.title,
             author: modalData.author,
             tags: modalData.tags,
-            texts: texts,
-            images: images,
-            backgroundColor: backgroundColor,
+            texts: currentPage.content.texts,
+            images: currentPage.content.images,
+            backgroundColor: currentPage.content.backgroundColor,
             visibility: modalData.visibility,
           },
           page_elements_attributes: [
-            ...texts.map(text => ({
+            ...currentPage.content.texts.map(text => ({
               element_type: 'text',
               content: {
                 text: text.text,
@@ -226,7 +278,7 @@ function Canvas({
                 position_y: text.y,
               },
             })),
-            ...images.map(image => ({
+            ...currentPage.content.images.map(image => ({
               element_type: 'image',
               content: {
                 src: image.src,
@@ -241,10 +293,8 @@ function Canvas({
         }
       };
 
-      console.log('Payload being sent:', payload);
-
-      const response = await axios.post('/api/v1/pages', payload, { headers });
-      console.log('Book saved successfully:', response.data);
+      const response = await axios.post(`/api/v1/books/${bookId}/pages`, payload, { headers });
+      console.log(`bookId: ${bookId}`); // bookIdの値を確認
       alert('保存が完了しました');
       closeModal();
     } catch (error) {
@@ -263,13 +313,23 @@ function Canvas({
     updateModalDataField(field, value);
   };
 
+  // ロードされた画像のログ出力
+  useEffect(() => {
+    console.log("Loaded images updated:", loadedImages);
+    loadedImages.forEach((img, index) => {
+      console.log(`Image ${index}:`, img.image);
+    });
+  }, [loadedImages]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "20px" }}>
       <Stage
         ref={stageRef}
         width={stageWidth}
         height={stageHeight}
+        fill={currentPage.content.backgroundColor}
         onMouseDown={handleStageMouseDown}
+        style={{ border: '1px solid #ccc' }} // 確認用に境界線を追加
       >
         <Layer>
           <Rect
@@ -277,11 +337,11 @@ function Canvas({
             y={0}
             width={stageWidth}
             height={stageHeight}
-            fill={backgroundColor}
+            fill={currentPage.content.backgroundColor}
             onMouseDown={handleStageMouseDown}
             name="background"
           />
-          {texts.map((pos, index) => (
+          {currentPage.content.texts.map((pos, index) => (
             <Text
               key={index}
               ref={(el) => (textRefs.current[index] = el)}
@@ -299,7 +359,7 @@ function Canvas({
               scaleY={1}
             />
           ))}
-          {loadedImages.map((img, index) => (
+          {Array.isArray(loadedImages) && loadedImages.map((img, index) => (
             <KonvaImage
               key={`img-${index}`}
               ref={(el) => (imageRefs.current[index] = el)}
@@ -325,6 +385,25 @@ function Canvas({
         </button>
         <button onClick={() => openModal("draft")} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
           下書き保存
+        </button>
+        <button
+          onClick={() => setCurrentPageIndex(currentPageIndex - 1)}
+          disabled={currentPageIndex === 0}
+          className="p-2 text-bodyText flex items-center justify-center"
+        >
+          <FaChevronCircleLeft size={32} />
+        </button>
+        <button
+          onClick={() => {
+            if (currentPageIndex < pages.length - 1) {
+              setCurrentPageIndex(currentPageIndex + 1);
+            } else {
+              handleAddPage();
+            }
+          }}
+          className="p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-blue-500 hover:bg-blue-100 hover:shadow-md"
+        >
+          <FaChevronCircleRight size={32} />
         </button>
       </div>
       <Modal

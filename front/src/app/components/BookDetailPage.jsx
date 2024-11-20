@@ -3,9 +3,9 @@
 import React, { useEffect } from "react";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import axios from '../../api/axios';
 import { FaRegCommentDots, FaPrint, FaEdit, FaTrash } from 'react-icons/fa';
-import useBookDetailStore from '../../stores/bookDetailStore'; // 新しいストアをインポート
-import useCanvasStore from '../../stores/canvasStore'; // 既存のcanvasStoreも使用
+import useCanvasStore from '../../stores/canvasStore';
 
 const Canvas = dynamic(() => import("./Canvas"), { ssr: false });
 
@@ -16,43 +16,85 @@ function BookDetailPage() {
   const {
     bookData,
     setBookData,
-    selectedPageIndex,
-    setSelectedPageIndex,
+    currentPageIndex,
+    setCurrentPageIndex,
     fetchBookData,
-  } = useBookDetailStore();
-
-  const {
-    images,
-    setImages,
-    texts,
-    setTexts,
     updateImage,
     deleteImage,
     updateText,
     deleteText,
-  } = useBookDetailStore();
+    pages,
+    setPages,
+    addImage,
+  } = useCanvasStore();
 
-  // bookDataをフェッチ
   useEffect(() => {
-    if (bookId && !bookData) {
-      fetchBookData(bookId);
-    }
-  }, [bookId, bookData, fetchBookData]);
+    const fetchBookData = async () => {
+      try {
+        const response = await axios.get(`/api/v1/books/${bookId}/`);
+        console.log("Book data:", response.data);
+        if (response.data) {
+          console.log("Pages:", response.data.pages);
+          // サーバーからのページデータをクライアント側の形式に変換
+          const formattedPages = response.data.pages.map((page) => {
+            const content = {
+              texts: [],
+              images: [],
+              backgroundColor: '#ffffff', // デフォルト値
+            };
+            if (page.page_elements && Array.isArray(page.page_elements)) {
+              page.page_elements.forEach((element) => {
+                if (element.element_type === 'text') {
+                  const { text, font_size, font_color, position_x, position_y } = element.content;
+                  content.texts.push({
+                    text,
+                    fontSize: font_size,
+                    color: font_color,
+                    x: position_x,
+                    y: position_y,
+                  });
+                } else if (element.element_type === 'image') {
+                  const { src, width, height, position_x, position_y } = element.content;
+                  content.images.push({
+                    src,
+                    width,
+                    height,
+                    x: position_x,
+                    y: position_y,
+                  });
+                }
+              });
+            }
+            return {
+              page_number: page.page_number,
+              content,
+              book_id: page.book_id || 1,
+            };
+          });
+          // 初期化
+          setBookData(response.data);
+          setPages(formattedPages);
+        }
+      } catch (error) {
+        console.error("Error fetching book data:", error);
+      }
+    };
+    fetchBookData();
+  }, [bookId]);
 
-  // bookDataが更新されたらimagesとtextsを設定
+
   useEffect(() => {
-    if (bookData) {
-      const currentPage = bookData.pages[selectedPageIndex];
-      const loadedImages = currentPage.page_elements
-        .filter((el) => el.element_type === "image")
-        .map((el) => el.content);
-      const loadedTexts = currentPage.page_elements
-        .filter((el) => el.element_type === "text")
-        .map((el) => el.content);
-      setImages(loadedImages);
-      setTexts(loadedTexts);
+    if (pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length) {
+      const currentPage = pages[currentPageIndex];
+      if (currentPage?.content?.images) {
+        console.log("Loaded Images:", currentPage.content.images);
+      } else {
+        console.error("currentPage does not have images");
+      }
+    } else {
+      console.error("Invalid pages array or currentPageIndex");
     }
-  }, [bookData, selectedPageIndex, setImages, setTexts]);
+  }, [pages, currentPageIndex, addImage]);
 
   const handleComment = () => {
     console.log('コメントボタンがクリックされました');
@@ -81,17 +123,17 @@ function BookDetailPage() {
       </div>
 
       {/* キャンバス */}
-      {bookData.pages.length > 0 && (
+      {pages.length > 0 && pages[currentPageIndex]?.content?.texts && (
         <Canvas
-          texts={texts}
-          images={images}
+          texts={pages[currentPageIndex].content.texts}
+          images={pages[currentPageIndex].content.images}
+          pageData={pages[currentPageIndex]}
           backgroundColor="#ffffff"
           onUpdateText={updateText}
           onUpdateImage={updateImage}
           onDeleteImage={deleteImage}
           onDeleteText={deleteText}
           onSelectText={(index) => {
-            // 既存のcanvasStoreを使用して選択テキストを設定
             useCanvasStore.getState().setSelectedTextIndex(index);
           }}
         />
@@ -99,12 +141,12 @@ function BookDetailPage() {
 
       {/* ページ切り替えボタン */}
       <div className="flex justify-center space-x-4">
-        {bookData.pages.map((_, index) => (
+        {pages.map((_, index) => (
           <button
             key={`page-btn-${index}`}
-            onClick={() => setSelectedPageIndex(index)}
+            onClick={() => setCurrentPageIndex(index)}
             className={`px-4 py-2 border rounded-md transition ${
-              selectedPageIndex === index
+              currentPageIndex === index
                 ? "bg-bodyText text-white"
                 : "bg-white border-gray-300"
             }`}

@@ -6,6 +6,7 @@ import TextInputCanvas from "./TextInputCanvas";
 import PeopleImages from "./PeopleImages";
 import NatureImages from "./NatureImages";
 import ObjectImages from "./ObjectImages";
+import useCanvasStore from "../../stores/canvasStore";
 
 export default function CreateBookFooter({
   activePanel,
@@ -17,7 +18,7 @@ export default function CreateBookFooter({
   texts,
   selectedText,
   handleAddImage,
-  setBackgroundColor
+  setBackgroundColor,
 }) {
   // パネルごとのコンテンツを関数として定義
   const renderPanelContent = () => {
@@ -36,24 +37,28 @@ export default function CreateBookFooter({
         return <PeopleImages onImageSelect={handleImageSelect} />;
       case "もの":
         return <ObjectImages onImageSelect={handleImageSelect} />;
-        case "背景色":
-          return (
-            <div className="flex items-center p-4 gap-2">
-              <label>背景色を選択:</label>
-              <input
-                type="color"
-                onChange={(e) => setBackgroundColor(e.target.value)}
-                className="w-12 h-12"
-              />
-            </div>
-          );
+      case "背景色":
+        return (
+          <div className="flex items-center p-4 gap-2">
+            <label>背景色を選択:</label>
+            <input
+              type="color"
+              onChange={(e) => {
+                console.log("Color selected:", e.target.value);
+                setBackgroundColor(e.target.value)
+              }}
+              className="w-12 h-12"
+            />
+          </div>
+        );
       default:
         return null;
     }
   };
 
   const handleImageSelect = (src) => {
-    // 選択した画像パスを handleAddImage に渡す
+    console.log("handleImageSelect called with:", src);
+    // CreateBookPageから渡されたhandleAddImageを使用
     handleAddImage(src);
   };
 

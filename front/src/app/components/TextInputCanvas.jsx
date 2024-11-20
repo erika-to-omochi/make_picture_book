@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import useCanvasStore from '../../stores/canvasStore';
 
-function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
+function TextInputCanvas({ onAddText, onUpdateText }) {
+  const {
+    selectedTextIndex,
+    pages,
+    currentPageIndex,
+    updateText,
+    addText,
+  } = useCanvasStore();
+
   const [inputText, setInputText] = useState('');
   const [fontSize, setFontSize] = useState(24);
   const [color, setColor] = useState('#000000');
+
+  // 現在のページから選択されたテキスト情報を取得
+  const selectedText = selectedTextIndex !== null
+  ? pages[currentPageIndex]?.content?.texts[selectedTextIndex]
+  : null;
 
   useEffect(() => {
     if (selectedText) {
@@ -18,10 +32,13 @@ function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
   }, [selectedText]);
 
   const handleButtonClick = () => {
+    console.log("Button clicked");
     if (inputText.trim()) {
       if (selectedText) {
+        console.log("Updating selected text:", { text: inputText, fontSize, color });
         onUpdateText({ text: inputText, fontSize, color });
       } else {
+        console.log("Adding new text:", { text: inputText, fontSize, color });
         onAddText({ text: inputText, fontSize, color });
       }
       setInputText('');
@@ -67,7 +84,7 @@ function TextInputCanvas({ onAddText, onUpdateText, selectedText }) {
           <button
             onClick={handleButtonClick}
             className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 ml-4"
-            style={{ width: '20' }}
+            style={{ width: '20%' }}
           >
             {selectedText ? 'テキストを更新' : 'キャンバスに追加'}
           </button>
