@@ -44,7 +44,7 @@ function BookDetailPage() {
             const content = {
               texts: [],
               images: [],
-              backgroundColor: page.content?.backgroundColor || '#ffffff',
+              backgroundColor: page.background_color || '#ffffff',
             };
             if (page.page_elements && Array.isArray(page.page_elements)) {
               page.page_elements.forEach((element) => {
@@ -149,7 +149,7 @@ function BookDetailPage() {
           texts={pages[currentPageIndex].content.texts}
           images={pages[currentPageIndex].content.images}
           pageData={pages[currentPageIndex]}
-          backgroundColor={pages[currentPageIndex].content.backgroundColor}
+          backgroundColor={pages[currentPageIndex]?.content?.backgroundColor || "#ffffff"} // ここで渡す
           onUpdateText={updateText}
           onUpdateImage={updateImage}
           onDeleteImage={deleteImage}

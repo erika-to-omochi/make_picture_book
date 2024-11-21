@@ -7,7 +7,7 @@ import useCanvasStore from '../../stores/canvasStore';
 import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
 import axios from '../../api/axios';
 
-function Canvas({ handleAddPage, showActionButtons }) {
+function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -358,7 +358,7 @@ function Canvas({ handleAddPage, showActionButtons }) {
             y={0}
             width={stageWidth}
             height={stageHeight}
-            fill={currentPage.content.backgroundColor}
+            fill={backgroundColor}
             onMouseDown={handleStageMouseDown}
             name="background"
           />

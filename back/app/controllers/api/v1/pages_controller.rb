@@ -5,7 +5,7 @@ class Api::V1::PagesController < ApplicationController
     Rails.logger.debug("Received params: #{params.inspect}")
     last_page_number = Page.where(book_id: page_params[:book_id]).maximum(:page_number) || 0
     page = Page.new(page_params.merge(page_number: last_page_number + 1))
-
+    page.background_color = page_params[:content][:backgroundColor]
 
     if page.save
       render json: { page: page.as_json(include: [:page_characters, :page_elements]) }, status: :created
