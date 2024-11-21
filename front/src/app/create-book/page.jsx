@@ -173,7 +173,6 @@ export default function CreateBookPage() {
     }
   };
 
-
   // 新しいページを追加する関数
   const handleAddPage = async () => {
     try {

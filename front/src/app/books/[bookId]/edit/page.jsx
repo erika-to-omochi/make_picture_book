@@ -27,6 +27,7 @@ function EditBookPage() {
     addText,
     addImage,
     setBackgroundColor,
+    selectedTextIndex,
   } = useCanvasStore();
 
   // ローカル状態
@@ -40,7 +41,7 @@ function EditBookPage() {
           const content = {
             texts: [],
             images: [],
-            backgroundColor: "#ffffff", // デフォルト値
+            backgroundColor: page.background_color || '#ffffff',
           };
           if (page.page_elements && Array.isArray(page.page_elements)) {
             page.page_elements.forEach((element) => {
@@ -98,10 +99,45 @@ function EditBookPage() {
     setActivePanel((prev) => (prev === panelName ? null : panelName));
   };
 
+  const handleAddText = (newText) => {
+    addText(newText); // ストアのaddTextアクションを呼び出す
+  };
+
+  // テキストのプロパティを更新する処理
+  const handleUpdateText = (updatedText) => {
+    console.log("Updating text:", updatedText);
+    if (selectedTextIndex !== null) {
+      updateText(selectedTextIndex, updatedText); // ストアのupdateTextアクションを呼び出す
+    }
+  };
+
+  // テキストの削除
+  const handleDeleteText = (index) => {
+    deleteText(index);
+    setSelectedTextIndex(null);
+  };
+
+  const handleAddImage = (src) => {
+    console.log("handleAddImage called with:", src);
+
+    const img = new window.Image();
+    img.src = src;
+
+    img.onload = () => {
+      console.log("Image loaded successfully:", src);
+      addImage(src);
+      console.log("Image added to store");
+    };
+
+    img.onerror = () => {
+      console.error("Failed to load image:", src);
+    };
+  };
+
   if (!bookData) return <p>Loading...</p>;
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-8">
+    <div className="flex flex-col items-center justify-center p-8">
       {/* タイトルと著者 */}
       <div className="text-center">
         <h1 className="text-3xl font-bold mb-2">{bookData.title}</h1>
@@ -122,7 +158,7 @@ function EditBookPage() {
           onSelectText={(index) => {
             useCanvasStore.getState().setSelectedTextIndex(index);
           }}
-          showActionButtons={false}
+          showActionButtons={true}
         />
       )}
 
@@ -130,11 +166,11 @@ function EditBookPage() {
       <CreateBookFooter
         activePanel={activePanel}
         togglePanel={togglePanel}
-        handleAddText={() => addText({ text: "新しいテキスト", x: 50, y: 50 })}
-        handleAddImage={() => addImage({ src: "/path/to/image", x: 100, y: 100, width: 200, height: 200 })}
-        handleUpdateText={updateText}
-        handleDeleteText={(index) => deleteText(index)}
-        setBackgroundColor={(color) => setBackgroundColor(color)}
+        handleAddText={handleAddText}
+        handleAddImage={handleAddImage}
+        handleUpdateText={handleUpdateText}
+        handleDeleteText={handleDeleteText}
+        setBackgroundColor={setBackgroundColor}
       />
     </div>
   );

@@ -358,7 +358,7 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
             y={0}
             width={stageWidth}
             height={stageHeight}
-            fill={backgroundColor}
+            fill={backgroundColor|| "#ffffff"}
             onMouseDown={handleStageMouseDown}
             name="background"
           />
