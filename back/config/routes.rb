@@ -13,6 +13,9 @@ Rails.application.routes.draw do
       end
       resources :books  do
         resources :pages, only: [:index, :show, :create, :update, :destroy]
+        member do
+          get :author_status
+        end
       end
     end
   end

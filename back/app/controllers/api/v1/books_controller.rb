@@ -1,5 +1,16 @@
 class Api::V1::BooksController < ApplicationController
-  before_action :authenticate_user!, only: [:create]
+  before_action :authenticate_user!, only: [:create,:author_status]
+
+
+  def author_status
+    book = Book.find(params[:id]) # IDから絵本を取得
+    is_author = book.user_id == current_user.id # 作者かどうかを判定
+
+    render json: { is_author: is_author }, status: :ok
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Book not found" }, status: :not_found
+  end
+
 
   def index
     books = Book.all

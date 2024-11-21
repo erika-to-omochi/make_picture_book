@@ -7,7 +7,7 @@ import useCanvasStore from '../../stores/canvasStore';
 import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
 import axios from '../../api/axios';
 
-function Canvas({ handleAddPage }) {
+function Canvas({ handleAddPage, showActionButtons }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -379,32 +379,64 @@ function Canvas({ handleAddPage }) {
           )}
         </Layer>
       </Stage>
-      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-        <button onClick={() => openModal("complete")} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
-          完成
-        </button>
-        <button onClick={() => openModal("draft")} className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80">
-          下書き保存
-        </button>
-        <button
-          onClick={() => setCurrentPageIndex(currentPageIndex - 1)}
-          disabled={currentPageIndex === 0}
-          className="p-2 text-bodyText flex items-center justify-center"
-        >
-          <FaChevronCircleLeft size={32} />
-        </button>
-        <button
-          onClick={() => {
-            if (currentPageIndex < pages.length - 1) {
-              setCurrentPageIndex(currentPageIndex + 1);
-            } else {
-              handleAddPage();
-            }
-          }}
-          className="p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-blue-500 hover:bg-blue-100 hover:shadow-md"
-        >
-          <FaChevronCircleRight size={32} />
-        </button>
+      <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+        {/* ページ移動エリア */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button
+            onClick={() => setCurrentPageIndex(currentPageIndex - 1)}
+            disabled={currentPageIndex === 0}
+            className="p-2 text-bodyText flex items-center justify-center"
+          >
+            <FaChevronCircleLeft size={32} />
+          </button>
+          {/* 現在のページ / 総ページ数 */}
+          <div className="flex items-center space-x-2">
+            <span className="text-bodyText font-semibold"></span>
+            <input
+              type="number"
+              min={1}
+              max={pages.length}
+              value={currentPageIndex + 1}
+              onChange={(e) => {
+                const page = parseInt(e.target.value, 10) - 1; // ユーザーの入力をインデックスに変換
+                if (page >= 0 && page < pages.length) {
+                  setCurrentPageIndex(page); // ページを設定
+                }
+              }}
+              className="w-16 p-1 text-center border rounded-md border-gray-300"
+            />
+            <span className="text-bodyText font-semibold">/ {pages.length}</span>
+          </div>
+          <button
+            onClick={() => {
+              if (currentPageIndex < pages.length - 1) {
+                setCurrentPageIndex(currentPageIndex + 1);
+              } else {
+                handleAddPage();
+              }
+            }}
+            className="p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-blue-500 hover:bg-blue-100 hover:shadow-md"
+          >
+            <FaChevronCircleRight size={32} />
+          </button>
+        </div>
+        {showActionButtons && (
+          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+            {/* 完成と下書きボタン */}
+            <button
+              onClick={() => openModal("complete")}
+              className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
+            >
+              完成
+            </button>
+            <button
+              onClick={() => openModal("draft")}
+              className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
+            >
+              下書き保存
+            </button>
+          </div>
+        )}
       </div>
       <Modal
         isOpen={isModalOpen}
