@@ -1,7 +1,5 @@
 "use client";
 
-import CreateBookFooter from '../components/CreateBookFooter';
-
 export default function CreateBookLayout({ children }) {
   return (
     <>

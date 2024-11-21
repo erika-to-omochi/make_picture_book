@@ -8,7 +8,7 @@ export default function DefaultFooter() {
   const pathname = usePathname();
 
   // /create-book ページでは DefaultFooter を表示しない
-  if (pathname === "/create-book") {
+  if (pathname === "/create-book" || pathname.startsWith("/books/") && pathname.endsWith("/edit")) {
     return null;
   }
   return (
