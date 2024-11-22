@@ -230,7 +230,7 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
   // モーダル保存時の処理
   const handleModalSave = async () => {
     try {
-      const token = localStorage.getItem('access_token');
+      let token = localStorage.getItem('access_token');
       const refreshToken = localStorage.getItem('refresh_token');
       if (!token) {
         console.error("Token is missing!");
