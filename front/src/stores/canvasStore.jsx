@@ -47,7 +47,7 @@ const useCanvasStore = create((set, get) => ({
 
   // アクション
   addImage: (imageSrc) => {
-    const img = new window.Image(); // 新しい Image オブジェクトを作成
+    const img = new window.Image();
     img.src = imageSrc;
     img.onload = () => {
       console.log("Image loaded successfully:", imageSrc);

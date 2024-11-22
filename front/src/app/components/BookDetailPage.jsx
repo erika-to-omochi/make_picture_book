@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import axios from '../../api/axios';
 import { FaRegCommentDots, FaPrint, FaEdit, FaTrash } from 'react-icons/fa';
@@ -11,6 +11,7 @@ const Canvas = dynamic(() => import("./Canvas"), { ssr: false });
 
 function BookDetailPage() {
   const { bookId } = useParams();
+  const router = useRouter();
 
   // Zustandストアから状態とアクションを取得
   const {
@@ -43,7 +44,7 @@ function BookDetailPage() {
             const content = {
               texts: [],
               images: [],
-              backgroundColor: '#ffffff', // デフォルト値
+              backgroundColor: page.background_color || '#ffffff',
             };
             if (page.page_elements && Array.isArray(page.page_elements)) {
               page.page_elements.forEach((element) => {
@@ -125,7 +126,7 @@ function BookDetailPage() {
   };
 
   const handleEdit = () => {
-    console.log('編集ボタンがクリックされました');
+    router.push(`/books/${bookId}/edit`);
   };
 
   const handleDelete = () => {
@@ -148,7 +149,7 @@ function BookDetailPage() {
           texts={pages[currentPageIndex].content.texts}
           images={pages[currentPageIndex].content.images}
           pageData={pages[currentPageIndex]}
-          backgroundColor="#ffffff"
+          backgroundColor={pages[currentPageIndex]?.content?.backgroundColor || "#ffffff"} // ここで渡す
           onUpdateText={updateText}
           onUpdateImage={updateImage}
           onDeleteImage={deleteImage}

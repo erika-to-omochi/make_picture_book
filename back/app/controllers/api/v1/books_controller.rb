@@ -37,7 +37,7 @@ class Api::V1::BooksController < ApplicationController
     render json: book.as_json(
       include: {
         pages: {
-          only: [:page_number],
+          only: [:page_number, :background_color],
           include: {
             page_characters: { only: [:character_type, :position_x, :position_y] },
             page_elements: { only: [:element_type, :content] }
