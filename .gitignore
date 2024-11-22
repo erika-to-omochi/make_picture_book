@@ -74,3 +74,4 @@ back/tmp/storage/*
 back/config/master.key
 back/config/credentials.yml.enc
 
+.vercel

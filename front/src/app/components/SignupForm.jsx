@@ -33,7 +33,10 @@ export default function SignupForm() {
       setErrorMessages([]);
 
       const accessToken = response.data.access_token;
-      localStorage.setItem('accessToken', accessToken);
+      const refreshToken = response.data.refresh_token;
+
+      localStorage.setItem('access_token', accessToken);
+      localStorage.setItem('refresh_token', refreshToken);
       localStorage.setItem('userName', name);
 
       // 状態を更新してヘッダーを即座に切り替える
