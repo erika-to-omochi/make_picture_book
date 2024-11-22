@@ -6,8 +6,9 @@ import Modal from './Modal';
 import useCanvasStore from '../../stores/canvasStore';
 import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
 import axios from '../../api/axios';
+import { useRouter } from 'next/navigation';
 
-function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
+function Canvas({ showActionButtons, backgroundColor }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -30,6 +31,7 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
     addImage,
     updateImage,
     updateText,
+    resetCanvas,
   } = useCanvasStore();
 
   const transformerRef = useRef(null);
@@ -42,6 +44,8 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
 
   // ローカルステートとして loadedImages を管理
   const [loadedImages, setLoadedImages] = useState([]);
+
+  const router = useRouter();
 
   // ページの初期化と安全な取得
   const currentPageIndexIsValid =
@@ -68,12 +72,6 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
       backgroundColor: '#ffffff',
     };
   }
-
-  // デバック用
-  useEffect(() => {
-    console.log("Current background color:", currentPage.content.backgroundColor); // デバッグ用
-  }, [currentPage.content.backgroundColor]);
-
 
   // 画像の読み込み
   useEffect(() => {
@@ -318,7 +316,13 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
         await axios.post(`/api/v1/books/${newBookId}/pages`, payload, { headers });
       }
       alert('保存が完了しました');
+
+      // キャンバスをリセット
+      resetCanvas();
+
       closeModal();
+
+      router.push('/index-books');
     } catch (error) {
       console.error('Failed to save book:', error.response || error);
       if (error.response?.data?.errors) {
@@ -337,9 +341,7 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
 
   // ロードされた画像のログ出力
   useEffect(() => {
-    console.log("Loaded images updated:", loadedImages);
     loadedImages.forEach((img, index) => {
-      console.log(`Image ${index}:`, img.image);
     });
   }, [loadedImages]);
 
@@ -359,7 +361,7 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
             y={0}
             width={stageWidth}
             height={stageHeight}
-            fill={backgroundColor|| "#ffffff"}
+            fill={currentPage.content.backgroundColor|| "#ffffff"}
             onMouseDown={handleStageMouseDown}
             name="background"
           />

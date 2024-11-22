@@ -36,9 +36,7 @@ function BookDetailPage() {
     const fetchBookData = async () => {
       try {
         const response = await axios.get(`/api/v1/books/${bookId}/`);
-        console.log("Book data:", response.data);
         if (response.data) {
-          console.log("Pages:", response.data.pages);
           // サーバーからのページデータをクライアント側の形式に変換
           const formattedPages = response.data.pages.map((page) => {
             const content = {
@@ -108,7 +106,6 @@ function BookDetailPage() {
     if (pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length) {
       const currentPage = pages[currentPageIndex];
       if (currentPage?.content?.images) {
-        console.log("Loaded Images:", currentPage.content.images);
       } else {
         console.error("currentPage does not have images");
       }
