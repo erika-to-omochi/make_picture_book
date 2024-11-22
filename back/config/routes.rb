@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get 'health/check'
   # Devise の認証ルート
   devise_for :users, path: 'api/v1/auth', controllers: {
     sessions: 'api/v1/auth/sessions',
@@ -19,4 +20,5 @@ Rails.application.routes.draw do
       end
     end
   end
+  root to: 'health#check'
 end

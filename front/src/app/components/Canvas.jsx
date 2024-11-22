@@ -231,6 +231,7 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
   const handleModalSave = async () => {
     try {
       let token = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
       if (!token) {
         console.error("Token is missing!");
         alert("ログイン状態が無効です。再度ログインしてください。");

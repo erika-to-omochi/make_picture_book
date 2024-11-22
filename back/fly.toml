@@ -8,6 +8,7 @@ primary_region = 'syd'
 console_command = '/rails/bin/rails console'
 
 [build]
+  dockerfile = "./Dockerfile"
 
 [deploy]
   release_command = './bin/rails db:prepare'
@@ -26,3 +27,7 @@ console_command = '/rails/bin/rails console'
 [[statics]]
   guest_path = '/rails/public'
   url_prefix = '/'
+
+[env]
+  RAILS_ENV = "production"
+  PORT = "3000"
