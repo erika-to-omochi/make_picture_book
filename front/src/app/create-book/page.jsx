@@ -16,14 +16,8 @@ export default function CreateBookPage() {
   const {
     pages,
     currentPageIndex,
-    addPage,
-    addText,
     updateText,
-    deleteText,
-    addImage,
     updateImage,
-    deleteImage,
-    setSelectedTextIndex,
     selectedTextIndex,
     backgroundColor,
     setBackgroundColor,
@@ -173,83 +167,13 @@ export default function CreateBookPage() {
     }
   };
 
-  // 新しいページを追加する関数
-  const handleAddPage = async () => {
-    try {
-      let token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error("Token is missing!");
-        alert("ログイン状態が無効です。再度ログインしてください。");
-        return;
-      }
-
-      // トークンの有効期限を確認してリフレッシュ
-      if (checkTokenExpiration(token)) {
-        console.log("Token has expired, refreshing...");
-        token = await refreshAccessToken();
-      }
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      };
-
-      const newPageNumber = pages.length > 0 ? Math.max(...pages.map(p => p.page_number)) + 1 : 1;
-
-      // 新しいページのデータを構築
-      const newPage = {
-        book_id: currentPage.book_id || 1,
-        page_number: newPageNumber,
-        content: {
-          title: '',
-          author: '',
-          tags: [],
-          backgroundColor: '#ffffff',
-          visibility: 'public',
-          texts: [],
-          images: [],
-        },
-        page_elements_attributes: [],
-        page_characters_attributes: [],
-      };
-
-      // ページ追加APIを呼び出す
-      const payload = { page: newPage };
-      const response = await axios.post(`/api/v1/books/${currentPage.book_id}/pages`, payload, { headers });
-
-      const savedPage = response.data.page;
-
-      // Zustand ストアに新しいページを追加
-      addPage(savedPage);
-      alert('新しいページが追加されました');
-    } catch (error) {
-      console.error('Failed to add page:', error.response || error);
-      if (error.response?.data?.errors) {
-        const errorMessage = error.response.data.errors.join(", ");
-        alert(`ページ追加エラー: ${errorMessage}`);
-      } else {
-        alert('ページ追加中にエラーが発生しました');
-      }
-    }
-  };
-
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
   };
 
-  // テキストを追加する関数
+  // CreateBookPage コンポーネント内
   const handleAddText = (newText) => {
-    const width = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
-    const height = width * 0.75;
-    const centerX = width / 2;
-    const centerY = height / 2;
-
-    const textWithPosition = {
-      ...newText,
-      x: centerX,
-      y: centerY,
-    };
-    addText(textWithPosition);
+    useCanvasStore.getState().handleAddText(newText);
   };
 
   // テキストのプロパティを更新
@@ -259,38 +183,9 @@ export default function CreateBookPage() {
     }
   };
 
-  // テキストの削除
-  const handleDeleteText = (index) => {
-    deleteText(index);
-    setSelectedTextIndex(null);
-  };
-
-  // 画像を追加する関数
-  const handleAddImage = (src) => {
-    console.log("handleAddImage called with:", src);
-
-    const img = new window.Image();
-    img.src = src;
-
-    img.onload = () => {
-      console.log("Image loaded successfully:", src);
-      addImage(src);
-      console.log("Image added to store");
-    };
-
-    img.onerror = () => {
-      console.error("Failed to load image:", src);
-    };
-  };
-
   // 画像のプロパティを更新
   const handleUpdateImage = (index, updatedProperties) => {
     updateImage(index, updatedProperties);
-  };
-
-  // 画像の削除
-  const handleDeleteImage = (index) => {
-    deleteImage(index);
   };
 
   // 「完成」ボタンの処理
@@ -312,7 +207,6 @@ export default function CreateBookPage() {
         backgroundColor={backgroundColor}
         onComplete={onComplete}
         onSaveDraft={onSaveDraft}
-        handleAddPage={handleAddPage}
         showActionButtons={true}
       />
 
@@ -320,9 +214,7 @@ export default function CreateBookPage() {
         activePanel={activePanel}
         togglePanel={togglePanel}
         handleAddText={handleAddText}
-        handleAddImage={handleAddImage}
         handleUpdateText={handleUpdateText}
-        handleDeleteText={handleDeleteText}
         setBackgroundColor={setBackgroundColor}
       />
     </div>

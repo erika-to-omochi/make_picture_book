@@ -12,6 +12,7 @@ function TextEditor() {
     updateText,
     selectedTextIndex,
     setSelectedTextIndex,
+    handleAddTex,
   } = useCanvasStore();
 
   const handleAddText = (newText) => {

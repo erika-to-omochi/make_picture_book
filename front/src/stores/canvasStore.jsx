@@ -46,14 +46,11 @@ const useCanvasStore = create((set, get) => ({
   }),
 
   // アクション
-  addImage: (imageSrc) => {
+  handleAddImage: (imageSrc) => {
     const img = new window.Image();
     img.src = imageSrc;
     img.onload = () => {
-      console.log("Image loaded successfully:", imageSrc);
       set((state) => {
-        console.log("set is called");
-        console.log("State before adding image:", state);
         const currentPage = state.pages[state.currentPageIndex];
         if (!currentPage) {
           console.error("No current page to add image");
@@ -83,8 +80,18 @@ const useCanvasStore = create((set, get) => ({
     };
   },
 
-    // 新しいテキストを追加するアクション
-    addText: (newText) => {
+    // テキストを追加する関数
+    handleAddText: (newText) => {
+      const width = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
+      const height = width * 0.75;
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      const textWithPosition = {
+        ...newText,
+        x: centerX,
+        y: centerY,
+      };
       set((state) => {
         const currentPage = state.pages[state.currentPageIndex];
         if (!currentPage) {
@@ -109,6 +116,7 @@ const useCanvasStore = create((set, get) => ({
     pages: [...state.pages, newPage],
     currentPageIndex: state.pages.length, // 新しいページに移動
   }));
+  console.log('Pages after addPage:', get().pages);
 },
 
 
@@ -217,6 +225,30 @@ fetchBookData: async (bookId) => {
       return { pages: updatedPages };
     }),
 
+    resetCanvas: () => set({
+      selectedTextIndex: null,
+      selectedImageIndex: null,
+      isModalOpen: false,
+      modalType: null,
+      modalData: {
+        title: "",
+        author: "",
+        tags: "",
+        visibility: "public",
+      },
+      pages: [
+        {
+          content: {
+            images: [],
+            texts: [],
+            backgroundColor: '#ffffff',
+          },
+          book_id: 1,
+          page_number: 1,
+        },
+      ],
+      currentPageIndex: 0,
+    }),
 
   setPages: (pages) => set({ pages }), // ページ状態を設定するアクションを追加
 }));

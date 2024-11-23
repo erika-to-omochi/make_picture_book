@@ -48,20 +48,23 @@ function Canvas({ showActionButtons, backgroundColor }) {
   const router = useRouter();
 
   // ページの初期化と安全な取得
-  const currentPageIndexIsValid =
-    currentPageIndex >= 0 && currentPageIndex < pages.length;
+  const currentPage = pages[currentPageIndex] || {
+    content: {
+      texts: [],
+      images: [],
+      backgroundColor: '#ffffff',
+    },
+    book_id: 1,
+    page_number: pages.length + 1,
+  };
 
-  const currentPage = currentPageIndexIsValid
-    ? pages[currentPageIndex]
-    : {
-        content: {
-          texts: [],
-          images: [],
-          backgroundColor: '#ffffff',
-        },
-        book_id: 1,
-        page_number: pages.length + 1,
-      };
+  if (!currentPage.content) {
+    currentPage.content = {
+      texts: [],
+      images: [],
+      backgroundColor: '#ffffff',
+    };
+  }
 
   // content が存在することを保証
   if (!currentPage.content) {
@@ -433,10 +436,12 @@ function Canvas({ showActionButtons, backgroundColor }) {
           </div>
           <button
             onClick={() => {
+              console.log('handleAddPage:', handleAddPage);
+
               if (currentPageIndex < pages.length - 1) {
                 setCurrentPageIndex(currentPageIndex + 1);
               } else {
-                handleAddPage();
+                addPage();
               }
             }}
             className="p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-blue-500 hover:bg-blue-100 hover:shadow-md"
