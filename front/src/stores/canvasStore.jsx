@@ -99,28 +99,23 @@ deleteImage: (index) =>
 
     // テキストはここ
     handleAddText: (newText) => {
-      const width = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
-      const height = width * 0.75;
-      const centerX = width / 2;
-      const centerY = height / 2;
-
-      const textWithPosition = {
-        ...newText,
-        x: centerX,
-        y: centerY,
-      };
       set((state) => {
         const currentPage = state.pages[state.currentPageIndex];
         if (!currentPage) {
           console.error("No current page to add text");
           return {};
         }
+        const textWithPosition = {
+          ...newText,
+          x: 100,
+          y: 100,
+        };
         const updatedPages = [...state.pages];
         updatedPages[state.currentPageIndex] = {
           ...currentPage,
           content: {
             ...currentPage.content,
-            texts: [...currentPage.content.texts, newText],
+            texts: [...currentPage.content.texts, textWithPosition],
           },
         };
         return { pages: updatedPages };
