@@ -12,20 +12,14 @@ const Canvas = dynamic(() => import("../../../components/Canvas"), { ssr: false 
 function EditBookPage() {
   const { bookId } = useParams();
 
-  // Zustandストアから状態とアクションを取得
   const {
     bookData,
     setBookData,
     currentPageIndex,
-    updateImage,
     deleteImage,
-    deleteText,
     pages,
     setPages,
-    addText,
-    addImage,
     setBackgroundColor,
-    selectedTextIndex,
   } = useCanvasStore();
 
   // ローカル状態
@@ -97,16 +91,6 @@ function EditBookPage() {
     setActivePanel((prev) => (prev === panelName ? null : panelName));
   };
 
-  const handleAddText = (newText) => {
-    addText(newText); // ストアのaddTextアクションを呼び出す
-  };
-
-  // テキストの削除
-  const handleDeleteText = (index) => {
-    deleteText(index);
-    setSelectedTextIndex(null);
-  };
-
   if (!bookData) return <p>Loading...</p>;
 
   return (
@@ -125,7 +109,6 @@ function EditBookPage() {
           pageData={pages[currentPageIndex]}
           backgroundColor={pages[currentPageIndex]?.content?.backgroundColor || "#ffffff"}
           onDeleteImage={deleteImage}
-          onDeleteText={deleteText}
           onSelectText={(index) => {
             useCanvasStore.getState().setSelectedTextIndex(index);
           }}
@@ -137,8 +120,6 @@ function EditBookPage() {
       <CreateBookFooter
         activePanel={activePanel}
         togglePanel={togglePanel}
-        handleAddText={handleAddText}
-        handleDeleteText={handleDeleteText}
         setBackgroundColor={setBackgroundColor}
       />
     </div>

@@ -18,11 +18,8 @@ function BookDetailPage() {
     bookData,
     setBookData,
     currentPageIndex,
-    setCurrentPageIndex,
-    fetchBookData,
     updateImage,
     deleteImage,
-    deleteText,
     pages,
     setPages,
     addImage,
@@ -148,7 +145,6 @@ function BookDetailPage() {
           backgroundColor={pages[currentPageIndex]?.content?.backgroundColor || "#ffffff"} // ここで渡す
           onUpdateImage={updateImage}
           onDeleteImage={deleteImage}
-          onDeleteText={deleteText}
           onSelectText={(index) => {
             useCanvasStore.getState().setSelectedTextIndex(index);
           }}
