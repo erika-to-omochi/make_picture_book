@@ -25,41 +25,6 @@ export default function CreateBookPage() {
     content: { texts: [], images: [], backgroundColor: '#ffffff' },
   };
 
-  // トークンの有効期限をチェック
-  const checkTokenExpiration = (token) => {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Math.floor(Date.now() / 1000);
-      return payload.exp < currentTime;
-    } catch (error) {
-      console.error("Failed to parse token:", error);
-      return true; // トークンが無効な場合も期限切れとみなす
-    }
-  };
-
-  // リフレッシュトークンを使用してアクセストークンを更新
-  const refreshAccessToken = async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-      console.error("Refresh token is missing.");
-      alert("リフレッシュトークンがありません。再度ログインしてください。");
-      throw new Error("リフレッシュトークンがありません");
-    };
-
-    try {
-      const response = await axios.post('/auth/refresh', {
-        refresh_token: refreshToken,
-      });
-      const newAccessToken = response.data.access_token;
-      localStorage.setItem('access_token', newAccessToken); // 新しいアクセストークンを保存
-      return newAccessToken;
-    } catch (error) {
-      console.error("Failed to refresh token:", error.response || error);
-      alert("ログインセッションが切れています。再度ログインしてください。");
-      throw error;
-    }
-  };
-
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
   };
