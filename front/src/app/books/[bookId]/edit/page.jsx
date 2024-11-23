@@ -20,6 +20,7 @@ function EditBookPage() {
     pages,
     setPages,
     setBackgroundColor,
+    addPage,
   } = useCanvasStore();
 
   // ローカル状態
@@ -112,6 +113,7 @@ function EditBookPage() {
           onSelectText={(index) => {
             useCanvasStore.getState().setSelectedTextIndex(index);
           }}
+          addPage={addPage}
           showActionButtons={true}
         />
       )}

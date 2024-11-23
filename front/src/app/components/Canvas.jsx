@@ -19,7 +19,6 @@ function Canvas({ showActionButtons, backgroundColor }) {
     setSelectedImageIndex,
     setIsModalOpen,
     setModalType,
-    setModalData,
     updateModalDataField,
     resetSelection,
     pages,
@@ -435,8 +434,6 @@ function Canvas({ showActionButtons, backgroundColor }) {
           </div>
           <button
             onClick={() => {
-              console.log('handleAddPage:', handleAddPage);
-
               if (currentPageIndex < pages.length - 1) {
                 setCurrentPageIndex(currentPageIndex + 1);
               } else {

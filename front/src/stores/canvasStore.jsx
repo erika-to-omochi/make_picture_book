@@ -162,14 +162,24 @@ deleteImage: (index) =>
 
 
   // ページの追加
-  addPage: (newPage) => {
-  set((state) => ({
-    pages: [...state.pages, newPage],
-    currentPageIndex: state.pages.length, // 新しいページに移動
-  }));
-  console.log('Pages after addPage:', get().pages);
-},
-
+  addPage: () => {
+    set((state) => {
+      const newPage = {
+        content: {
+          texts: [], // テキスト初期化
+          images: [], // 画像初期化
+          backgroundColor: '#ffffff', // 背景色の初期値
+        },
+        book_id: state.bookData?.id || 1, // 必要に応じて book_id を設定
+        page_number: state.pages.length + 1, // ページ番号を設定
+      };
+      const updatedPages = [...state.pages, newPage];
+      return {
+        pages: updatedPages,
+        currentPageIndex: updatedPages.length - 1, // 新しいページに移動
+      };
+    });
+  },
 
 fetchBookData: async (bookId) => {
   if (get().bookData) return;
