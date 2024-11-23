@@ -22,7 +22,6 @@ function BookDetailPage() {
     fetchBookData,
     updateImage,
     deleteImage,
-    updateText,
     deleteText,
     pages,
     setPages,
@@ -147,7 +146,6 @@ function BookDetailPage() {
           images={pages[currentPageIndex].content.images}
           pageData={pages[currentPageIndex]}
           backgroundColor={pages[currentPageIndex]?.content?.backgroundColor || "#ffffff"} // ここで渡す
-          onUpdateText={updateText}
           onUpdateImage={updateImage}
           onDeleteImage={deleteImage}
           onDeleteText={deleteText}

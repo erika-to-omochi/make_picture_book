@@ -17,10 +17,8 @@ function EditBookPage() {
     bookData,
     setBookData,
     currentPageIndex,
-    setCurrentPageIndex,
     updateImage,
     deleteImage,
-    updateText,
     deleteText,
     pages,
     setPages,
@@ -103,35 +101,10 @@ function EditBookPage() {
     addText(newText); // ストアのaddTextアクションを呼び出す
   };
 
-  // テキストのプロパティを更新する処理
-  const handleUpdateText = (updatedText) => {
-    console.log("Updating text:", updatedText);
-    if (selectedTextIndex !== null) {
-      updateText(selectedTextIndex, updatedText); // ストアのupdateTextアクションを呼び出す
-    }
-  };
-
   // テキストの削除
   const handleDeleteText = (index) => {
     deleteText(index);
     setSelectedTextIndex(null);
-  };
-
-  const handleAddImage = (src) => {
-    console.log("handleAddImage called with:", src);
-
-    const img = new window.Image();
-    img.src = src;
-
-    img.onload = () => {
-      console.log("Image loaded successfully:", src);
-      addImage(src);
-      console.log("Image added to store");
-    };
-
-    img.onerror = () => {
-      console.error("Failed to load image:", src);
-    };
   };
 
   if (!bookData) return <p>Loading...</p>;
@@ -151,8 +124,6 @@ function EditBookPage() {
           images={pages[currentPageIndex].content.images}
           pageData={pages[currentPageIndex]}
           backgroundColor={pages[currentPageIndex]?.content?.backgroundColor || "#ffffff"}
-          onUpdateText={updateText}
-          onUpdateImage={updateImage}
           onDeleteImage={deleteImage}
           onDeleteText={deleteText}
           onSelectText={(index) => {
@@ -167,8 +138,6 @@ function EditBookPage() {
         activePanel={activePanel}
         togglePanel={togglePanel}
         handleAddText={handleAddText}
-        handleAddImage={handleAddImage}
-        handleUpdateText={handleUpdateText}
         handleDeleteText={handleDeleteText}
         setBackgroundColor={setBackgroundColor}
       />

@@ -16,7 +16,7 @@ export default function CreateBookPage() {
   const {
     pages,
     currentPageIndex,
-    updateText,
+    handleAddText,
     updateImage,
     selectedTextIndex,
     backgroundColor,
@@ -36,6 +36,7 @@ export default function CreateBookPage() {
         alert("ログイン状態が無効です。再度ログインしてください。");
         return;
       };
+
 
       if (checkTokenExpiration(token)) {
         console.log("Token has expired, refreshing...");
@@ -171,18 +172,6 @@ export default function CreateBookPage() {
     setActivePanel(activePanel === panelName ? null : panelName);
   };
 
-  // CreateBookPage コンポーネント内
-  const handleAddText = (newText) => {
-    useCanvasStore.getState().handleAddText(newText);
-  };
-
-  // テキストのプロパティを更新
-  const handleUpdateText = (updatedProperties) => {
-    if (selectedTextIndex !== null) {
-      updateText(selectedTextIndex, updatedProperties);
-    }
-  };
-
   // 画像のプロパティを更新
   const handleUpdateImage = (index, updatedProperties) => {
     updateImage(index, updatedProperties);
@@ -214,7 +203,6 @@ export default function CreateBookPage() {
         activePanel={activePanel}
         togglePanel={togglePanel}
         handleAddText={handleAddText}
-        handleUpdateText={handleUpdateText}
         setBackgroundColor={setBackgroundColor}
       />
     </div>

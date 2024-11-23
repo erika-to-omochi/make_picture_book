@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import useCanvasStore from '../../stores/canvasStore';
 
-function TextInputCanvas({ onAddText, onUpdateText }) {
+function TextInputCanvas({}) {
   const {
     selectedTextIndex,
     pages,
     currentPageIndex,
-    updateText,
-    addText,
+    handleAddText,
+    handleUpdateText,
   } = useCanvasStore();
 
   const [inputText, setInputText] = useState('');
@@ -32,14 +32,11 @@ function TextInputCanvas({ onAddText, onUpdateText }) {
   }, [selectedText]);
 
   const handleButtonClick = () => {
-    console.log("Button clicked");
     if (inputText.trim()) {
       if (selectedText) {
-        console.log("Updating selected text:", { text: inputText, fontSize, color });
-        onUpdateText({ text: inputText, fontSize, color });
+        handleUpdateText({ text: inputText, fontSize, color });
       } else {
-        console.log("Adding new text:", { text: inputText, fontSize, color });
-        onAddText({ text: inputText, fontSize, color });
+        handleAddText({ text: inputText, fontSize, color }); // ストアのhandleAddTextを使用
       }
       setInputText('');
       setFontSize(24);

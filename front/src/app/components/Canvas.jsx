@@ -28,9 +28,8 @@ function Canvas({ showActionButtons, backgroundColor }) {
     setCurrentPageIndex,
     deleteText,
     deleteImage,
-    addImage,
     updateImage,
-    updateText,
+    handleUpdateText,
     resetCanvas,
   } = useCanvasStore();
 
@@ -145,8 +144,8 @@ function Canvas({ showActionButtons, backgroundColor }) {
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
     const update = { x: e.target.x(), y: e.target.y() };
-    if (type === 'text') updateText(index, update);
-    else if (type === 'image') updateImage(index, update);
+    if (type === 'text') handleUpdateText(update);
+    else if (type === 'image') updateImage(update);
   };
 
   // 変形終了時の処理
@@ -163,7 +162,7 @@ function Canvas({ showActionButtons, backgroundColor }) {
       newProperties.fontSize = currentPage.content.texts[index].fontSize * newProperties.scaleY;
       node.scaleX(1);
       node.scaleY(1);
-      updateText(index, newProperties);
+      handleUpdateText(newProperties);
     } else if (type === 'image') {
       updateImage(index, newProperties);
     }

@@ -25,9 +25,8 @@ export default function CreateBookFooter({
       case "文字":
         return (
           <TextInputCanvas
-            onAddText={handleAddText}
-            onUpdateText={handleUpdateText}
-            selectedText={selectedText}
+            handleAddText={handleAddText}
+            handleUpdateText={handleUpdateText}
           />
         );
       case "自然":
