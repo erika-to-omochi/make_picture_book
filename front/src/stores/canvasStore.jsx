@@ -5,14 +5,6 @@ const useCanvasStore = create((set, get) => ({
   selectedTextIndex: null,
   selectedImageIndex: null,
   bookData: null,
-  isModalOpen: false,
-  modalType: null,
-  modalData: {
-    title: "",
-    author: "",
-    tags: "",
-    visibility: "public",
-  },
   pages: [
     {
       content: {
@@ -208,13 +200,6 @@ fetchBookData: async (bookId) => {
 },
 
 // モーダルはここ
-  setIsModalOpen: (isOpen) => set({ isModalOpen: isOpen }),
-  setModalType: (type) => set({ modalType: type }),
-  setModalData: (data) => set({ modalData: { ...data } }),
-  updateModalDataField: (field, value) =>
-    set((state) => ({
-      modalData: { ...state.modalData, [field]: value },
-    })),
   resetSelection: () =>
     set({ selectedTextIndex: null, selectedImageIndex: null }),
   setBookData: (data) => set({ bookData: data }),
@@ -242,14 +227,6 @@ fetchBookData: async (bookId) => {
     resetCanvas: () => set({
       selectedTextIndex: null,
       selectedImageIndex: null,
-      isModalOpen: false,
-      modalType: null,
-      modalData: {
-        title: "",
-        author: "",
-        tags: "",
-        visibility: "public",
-      },
       pages: [
         {
           content: {

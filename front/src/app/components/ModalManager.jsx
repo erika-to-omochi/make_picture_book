@@ -1,4 +1,3 @@
-// src/app/components/ModalManager.jsx
 'use client';
 
 import React, { useState } from 'react';
@@ -17,15 +16,41 @@ export default function ModalManager() {
     visibility: "public",
   });
 
-  const {
-    pages,
-    currentPageIndex,
-    resetCanvas,
-  } = useCanvasStore();
-
+  const { pages, resetCanvas, bookData } = useCanvasStore(); // bookDataを直接取得
   const router = useRouter();
 
-  // トークン管理の関数（必要に応じて）
+    // モーダル開閉ロジック
+    const openModal = (type) => {
+      setModalType(type);
+      // BookIdが存在する場合は初期値をセット
+      if (bookData?.id) {
+        setModalData({
+          title: bookData.title || "",
+          author: bookData.author_name || "",
+          tags: bookData.tags || "",
+          visibility: bookData.visibility === 0 ? "public" : "private",
+        });
+      } else {
+        // 初期値を空白にリセット
+        setModalData({
+          title: "",
+          author: "",
+          tags: "",
+          visibility: "public",
+        });
+      }
+      setIsModalOpen(true);
+    };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleModalChange = (field, value) => {
+    setModalData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // トークン管理関数
   const checkTokenExpiration = (token) => {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -33,113 +58,89 @@ export default function ModalManager() {
       return payload.exp < currentTime;
     } catch (error) {
       console.error("Failed to parse token:", error);
-      return true; // トークンが無効な場合も期限切れとみなす
+      return true; // トークンが無効とみなす
     }
   };
 
   const refreshAccessToken = async () => {
     const refreshToken = localStorage.getItem('refresh_token');
     if (!refreshToken) {
-      console.error("Refresh token is missing.");
       alert("リフレッシュトークンがありません。再度ログインしてください。");
       throw new Error("リフレッシュトークンがありません");
     }
 
     try {
-      const response = await axios.post('/auth/refresh', {
-        refresh_token: refreshToken,
-      });
+      const response = await axios.post('/auth/refresh', { refresh_token: refreshToken });
       const newAccessToken = response.data.access_token;
       localStorage.setItem('access_token', newAccessToken);
       return newAccessToken;
     } catch (error) {
-      console.error("Failed to refresh token:", error.response || error);
+      console.error("Failed to refresh token:", error);
       alert("ログインセッションが切れています。再度ログインしてください。");
       throw error;
     }
   };
 
-  // モーダルを開く関数
-  const openModal = (type) => {
-    setModalType(type);
-    setIsModalOpen(true);
-  };
-
-  // モーダルを閉じる関数
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  // モーダルデータの更新関数
-  const handleModalChange = (field, value) => {
-    setModalData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  // モーダル保存時の処理
+  // モーダル保存処理
   const handleModalSave = async () => {
     try {
       let token = localStorage.getItem('access_token');
       if (!token) {
-        console.error("Token is missing!");
         alert("ログイン状態が無効です。再度ログインしてください。");
         return;
       }
 
       if (checkTokenExpiration(token)) {
-        console.log("Token has expired, refreshing...");
         token = await refreshAccessToken();
       }
 
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      };
+      const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
+      // 書籍データのペイロード
       const bookDataPayload = {
         title: modalData.title,
         author_name: modalData.author,
-        description: modalData.description || '',
+        tags: modalData.tags,
         visibility: modalData.visibility === 'public' ? 0 : 1,
         is_draft: modalType === 'draft',
       };
 
-      // 新しい書籍を作成
-      const createBookResponse = await axios.post('/api/v1/books', bookDataPayload, { headers });
-      const newBookId = createBookResponse.data.book.id;
-      console.log(`New book created with id: ${newBookId}`);
+      let newBookId = bookData?.id || null;
+      let isUpdate = false;
 
-      // ページごとに保存
+      // 書籍の更新または新規作成
+      if (newBookId) {
+        // 更新
+        const updateBookResponse = await axios.put(`/api/v1/books/${newBookId}`, bookDataPayload, { headers });
+        console.log(`Book updated with id: ${updateBookResponse.data.book.id}`);
+        isUpdate = true;
+      } else {
+        // 新規作成
+        const createBookResponse = await axios.post('/api/v1/books', bookDataPayload, { headers });
+        newBookId = createBookResponse.data.book.id;
+        console.log(`New book created with id: ${newBookId}`);
+      }
+
+      // ページの更新または新規作成
       for (const page of pages) {
         const payload = {
           page: {
             book_id: newBookId,
             page_number: page.page_number,
             content: {
-              title: page.content.title,
-              author: page.content.author,
-              tags: page.content.tags,
-              backgroundColor: page.content.backgroundColor,
-              visibility: page.content.visibility,
-              texts: page.content.texts.map(text => ({
-                text: text.text,
-                font_size: text.fontSize,
-                color: text.color,
-                x: text.x,
-                y: text.y,
+              ...page.content,
+              texts: page.content.texts.map((text) => ({
+                ...text,
                 rotation: text.rotation || 0,
                 scaleX: text.scaleX || 1,
                 scaleY: text.scaleY || 1,
               })),
-              images: page.content.images.map(image => ({
-                src: image.src,
-                x: image.x,
-                y: image.y,
-                width: image.width,
-                height: image.height,
+              images: page.content.images.map((image) => ({
+                ...image,
               })),
             },
             page_elements_attributes: [
-              ...page.content.texts.map(text => ({
+              ...page.content.texts.map((text) => ({
                 element_type: 'text',
                 content: {
                   text: text.text,
@@ -149,7 +150,7 @@ export default function ModalManager() {
                   position_y: text.y,
                 },
               })),
-              ...page.content.images.map(image => ({
+              ...page.content.images.map((image) => ({
                 element_type: 'image',
                 content: {
                   src: image.src,
@@ -160,41 +161,42 @@ export default function ModalManager() {
                 },
               })),
             ],
-          }
+          },
         };
-        await axios.post(`/api/v1/books/${newBookId}/pages`, payload, { headers });
+
+        if (page.id) {
+          // ページ更新
+          await axios.put(`/api/v1/books/${newBookId}/pages/${page.id}`, payload, { headers });
+        } else {
+          // 新規作成
+          await axios.post(`/api/v1/books/${newBookId}/pages`, payload, { headers });
+        }
       }
 
-      alert('保存が完了しました');
+      // 保存完了メッセージの表示
+      if (isUpdate) {
+        alert('更新が完了しました');
+      } else {
+        alert('保存が完了しました');
+      }
 
-      // キャンバスをリセット
       resetCanvas();
-
       closeModal();
-
       router.push('/index-books');
     } catch (error) {
-      console.error('Failed to save book:', error.response || error);
-      if (error.response?.data?.errors) {
-        const errorMessage = error.response.data.errors.join(", ");
-        alert(`保存エラー: ${errorMessage}`);
-      } else {
-        alert('保存中にエラーが発生しました');
-      }
+      console.error("保存中にエラーが発生しました:", error);
+      alert("保存中にエラーが発生しました");
     }
   };
 
   return (
     <>
-      {/* 完成ボタン */}
       <button
         onClick={() => openModal("complete")}
         className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
       >
         完成
       </button>
-
-      {/* 下書き保存ボタン */}
       <button
         onClick={() => openModal("draft")}
         className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
@@ -202,7 +204,6 @@ export default function ModalManager() {
         下書き保存
       </button>
 
-      {/* モーダル本体 */}
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
