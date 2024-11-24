@@ -4,7 +4,7 @@ class Book < ApplicationRecord
   has_many :book_tags, dependent: :destroy
   has_many :tags, through: :book_tags
 
-  accepts_nested_attributes_for :pages
+  accepts_nested_attributes_for :pages, allow_destroy: true
 
   validates :title, presence: true
   validates :author_name, presence: true

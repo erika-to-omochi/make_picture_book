@@ -161,7 +161,7 @@ deleteImage: (index) =>
     setSelectedTextIndex: (index) => set({ selectedTextIndex: index }),
 
 
-  // ページの追加
+  // ページはここ
   addPage: () => {
     set((state) => {
       const newPage = {
@@ -207,6 +207,7 @@ fetchBookData: async (bookId) => {
   }
 },
 
+// モーダルはここ
   setIsModalOpen: (isOpen) => set({ isModalOpen: isOpen }),
   setModalType: (type) => set({ modalType: type }),
   setModalData: (data) => set({ modalData: { ...data } }),

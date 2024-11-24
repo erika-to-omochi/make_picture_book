@@ -7,5 +7,5 @@ class Page < ApplicationRecord
   validates :content, presence: { message: "コンテンツは必須です" }
   validates :page_number, uniqueness: { scope: :book_id, message: "同じ本に同じページ番号が存在します" }
 
-  accepts_nested_attributes_for :page_characters, :page_elements
+  accepts_nested_attributes_for :page_characters, :page_elements, allow_destroy: true
 end
