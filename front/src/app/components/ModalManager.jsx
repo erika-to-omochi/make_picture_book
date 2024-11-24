@@ -84,18 +84,6 @@ export default function ModalManager() {
   // モーダル保存処理
   const handleModalSave = async () => {
     try {
-      let token = localStorage.getItem('access_token');
-      if (!token) {
-        alert("ログイン状態が無効です。再度ログインしてください。");
-        return;
-      }
-
-      if (checkTokenExpiration(token)) {
-        token = await refreshAccessToken();
-      }
-
-      const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-
       // 書籍データのペイロード
       const bookDataPayload = {
         title: modalData.title,
@@ -111,12 +99,12 @@ export default function ModalManager() {
       // 書籍の更新または新規作成
       if (newBookId) {
         // 更新
-        const updateBookResponse = await axios.put(`/api/v1/books/${newBookId}`, bookDataPayload, { headers });
+        const updateBookResponse = await axios.put(`/api/v1/books/${newBookId}`, bookDataPayload);
         console.log(`Book updated with id: ${updateBookResponse.data.book.id}`);
         isUpdate = true;
       } else {
         // 新規作成
-        const createBookResponse = await axios.post('/api/v1/books', bookDataPayload, { headers });
+        const createBookResponse = await axios.post('/api/v1/books', bookDataPayload);
         newBookId = createBookResponse.data.book.id;
         console.log(`New book created with id: ${newBookId}`);
       }
@@ -166,10 +154,10 @@ export default function ModalManager() {
 
         if (page.id) {
           // ページ更新
-          await axios.put(`/api/v1/books/${newBookId}/pages/${page.id}`, payload, { headers });
+          await axios.put(`/api/v1/books/${newBookId}/pages/${page.id}`, payload);
         } else {
           // 新規作成
-          await axios.post(`/api/v1/books/${newBookId}/pages`, payload, { headers });
+          await axios.post(`/api/v1/books/${newBookId}/pages`, payload);
         }
       }
 

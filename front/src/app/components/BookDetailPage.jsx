@@ -86,9 +86,6 @@ function BookDetailPage() {
     const checkAuthorStatus = async () => {
       try {
         const response = await axios.get(`/api/v1/books/${bookId}/author_status`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`, // ローカルストレージからトークンを取得
-          },
         });
         setIsAuthor(response.data.is_author); // 作者かどうかを状態に設定
       } catch (error) {
@@ -126,17 +123,7 @@ function BookDetailPage() {
     const confirmDelete = window.confirm("この絵本を削除しますか？");
     if (!confirmDelete) return;
     try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert("ログイン状態が無効です。再度ログインしてください。");
-        return;
-      }
-      // APIリクエストの送信
-      await axios.delete(`/api/v1/books/${bookId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.delete(`/api/v1/books/${bookId}`);
       alert("絵本を削除しました。");
       router.push("/index-books"); // 削除後にリスト画面にリダイレクト
     } catch (error) {
