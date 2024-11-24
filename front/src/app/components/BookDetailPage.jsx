@@ -122,8 +122,27 @@ function BookDetailPage() {
     router.push(`/books/${bookId}/edit`);
   };
 
-  const handleDelete = () => {
-    console.log('削除ボタンがクリックされました');
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("この絵本を削除しますか？");
+    if (!confirmDelete) return;
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("ログイン状態が無効です。再度ログインしてください。");
+        return;
+      }
+      // APIリクエストの送信
+      await axios.delete(`/api/v1/books/${bookId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      alert("絵本を削除しました。");
+      router.push("/index-books"); // 削除後にリスト画面にリダイレクト
+    } catch (error) {
+      console.error("絵本の削除に失敗しました:", error);
+      alert("絵本の削除中にエラーが発生しました。");
+    }
   };
 
   if (!bookData) return <p>Loading...</p>;
