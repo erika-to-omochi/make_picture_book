@@ -12,22 +12,15 @@ const Canvas = dynamic(() => import("../../../components/Canvas"), { ssr: false 
 function EditBookPage() {
   const { bookId } = useParams();
 
-  // Zustandストアから状態とアクションを取得
   const {
     bookData,
     setBookData,
     currentPageIndex,
-    setCurrentPageIndex,
-    updateImage,
     deleteImage,
-    updateText,
-    deleteText,
     pages,
     setPages,
-    addText,
-    addImage,
     setBackgroundColor,
-    selectedTextIndex,
+    addPage,
   } = useCanvasStore();
 
   // ローカル状態
@@ -99,41 +92,6 @@ function EditBookPage() {
     setActivePanel((prev) => (prev === panelName ? null : panelName));
   };
 
-  const handleAddText = (newText) => {
-    addText(newText); // ストアのaddTextアクションを呼び出す
-  };
-
-  // テキストのプロパティを更新する処理
-  const handleUpdateText = (updatedText) => {
-    console.log("Updating text:", updatedText);
-    if (selectedTextIndex !== null) {
-      updateText(selectedTextIndex, updatedText); // ストアのupdateTextアクションを呼び出す
-    }
-  };
-
-  // テキストの削除
-  const handleDeleteText = (index) => {
-    deleteText(index);
-    setSelectedTextIndex(null);
-  };
-
-  const handleAddImage = (src) => {
-    console.log("handleAddImage called with:", src);
-
-    const img = new window.Image();
-    img.src = src;
-
-    img.onload = () => {
-      console.log("Image loaded successfully:", src);
-      addImage(src);
-      console.log("Image added to store");
-    };
-
-    img.onerror = () => {
-      console.error("Failed to load image:", src);
-    };
-  };
-
   if (!bookData) return <p>Loading...</p>;
 
   return (
@@ -151,13 +109,11 @@ function EditBookPage() {
           images={pages[currentPageIndex].content.images}
           pageData={pages[currentPageIndex]}
           backgroundColor={pages[currentPageIndex]?.content?.backgroundColor || "#ffffff"}
-          onUpdateText={updateText}
-          onUpdateImage={updateImage}
           onDeleteImage={deleteImage}
-          onDeleteText={deleteText}
           onSelectText={(index) => {
             useCanvasStore.getState().setSelectedTextIndex(index);
           }}
+          addPage={addPage}
           showActionButtons={true}
         />
       )}
@@ -166,10 +122,6 @@ function EditBookPage() {
       <CreateBookFooter
         activePanel={activePanel}
         togglePanel={togglePanel}
-        handleAddText={handleAddText}
-        handleAddImage={handleAddImage}
-        handleUpdateText={handleUpdateText}
-        handleDeleteText={handleDeleteText}
         setBackgroundColor={setBackgroundColor}
       />
     </div>

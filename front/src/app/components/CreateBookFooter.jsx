@@ -12,23 +12,21 @@ export default function CreateBookFooter({
   activePanel,
   togglePanel,
   handleAddText,
-  handleSelectText,
   handleUpdateText,
-  handleDeleteText,
-  texts,
   selectedText,
-  handleAddImage,
   setBackgroundColor,
 }) {
+
+  const handleAddImage = useCanvasStore((state) => state.handleAddImage);
+
   // パネルごとのコンテンツを関数として定義
   const renderPanelContent = () => {
     switch (activePanel) {
       case "文字":
         return (
           <TextInputCanvas
-            onAddText={handleAddText}
-            onUpdateText={handleUpdateText}
-            selectedText={selectedText}
+            handleAddText={handleAddText}
+            handleUpdateText={handleUpdateText}
           />
         );
       case "自然":
@@ -57,8 +55,6 @@ export default function CreateBookFooter({
   };
 
   const handleImageSelect = (src) => {
-    console.log("handleImageSelect called with:", src);
-    // CreateBookPageから渡されたhandleAddImageを使用
     handleAddImage(src);
   };
 

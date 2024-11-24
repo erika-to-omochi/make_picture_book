@@ -5,14 +5,6 @@ const useCanvasStore = create((set, get) => ({
   selectedTextIndex: null,
   selectedImageIndex: null,
   bookData: null,
-  isModalOpen: false,
-  modalType: null,
-  modalData: {
-    title: "",
-    author: "",
-    tags: "",
-    visibility: "public",
-  },
   pages: [
     {
       content: {
@@ -26,34 +18,14 @@ const useCanvasStore = create((set, get) => ({
   ], // 初期ページを追加
   currentPageIndex: 0,
 
-  setBackgroundColor: (color) => set((state) => {
-    console.log("setBackgroundColor called with color:", color);
-    const currentPage = state.pages[state.currentPageIndex];
-    if (!currentPage) {
-      console.error("No current page to set background color");
-      return {};
-    }
-    const updatedPages = [...state.pages];
-    updatedPages[state.currentPageIndex] = {
-      ...currentPage,
-      content: {
-        ...currentPage.content,
-        backgroundColor: color,
-      },
-    };
-    console.log("Updated Pages:", updatedPages);
-    return { pages: updatedPages };
-  }),
-
   // アクション
-  addImage: (imageSrc) => {
+
+  //画像はここ
+  handleAddImage: (imageSrc) => {
     const img = new window.Image();
     img.src = imageSrc;
     img.onload = () => {
-      console.log("Image loaded successfully:", imageSrc);
       set((state) => {
-        console.log("set is called");
-        console.log("State before adding image:", state);
         const currentPage = state.pages[state.currentPageIndex];
         if (!currentPage) {
           console.error("No current page to add image");
@@ -83,34 +55,123 @@ const useCanvasStore = create((set, get) => ({
     };
   },
 
-    // 新しいテキストを追加するアクション
-    addText: (newText) => {
+  updateImage: (index, newProperties) =>
+  set((state) => {
+    const currentPage = state.pages[state.currentPageIndex];
+    const updatedImages = currentPage.content.images.map((img, i) =>
+      i === index ? { ...img, ...newProperties } : img
+    );
+    const updatedPages = [...state.pages];
+    updatedPages[state.currentPageIndex] = {
+      ...currentPage,
+      content: {
+        ...currentPage.content,
+        images: updatedImages,
+      },
+    };
+    return { pages: updatedPages };
+  }),
+
+deleteImage: (index) =>
+  set((state) => {
+    const currentPage = state.pages[state.currentPageIndex];
+    const updatedImages = currentPage.content.images.filter((_, i) => i !== index);
+    const updatedPages = [...state.pages];
+    updatedPages[state.currentPageIndex] = {
+      ...currentPage,
+      content: {
+        ...currentPage.content,
+        images: updatedImages,
+      },
+    };
+    return { pages: updatedPages };
+  }),
+
+  setSelectedImageIndex: (index) => set({ selectedImageIndex: index }),
+
+    // テキストはここ
+    handleAddText: (newText) => {
       set((state) => {
         const currentPage = state.pages[state.currentPageIndex];
         if (!currentPage) {
           console.error("No current page to add text");
           return {};
         }
+        const textWithPosition = {
+          ...newText,
+          x: 100,
+          y: 100,
+        };
         const updatedPages = [...state.pages];
         updatedPages[state.currentPageIndex] = {
           ...currentPage,
           content: {
             ...currentPage.content,
-            texts: [...currentPage.content.texts, newText],
+            texts: [...currentPage.content.texts, textWithPosition],
           },
         };
         return { pages: updatedPages };
       });
     },
 
-  // ページの追加
-  addPage: (newPage) => {
-  set((state) => ({
-    pages: [...state.pages, newPage],
-    currentPageIndex: state.pages.length, // 新しいページに移動
-  }));
-},
+    handleUpdateText: (updatedText) =>
+    set((state) => {
+      const index = state.selectedTextIndex;
+      if (index !== null && index !== undefined) {
+        const currentPage = state.pages[state.currentPageIndex];
+        const updatedTexts = currentPage.content.texts.map((text, i) =>
+          i === index ? { ...text, ...updatedText } : text
+        );
+        const updatedPages = [...state.pages];
+        updatedPages[state.currentPageIndex] = {
+          ...currentPage,
+          content: {
+            ...currentPage.content,
+            texts: updatedTexts,
+          },
+        };
+        return { pages: updatedPages };
+      }
+      return {};
+    }),
 
+    deleteText: (index) =>
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
+      const updatedTexts = currentPage.content.texts.filter((_, i) => i !== index);
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        content: {
+          ...currentPage.content,
+          texts: updatedTexts,
+        },
+      };
+      return { pages: updatedPages };
+    }),
+
+    setSelectedTextIndex: (index) => set({ selectedTextIndex: index }),
+
+
+  // ページはここ
+  addPage: () => {
+    set((state) => {
+      const newPage = {
+        content: {
+          texts: [], // テキスト初期化
+          images: [], // 画像初期化
+          backgroundColor: '#ffffff', // 背景色の初期値
+        },
+        book_id: state.bookData?.id || 1, // 必要に応じて book_id を設定
+        page_number: state.pages.length + 1, // ページ番号を設定
+      };
+      const updatedPages = [...state.pages, newPage];
+      return {
+        pages: updatedPages,
+        currentPageIndex: updatedPages.length - 1, // 新しいページに移動
+      };
+    });
+  },
 
 fetchBookData: async (bookId) => {
   if (get().bookData) return;
@@ -138,85 +199,47 @@ fetchBookData: async (bookId) => {
   }
 },
 
-  setSelectedTextIndex: (index) => set({ selectedTextIndex: index }),
-  setSelectedImageIndex: (index) => set({ selectedImageIndex: index }),
-  // setLoadedImages: (images) => set({ loadedImages: images }), // 削除
-  setIsModalOpen: (isOpen) => set({ isModalOpen: isOpen }),
-  setModalType: (type) => set({ modalType: type }),
-  setModalData: (data) => set({ modalData: { ...data } }),
-  updateModalDataField: (field, value) =>
-    set((state) => ({
-      modalData: { ...state.modalData, [field]: value },
-    })),
+// モーダルはここ
   resetSelection: () =>
     set({ selectedTextIndex: null, selectedImageIndex: null }),
   setBookData: (data) => set({ bookData: data }),
   setCurrentPageIndex: (index) => set({ currentPageIndex: index }),
 
-  updateText: (index, newProperties) =>
-  set((state) => {
+  setBackgroundColor: (color) => set((state) => {
+    console.log("setBackgroundColor called with color:", color);
     const currentPage = state.pages[state.currentPageIndex];
-    const updatedTexts = currentPage.content.texts.map((text, i) =>
-      i === index ? { ...text, ...newProperties } : text
-    );
+    if (!currentPage) {
+      console.error("No current page to set background color");
+      return {};
+    }
     const updatedPages = [...state.pages];
     updatedPages[state.currentPageIndex] = {
       ...currentPage,
       content: {
         ...currentPage.content,
-        texts: updatedTexts,
+        backgroundColor: color,
       },
     };
+    console.log("Updated Pages:", updatedPages);
     return { pages: updatedPages };
   }),
 
-  updateImage: (index, newProperties) =>
-    set((state) => {
-      const currentPage = state.pages[state.currentPageIndex];
-      const updatedImages = currentPage.content.images.map((img, i) =>
-        i === index ? { ...img, ...newProperties } : img
-      );
-      const updatedPages = [...state.pages];
-      updatedPages[state.currentPageIndex] = {
-        ...currentPage,
-        content: {
-          ...currentPage.content,
-          images: updatedImages,
+    resetCanvas: () => set({
+      selectedTextIndex: null,
+      selectedImageIndex: null,
+      pages: [
+        {
+          content: {
+            images: [],
+            texts: [],
+            backgroundColor: '#ffffff',
+          },
+          book_id: 1,
+          page_number: 1,
         },
-      };
-      return { pages: updatedPages };
+      ],
+      currentPageIndex: 0,
     }),
-
-  deleteText: (index) =>
-    set((state) => {
-      const currentPage = state.pages[state.currentPageIndex];
-      const updatedTexts = currentPage.content.texts.filter((_, i) => i !== index);
-      const updatedPages = [...state.pages];
-      updatedPages[state.currentPageIndex] = {
-        ...currentPage,
-        content: {
-          ...currentPage.content,
-          texts: updatedTexts,
-        },
-      };
-      return { pages: updatedPages };
-    }),
-
-  deleteImage: (index) =>
-    set((state) => {
-      const currentPage = state.pages[state.currentPageIndex];
-      const updatedImages = currentPage.content.images.filter((_, i) => i !== index);
-      const updatedPages = [...state.pages];
-      updatedPages[state.currentPageIndex] = {
-        ...currentPage,
-        content: {
-          ...currentPage.content,
-          images: updatedImages,
-        },
-      };
-      return { pages: updatedPages };
-    }),
-
 
   setPages: (pages) => set({ pages }), // ページ状態を設定するアクションを追加
 }));

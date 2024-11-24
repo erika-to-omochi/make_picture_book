@@ -2,24 +2,17 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
-import Modal from './Modal';
 import useCanvasStore from '../../stores/canvasStore';
 import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
-import axios from '../../api/axios';
+import { useRouter } from 'next/navigation';
+import ModalManager from './ModalManager';
 
-function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
+function Canvas({ showActionButtons }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
-    isModalOpen,
-    modalType,
-    modalData,
     setSelectedTextIndex,
     setSelectedImageIndex,
-    setIsModalOpen,
-    setModalType,
-    setModalData,
-    updateModalDataField,
     resetSelection,
     pages,
     currentPageIndex,
@@ -27,9 +20,8 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
     setCurrentPageIndex,
     deleteText,
     deleteImage,
-    addImage,
     updateImage,
-    updateText,
+    handleUpdateText,
   } = useCanvasStore();
 
   const transformerRef = useRef(null);
@@ -43,21 +35,26 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
   // ローカルステートとして loadedImages を管理
   const [loadedImages, setLoadedImages] = useState([]);
 
-  // ページの初期化と安全な取得
-  const currentPageIndexIsValid =
-    currentPageIndex >= 0 && currentPageIndex < pages.length;
+  const router = useRouter();
 
-  const currentPage = currentPageIndexIsValid
-    ? pages[currentPageIndex]
-    : {
-        content: {
-          texts: [],
-          images: [],
-          backgroundColor: '#ffffff',
-        },
-        book_id: 1,
-        page_number: pages.length + 1,
-      };
+  // ページの初期化と安全な取得
+  const currentPage = pages[currentPageIndex] || {
+    content: {
+      texts: [],
+      images: [],
+      backgroundColor: '#ffffff',
+    },
+    book_id: 1,
+    page_number: pages.length + 1,
+  };
+
+  if (!currentPage.content) {
+    currentPage.content = {
+      texts: [],
+      images: [],
+      backgroundColor: '#ffffff',
+    };
+  }
 
   // content が存在することを保証
   if (!currentPage.content) {
@@ -68,12 +65,6 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
       backgroundColor: '#ffffff',
     };
   }
-
-  // デバック用
-  useEffect(() => {
-    console.log("Current background color:", currentPage.content.backgroundColor); // デバッグ用
-  }, [currentPage.content.backgroundColor]);
-
 
   // 画像の読み込み
   useEffect(() => {
@@ -144,8 +135,8 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
     const update = { x: e.target.x(), y: e.target.y() };
-    if (type === 'text') updateText(index, update);
-    else if (type === 'image') updateImage(index, update);
+    if (type === 'text') handleUpdateText(update);
+    else if (type === 'image') updateImage(update);
   };
 
   // 変形終了時の処理
@@ -162,7 +153,7 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
       newProperties.fontSize = currentPage.content.texts[index].fontSize * newProperties.scaleY;
       node.scaleX(1);
       node.scaleY(1);
-      updateText(index, newProperties);
+      handleUpdateText(newProperties);
     } else if (type === 'image') {
       updateImage(index, newProperties);
     }
@@ -182,164 +173,9 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
     }
   };
 
-  // モーダルの開閉
-  const openModal = (type) => {
-    setModalType(type);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  // トークンの有効期限をチェック
-  const checkTokenExpiration = (token) => {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Math.floor(Date.now() / 1000);
-      return payload.exp < currentTime;
-    } catch (error) {
-      console.error("Failed to parse token:", error);
-      return true; // トークンが無効な場合も期限切れとみなす
-    }
-  };
-
-  // リフレッシュトークンを使用してアクセストークンを更新
-  const refreshAccessToken = async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-      console.error("Refresh token is missing.");
-      alert("リフレッシュトークンがありません。再度ログインしてください。");
-      throw new Error("リフレッシュトークンがありません");
-    };
-
-    try {
-      const response = await axios.post('/auth/refresh', {
-        refresh_token: refreshToken, // サーバーで期待されるキー名で送信
-      });
-      const newAccessToken = response.data.access_token;
-      localStorage.setItem('access_token', newAccessToken); // 新しいアクセストークンを保存
-      return newAccessToken;
-    } catch (error) {
-      console.error("Failed to refresh token:", error.response || error);
-      alert("ログインセッションが切れています。再度ログインしてください。");
-      throw error;
-    }
-  };
-
-  // モーダル保存時の処理
-  const handleModalSave = async () => {
-    try {
-      let token = localStorage.getItem('access_token');
-      const refreshToken = localStorage.getItem('refresh_token');
-      if (!token) {
-        console.error("Token is missing!");
-        alert("ログイン状態が無効です。再度ログインしてください。");
-        return;
-      };
-
-      if (checkTokenExpiration(token)) {
-        console.log("Token has expired, refreshing...");
-        token = await refreshAccessToken();
-      };
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      };
-
-       // 新しい書籍を作成
-      const newBookData = {
-        title: modalData.title,
-        author_name: modalData.author,
-        description: modalData.description || '', // 必要に応じて追加
-        visibility: modalData.visibility === 'public' ? 0 : 1, // enumの値に合わせて
-        is_draft: modalType === 'draft',
-      };
-
-      const createBookResponse = await axios.post('/api/v1/books', newBookData, { headers });
-      const newBookId = createBookResponse.data.book.id;
-      console.log(`New book created with id: ${newBookId}`);
-
-      // ページごとに保存
-      for (const page of pages) {
-        const payload = {
-          page: {
-            book_id: newBookId,
-            page_number: page.page_number,
-            content: {
-              title: page.content.title,
-              author: page.content.author,
-              tags: page.content.tags,
-              backgroundColor: page.content.backgroundColor,
-              visibility: page.content.visibility,
-              texts: page.content.texts.map(text => ({
-                text: text.text,
-                font_size: text.fontSize,
-                color: text.color,
-                x: text.x,
-                y: text.y,
-                rotation: text.rotation || 0,
-                scaleX: text.scaleX || 1,
-                scaleY: text.scaleY || 1,
-              })),
-              images: page.content.images.map(image => ({
-                src: image.src,
-                x: image.x,
-                y: image.y,
-                width: image.width,
-                height: image.height,
-              })),
-            },
-            page_elements_attributes: [
-              ...page.content.texts.map(text => ({
-                element_type: 'text',
-                content: {
-                  text: text.text,
-                  font_size: text.fontSize,
-                  font_color: text.color,
-                  position_x: text.x,
-                  position_y: text.y,
-                },
-              })),
-              ...page.content.images.map(image => ({
-                element_type: 'image',
-                content: {
-                  src: image.src,
-                  width: image.width,
-                  height: image.height,
-                  position_x: image.x,
-                  position_y: image.y,
-                },
-              })),
-            ],
-          }
-        };
-        await axios.post(`/api/v1/books/${newBookId}/pages`, payload, { headers });
-      }
-      alert('保存が完了しました');
-      closeModal();
-    } catch (error) {
-      console.error('Failed to save book:', error.response || error);
-      if (error.response?.data?.errors) {
-        const errorMessage = error.response.data.errors.join(", ");
-        alert(`保存エラー: ${errorMessage}`);
-      } else {
-        alert('保存中にエラーが発生しました');
-      }
-    }
-  };
-
-  // モーダルデータの更新関数
-  const handleModalChange = (field, value) => {
-    updateModalDataField(field, value);
-  };
-
   // ロードされた画像のログ出力
   useEffect(() => {
-    console.log("Loaded images updated:", loadedImages);
     loadedImages.forEach((img, index) => {
-      console.log(`Image ${index}:`, img.image);
     });
   }, [loadedImages]);
 
@@ -359,7 +195,7 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
             y={0}
             width={stageWidth}
             height={stageHeight}
-            fill={backgroundColor|| "#ffffff"}
+            fill={currentPage.content.backgroundColor|| "#ffffff"}
             onMouseDown={handleStageMouseDown}
             name="background"
           />
@@ -434,7 +270,7 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
               if (currentPageIndex < pages.length - 1) {
                 setCurrentPageIndex(currentPageIndex + 1);
               } else {
-                handleAddPage();
+                addPage();
               }
             }}
             className="p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-blue-500 hover:bg-blue-100 hover:shadow-md"
@@ -444,36 +280,10 @@ function Canvas({ handleAddPage, showActionButtons, backgroundColor }) {
         </div>
         {showActionButtons && (
           <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-            {/* 完成と下書きボタン */}
-            <button
-              onClick={() => openModal("complete")}
-              className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
-            >
-              完成
-            </button>
-            <button
-              onClick={() => openModal("draft")}
-              className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
-            >
-              下書き保存
-            </button>
-          </div>
+            <ModalManager />
+        </div>
         )}
       </div>
-      <Modal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onSave={handleModalSave}
-        modalType={modalType}
-        title={modalData.title}
-        setTitle={(value) => handleModalChange("title", value)}
-        author={modalData.author}
-        setAuthor={(value) => handleModalChange("author", value)}
-        tags={modalData.tags}
-        setTags={(value) => handleModalChange("tags", value)}
-        visibility={modalData.visibility}
-        setVisibility={(value) => handleModalChange("visibility", value)}
-      />
     </div>
   );
 }

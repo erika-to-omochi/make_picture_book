@@ -53,6 +53,17 @@ class Api::V1::BooksController < ApplicationController
     render json: { error: "Invalid JSON format in page content" }, status: :bad_request
   end
 
+  def update
+    book = current_user.books.find(params[:id])
+    if book.update(book_params)
+      render json: { message: 'Book updated successfully', book: book }, status: :ok
+    else
+      render json: { errors: book.errors.full_messages }, status: :unprocessable_entity
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Book not found or not authorized" }, status: :not_found
+  end
+
   private
 
   def book_params
@@ -64,35 +75,24 @@ class Api::V1::BooksController < ApplicationController
       :is_draft,
       tag_ids: [],
       pages_attributes: [
+        :id,
         :page_number,
-        content: [
-          :title,
-          :author,
-          :tags,
-          :backgroundColor,
-          :visibility,
-          texts: [
+        :background_color,
+        page_elements_attributes: [
+          :id,
+          :element_type,
+          content: [
             :text,
-            :fontSize,
-            :color,
-            :x,
-            :y,
-            :rotation,
-            :scaleX,
-            :scaleY
-          ],
-          images: [
+            :font_size,
+            :font_color,
+            :position_x,
+            :position_y,
             :src,
-            :x,
-            :y,
             :width,
-            :height,
-            :rotation,
-            :scaleX,
-            :scaleY
+            :height
           ]
         ]
       ]
     )
-  end
+  end 
 end
