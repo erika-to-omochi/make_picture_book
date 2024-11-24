@@ -69,6 +69,11 @@ export default function ModalManager() {
       throw new Error("リフレッシュトークンがありません");
     }
 
+    // トークンの有効期限を確認し、必要であれば更新
+    if (checkTokenExpiration(token)) {
+      token = await refreshAccessToken();
+    }
+
     try {
       const response = await axios.post('/auth/refresh', { refresh_token: refreshToken });
       const newAccessToken = response.data.access_token;
@@ -111,44 +116,35 @@ export default function ModalManager() {
 
       // ページの更新または新規作成
       for (const page of pages) {
+        const transformedTexts = page.content.texts.map((text) => ({
+          text: text.text,
+          font_size: text.fontSize,
+          font_color: text.color,
+          position_x: text.x,
+          position_y: text.y,
+          rotation: text.rotation || 0,
+          scale_x: text.scaleX || 1,
+          scale_y: text.scaleY || 1,
+        }));
+
+        const transformedImages = page.content.images.map((image) => ({
+          src: image.src,
+          position_x: image.x,
+          position_y: image.y,
+          rotation: image.rotation || 0,
+          scale_x: image.scaleX || 1,
+          scale_y: image.scaleY || 1,
+        }));
+
         const payload = {
           page: {
             book_id: newBookId,
             page_number: page.page_number,
             content: {
-              ...page.content,
-              texts: page.content.texts.map((text) => ({
-                ...text,
-                rotation: text.rotation || 0,
-                scaleX: text.scaleX || 1,
-                scaleY: text.scaleY || 1,
-              })),
-              images: page.content.images.map((image) => ({
-                ...image,
-              })),
+              background_color: page.content.backgroundColor || '#ffffff',
+              texts: transformedTexts,
+              images: transformedImages,
             },
-            page_elements_attributes: [
-              ...page.content.texts.map((text) => ({
-                element_type: 'text',
-                content: {
-                  text: text.text,
-                  font_size: text.fontSize,
-                  font_color: text.color,
-                  position_x: text.x,
-                  position_y: text.y,
-                },
-              })),
-              ...page.content.images.map((image) => ({
-                element_type: 'image',
-                content: {
-                  src: image.src,
-                  width: image.width,
-                  height: image.height,
-                  position_x: image.x,
-                  position_y: image.y,
-                },
-              })),
-            ],
           },
         };
 

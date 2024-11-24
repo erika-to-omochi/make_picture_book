@@ -30,39 +30,10 @@ class Api::V1::PagesController < ApplicationController
     params.require(:page).permit(
       :book_id,
       :page_number,
-      :background_color,
       content: [
-        :backgroundColor,
-        texts: [
-          :text,
-          :font_size,
-          :color,
-          :x,
-          :y,
-          :rotation,
-          :scaleX,
-          :scaleY
-        ],
-        images: [
-          :src,
-          :x,
-          :y,
-          :width,
-          :height
-        ]
-      ],
-      page_elements_attributes: [
-        :element_type,
-        content: [
-          :text,
-          :font_size,
-          :font_color,
-          :position_x,
-          :position_y,
-          :src,
-          :width,
-          :height
-        ]
+        :background_color,
+        texts: [:text, :font_size, :font_color, :position_x, :position_y, :rotation, :scale_x, :scale_y],
+        images: [:src, :position_x, :position_y, :rotation, :scale_x, :scale_y]
       ]
     )
   end

@@ -85,8 +85,7 @@ function BookDetailPage() {
   useEffect(() => {
     const checkAuthorStatus = async () => {
       try {
-        const response = await axios.get(`/api/v1/books/${bookId}/author_status`, {
-        });
+        const response = await axios.get(`/api/v1/books/${bookId}/author_status`);
         setIsAuthor(response.data.is_author); // 作者かどうかを状態に設定
       } catch (error) {
         console.error("Error checking author status:", error);
@@ -99,7 +98,6 @@ function BookDetailPage() {
     if (pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length) {
       const currentPage = pages[currentPageIndex];
       if (currentPage?.content?.images) {
-      } else {
         console.error("currentPage does not have images");
       }
     } else {
