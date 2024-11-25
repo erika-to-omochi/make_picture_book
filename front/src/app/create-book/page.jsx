@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 import CreateBookFooter from '../components/CreateBookFooter';
 import useCanvasStore from '../../stores/canvasStore';
-import axios from '../../api/axios';
 
 const Canvas = dynamic(() => import('../components/Canvas'), {
   ssr: false,
@@ -17,12 +16,13 @@ export default function CreateBookPage() {
     pages,
     currentPageIndex,
     handleAddText,
-    backgroundColor,
     setBackgroundColor,
   } = useCanvasStore();
 
   const currentPage = pages[currentPageIndex] || {
-    content: { texts: [], images: [], backgroundColor: '#ffffff' },
+    pageElements: [],
+    pageCharacters: [],
+    backgroundColor: '#ffffff',
   };
 
   const togglePanel = (panelName) => {
@@ -45,7 +45,7 @@ export default function CreateBookPage() {
   return (
     <div>
       <Canvas
-        backgroundColor={backgroundColor}
+        backgroundColor={currentPage.backgroundColor}
         onComplete={onComplete}
         onSaveDraft={onSaveDraft}
         showActionButtons={true}
