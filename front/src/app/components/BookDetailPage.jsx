@@ -46,20 +46,6 @@ function BookDetailPage() {
     checkAuthorStatus();
   }, [bookId]);
 
-  useEffect(() => {
-    if (pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length) {
-      const currentPage = pages[currentPageIndex];
-      console.log("Pages Array:", pages);
-      console.log("Current Page Index:", currentPageIndex);
-      console.log("Current Page Data:", currentPage);
-      if (!currentPage?.images || currentPage.images.length === 0) {
-        console.error("currentPage does not have images");
-      }
-    } else {
-      console.error("Invalid pages array or currentPageIndex");
-    }
-  }, [pages, currentPageIndex]);
-
   const handleComment = () => {
     console.log('コメントボタンがクリックされました');
   };
@@ -96,12 +82,11 @@ function BookDetailPage() {
       </div>
 
       {/* キャンバス */}
-      {pages.length > 0 && pages[currentPageIndex]?.texts && (
+      {pages.length > 0 && pages[currentPageIndex] && (
         <Canvas
-          texts={pages[currentPageIndex].texts}
-          images={pages[currentPageIndex].images}
+          pageElements={pages[currentPageIndex].pageElements}
           pageData={pages[currentPageIndex]}
-          backgroundColor={pages[currentPageIndex]?.backgroundColor || "#ffffff"} // ここで渡す
+          backgroundColor={pages[currentPageIndex]?.backgroundColor || "#ffffff"}
           onUpdateImage={updateImage}
           onDeleteImage={deleteImage}
           onSelectText={(index) => {

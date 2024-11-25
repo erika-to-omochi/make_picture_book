@@ -182,8 +182,6 @@ deleteImage: (index) =>
     if (get().bookData) return;
     try {
       const response = await axios.get(`/api/v1/books/${bookId}/`);
-      console.log("Store API Response Data:", response.data);
-      console.log("Store API Response Pages:", response.data.pages);
 
       if (response.data && Array.isArray(response.data.pages)) {
         const formattedPages = response.data.pages.map((page) => ({

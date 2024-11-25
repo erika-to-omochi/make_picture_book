@@ -267,9 +267,7 @@ const handleImageClick = (index) => {
           </button>
           {/* 現在のページ / 総ページ数 */}
           <div className="flex items-center space-x-2">
-            <span className="text-bodyText font-semibold">{currentPageIndex + 1}</span>
-            <span className="text-bodyText font-semibold">/ {pages.length}</span>
-            <input
+          <input
               type="number"
               min={1}
               max={pages.length}
@@ -282,6 +280,7 @@ const handleImageClick = (index) => {
               }}
               className="w-16 p-1 text-center border rounded-md border-gray-300"
             />
+            <span className="text-bodyText font-semibold">/ {pages.length}</span>
           </div>
           <button
             onClick={() => {
