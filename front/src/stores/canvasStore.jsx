@@ -219,7 +219,6 @@ deleteImage: (index) =>
   setCurrentPageIndex: (index) => set({ currentPageIndex: index }),
 
   setBackgroundColor: (color) => set((state) => {
-    console.log("setBackgroundColor called with color:", color);
     const currentPage = state.pages[state.currentPageIndex];
     if (!currentPage) {
       console.error("No current page to set background color");
@@ -230,7 +229,6 @@ deleteImage: (index) =>
       ...currentPage,
       backgroundColor: color,
     };
-    console.log("Updated Pages:", updatedPages);
     return { pages: updatedPages };
   }),
 

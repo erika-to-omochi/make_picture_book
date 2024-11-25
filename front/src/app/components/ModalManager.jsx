@@ -105,7 +105,6 @@ export default function ModalManager() {
       if (newBookId) {
         // 更新
         const updateBookResponse = await axios.put(`/api/v1/books/${newBookId}`, bookDataPayload);
-        console.log(`Book updated with id: ${updateBookResponse.data.book.id}`);
         isUpdate = true;
       } else {
         // 新規作成
