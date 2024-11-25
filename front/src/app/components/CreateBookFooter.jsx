@@ -42,7 +42,6 @@ export default function CreateBookFooter({
             <input
               type="color"
               onChange={(e) => {
-                console.log("Color selected:", e.target.value);
                 setBackgroundColor(e.target.value)
               }}
               className="w-12 h-12"

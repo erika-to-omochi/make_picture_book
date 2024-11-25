@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_11_21_050718) do
+ActiveRecord::Schema[7.1].define(version: 2024_11_25_070649) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -66,9 +66,17 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_21_050718) do
   create_table "page_elements", force: :cascade do |t|
     t.bigint "page_id", null: false
     t.enum "element_type", null: false, enum_type: "element_type_enum"
-    t.jsonb "content", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "text"
+    t.string "src"
+    t.float "font_size"
+    t.string "font_color"
+    t.float "position_x"
+    t.float "position_y"
+    t.float "rotation"
+    t.float "scale_x"
+    t.float "scale_y"
     t.index ["element_type"], name: "index_page_elements_on_element_type"
     t.index ["page_id"], name: "index_page_elements_on_page_id"
   end

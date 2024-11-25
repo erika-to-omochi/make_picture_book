@@ -12,35 +12,35 @@ function TextInputCanvas({}) {
 
   const [inputText, setInputText] = useState('');
   const [fontSize, setFontSize] = useState(24);
-  const [color, setColor] = useState('#000000');
+  const [fontColor, setFontColor] = useState('#000000');
 
   // 現在のページから選択されたテキスト情報を取得
   const selectedText = selectedTextIndex !== null
-  ? pages[currentPageIndex]?.content?.texts[selectedTextIndex]
+  ? pages[currentPageIndex]?.pageElements[selectedTextIndex]
   : null;
 
   useEffect(() => {
     if (selectedText) {
       setInputText(selectedText.text);
       setFontSize(selectedText.fontSize);
-      setColor(selectedText.color);
+      setFontColor(selectedText.fontColor);
     } else {
       setInputText('');
       setFontSize(24);
-      setColor('#000000');
+      setFontColor('#000000');
     }
   }, [selectedText]);
 
   const handleButtonClick = () => {
     if (inputText.trim()) {
       if (selectedText) {
-        handleUpdateText({ text: inputText, fontSize, color });
+        handleUpdateText(selectedTextIndex, { text: inputText, fontSize, fontColor });
       } else {
-        handleAddText({ text: inputText, fontSize, color }); // ストアのhandleAddTextを使用
+        handleAddText({ text: inputText, fontSize, fontColor });
       }
       setInputText('');
       setFontSize(24);
-      setColor('#000000');
+      setFontColor('#000000');
     }
   };
 
@@ -73,8 +73,8 @@ function TextInputCanvas({}) {
             <label>文字色:</label>
             <input
               type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
+              value={fontColor}
+              onChange={(e) => setFontColor(e.target.value)}
               className="w-12 h-12"
             />
           </div>

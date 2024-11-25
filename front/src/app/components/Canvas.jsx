@@ -39,42 +39,24 @@ function Canvas({ showActionButtons }) {
 
   // ページの初期化と安全な取得
   const currentPage = pages[currentPageIndex] || {
-    content: {
-      texts: [],
-      images: [],
-      backgroundColor: '#ffffff',
-    },
-    book_id: 1,
-    page_number: pages.length + 1,
+    bookId: 1,
+    pageNumber: pages.length + 1,
+    backgroundColor: '#ffffff',
+    pageElements: [],
+    pageCharacters: [],
+    id: null,
   };
-
-  if (!currentPage.content) {
-    currentPage.content = {
-      texts: [],
-      images: [],
-      backgroundColor: '#ffffff',
-    };
-  }
-
-  // content が存在することを保証
-  if (!currentPage.content) {
-    console.error("currentPage.content is undefined", currentPage);
-    currentPage.content = {
-      texts: [],
-      images: [],
-      backgroundColor: '#ffffff',
-    };
-  }
 
   // 画像の読み込み
   useEffect(() => {
     let isMounted = true; // マウント状態を追跡
     const loadImages = async () => {
-      const promises = currentPage.content.images.map((img) => {
+      const imageElements = currentPage.pageElements.filter(el => el.elementType === 'image');
+      const promises = imageElements.map((el) => {
         return new Promise((resolve) => {
           const image = new window.Image();
-          image.src = img.src;
-          image.onload = () => resolve({ ...img, image });
+          image.src = el.src;
+          image.onload = () => resolve({ ...el, image });
           image.onerror = () => resolve(null); // エラー時も null を返す
         });
       });
@@ -91,7 +73,7 @@ function Canvas({ showActionButtons }) {
         }
       }
     };
-    if (currentPage.content.images && currentPage.content.images.length > 0) {
+    if (currentPage.pageElements && currentPage.pageElements.length > 0) {
       loadImages();
     } else {
       setLoadedImages([]); // 画像がない場合に空配列
@@ -99,7 +81,7 @@ function Canvas({ showActionButtons }) {
     return () => {
       isMounted = false; // クリーンアップ
     };
-  }, [currentPage.content.images]);
+  }, [currentPage.pageElements]);
 
   // Transformerの更新
   useEffect(() => {
@@ -113,7 +95,7 @@ function Canvas({ showActionButtons }) {
       }
       transformerRef.current.getLayer().batchDraw();
     }
-  }, [selectedTextIndex, selectedImageIndex, currentPage.content.texts, loadedImages]);
+  }, [selectedTextIndex, selectedImageIndex, currentPage.pageElements, loadedImages]);
 
   // キーボードイベントの処理
   useEffect(() => {
@@ -134,28 +116,48 @@ function Canvas({ showActionButtons }) {
 
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
-    const update = { x: e.target.x(), y: e.target.y() };
-    if (type === 'text') handleUpdateText(update);
-    else if (type === 'image') updateImage(update);
+    const update = {
+      positionX: e.target.x(),
+      positionY: e.target.y()
+    };
+    if (type === 'text') {
+      handleUpdateText(index, update);
+    } else if (type === 'image') {
+      updateImage(index, update);
+    }
   };
 
   // 変形終了時の処理
   const handleTransformEnd = (index, e, type) => {
     const node = type === 'text' ? textRefs.current[index] : imageRefs.current[index];
     const newProperties = {
-      x: node.x(),
-      y: node.y(),
+      positionX: node.x(),
+      positionY: node.y(),
       rotation: node.rotation(),
       scaleX: node.scaleX(),
       scaleY: node.scaleY(),
     };
     if (type === 'text') {
-      newProperties.fontSize = currentPage.content.texts[index].fontSize * newProperties.scaleY;
+      const updatedFontSize = currentPage.pageElements[index].fontSize * newProperties.scaleY;
       node.scaleX(1);
       node.scaleY(1);
-      handleUpdateText(newProperties);
+      handleUpdateText(index, {
+        positionX: newProperties.positionX,
+        positionY: newProperties.positionY,
+        rotation: newProperties.rotation,
+        fontSize: updatedFontSize,
+      });
     } else if (type === 'image') {
-      updateImage(index, newProperties);
+      updateImage(index, {
+        positionX: newProperties.positionX,
+        positionY: newProperties.positionY,
+        rotation: newProperties.rotation,
+        scaleX: newProperties.scaleX,
+        scaleY: newProperties.scaleY,
+      });
+        // スケールをリセットしてストアに保存
+        node.scaleX(1);
+        node.scaleY(1);
     }
   };
 
@@ -166,6 +168,13 @@ function Canvas({ showActionButtons }) {
     setSelectedImageIndex(null);
   };
 
+  // 画像クリック時の処理
+const handleImageClick = (index) => {
+  console.log("Image clicked at index:", index);
+  setSelectedImageIndex(index);
+  setSelectedTextIndex(null);
+};
+
   // ステージクリック時の処理
   const handleStageMouseDown = (e) => {
     if (e.target.name() === 'background') {
@@ -173,9 +182,10 @@ function Canvas({ showActionButtons }) {
     }
   };
 
-  // ロードされた画像のログ出力
+  // ロードされた画像のログ出力（必要に応じて実装）
   useEffect(() => {
     loadedImages.forEach((img, index) => {
+      // 必要に応じて処理
     });
   }, [loadedImages]);
 
@@ -185,7 +195,6 @@ function Canvas({ showActionButtons }) {
         ref={stageRef}
         width={stageWidth}
         height={stageHeight}
-        fill={currentPage.content.backgroundColor}
         onMouseDown={handleStageMouseDown}
         style={{ border: '1px solid #ccc' }} // 確認用に境界線を追加
       >
@@ -195,43 +204,52 @@ function Canvas({ showActionButtons }) {
             y={0}
             width={stageWidth}
             height={stageHeight}
-            fill={currentPage.content.backgroundColor|| "#ffffff"}
+            fill={currentPage.backgroundColor || "#ffffff"}
             onMouseDown={handleStageMouseDown}
             name="background"
           />
-          {currentPage.content.texts.map((pos, index) => (
-            <Text
-              key={index}
-              ref={(el) => (textRefs.current[index] = el)}
-              text={pos.text}
-              x={pos.x}
-              y={pos.y}
-              draggable
-              onDragEnd={(e) => handleDragEnd(index, e, 'text')}
-              onTransformEnd={(e) => handleTransformEnd(index, e, 'text')}
-              fontSize={pos.fontSize}
-              fill={pos.color}
-              onClick={() => handleTextClick(index)}
-              rotation={pos.rotation || 0}
-              scaleX={1}
-              scaleY={1}
-            />
-          ))}
-          {Array.isArray(loadedImages) && loadedImages.map((img, index) => (
-            <KonvaImage
-              key={`img-${index}`}
-              ref={(el) => (imageRefs.current[index] = el)}
-              image={img.image}
-              x={img.x}
-              y={img.y}
-              draggable
-              onDragEnd={(e) => handleDragEnd(index, e, 'image')}
-              onTransformEnd={(e) => handleTransformEnd(index, e, 'image')}
-              onClick={() => { setSelectedImageIndex(index); setSelectedTextIndex(null); }}
-              width={img.width}
-              height={img.height}
-            />
-          ))}
+          {currentPage.pageElements.map((element, index) => {
+            if (element.elementType === 'text') {
+              return (
+                <Text
+                key={`text-${index}`}
+                ref={(el) => (textRefs.current[index] = el)}
+                text={element.text}
+                x={element.positionX}
+                y={element.positionY}
+                draggable
+                onDragEnd={(e) => handleDragEnd(index, e, 'text')}
+                onTransformEnd={(e) => handleTransformEnd(index, e, 'text')}
+                fontSize={element.fontSize}
+                fill={element.fontColor}
+                onClick={() => handleTextClick(index)}
+                rotation={element.rotation || 0}
+                scaleX={1}
+                scaleY={1}
+              />
+              );
+            } else if (element.elementType === 'image') {
+              const loadedImage = loadedImages.find(img => img.src === element.src);
+              if (!loadedImage) return null;
+              return (
+                <KonvaImage
+                  key={`image-${index}`}
+                  ref={(el) => (imageRefs.current[index] = el)}
+                  image={loadedImage.image}
+                  x={element.positionX}
+                  y={element.positionY}
+                  draggable
+                  onDragEnd={(e) => handleDragEnd(index, e, 'image')}
+                  onTransformEnd={(e) => handleTransformEnd(index, e, 'image')}
+                  onClick={() => { handleImageClick(index); }}
+                  scaleX={element.scaleX || 1}
+                  scaleY={element.scaleY || 1}
+                  rotation={element.rotation || 0}
+                />
+              );
+            }
+            return null;
+          })}
           {(selectedTextIndex !== null || selectedImageIndex !== null) && (
             <Transformer ref={transformerRef} anchorSize={8} borderDash={[6, 2]} keepRatio={true} />
           )}
@@ -249,8 +267,7 @@ function Canvas({ showActionButtons }) {
           </button>
           {/* 現在のページ / 総ページ数 */}
           <div className="flex items-center space-x-2">
-            <span className="text-bodyText font-semibold"></span>
-            <input
+          <input
               type="number"
               min={1}
               max={pages.length}
@@ -281,7 +298,7 @@ function Canvas({ showActionButtons }) {
         {showActionButtons && (
           <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
             <ModalManager />
-        </div>
+          </div>
         )}
       </div>
     </div>

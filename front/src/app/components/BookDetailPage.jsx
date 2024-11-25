@@ -16,77 +16,28 @@ function BookDetailPage() {
   // Zustandストアから状態とアクションを取得
   const {
     bookData,
-    setBookData,
     currentPageIndex,
     updateImage,
     deleteImage,
     pages,
-    setPages,
-    addImage,
+    fetchBookData,
   } = useCanvasStore();
 
   // 作者判定の状態管理
   const [isAuthor, setIsAuthor] = useState(false);
 
-  useEffect(() => {
-    const fetchBookData = async () => {
-      try {
-        const response = await axios.get(`/api/v1/books/${bookId}/`);
-        if (response.data) {
-          // サーバーからのページデータをクライアント側の形式に変換
-          const formattedPages = response.data.pages.map((page) => {
-            const content = {
-              texts: [],
-              images: [],
-              backgroundColor: page.background_color || '#ffffff',
-            };
-            if (page.page_elements && Array.isArray(page.page_elements)) {
-              page.page_elements.forEach((element) => {
-                if (element.element_type === 'text') {
-                  const { text, font_size, font_color, position_x, position_y } = element.content;
-                  content.texts.push({
-                    text,
-                    fontSize: font_size,
-                    color: font_color,
-                    x: position_x,
-                    y: position_y,
-                  });
-                } else if (element.element_type === 'image') {
-                  const { src, width, height, position_x, position_y } = element.content;
-                  content.images.push({
-                    src,
-                    width,
-                    height,
-                    x: position_x,
-                    y: position_y,
-                  });
-                }
-              });
-            }
-            return {
-              page_number: page.page_number,
-              content,
-              book_id: page.book_id || 1,
-            };
-          });
-          // 初期化
-          setBookData(response.data);
-          setPages(formattedPages);
-        }
-      } catch (error) {
-        console.error("Error fetching book data:", error);
+    // 書籍データの取得
+    useEffect(() => {
+      if (bookId) {
+        fetchBookData(bookId);
       }
-    };
-    fetchBookData();
-  }, [bookId]);
-
+    }, [bookId, fetchBookData]);
 
   // 作者判定APIを呼び出し
   useEffect(() => {
     const checkAuthorStatus = async () => {
       try {
-        const response = await axios.get(`/api/v1/books/${bookId}/author_status`, {
-        });
+        const response = await axios.get(`/api/v1/books/${bookId}/author_status`);
         setIsAuthor(response.data.is_author); // 作者かどうかを状態に設定
       } catch (error) {
         console.error("Error checking author status:", error);
@@ -94,18 +45,6 @@ function BookDetailPage() {
     };
     checkAuthorStatus();
   }, [bookId]);
-
-  useEffect(() => {
-    if (pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length) {
-      const currentPage = pages[currentPageIndex];
-      if (currentPage?.content?.images) {
-      } else {
-        console.error("currentPage does not have images");
-      }
-    } else {
-      console.error("Invalid pages array or currentPageIndex");
-    }
-  }, [pages, currentPageIndex, addImage]);
 
   const handleComment = () => {
     console.log('コメントボタンがクリックされました');
@@ -143,12 +82,11 @@ function BookDetailPage() {
       </div>
 
       {/* キャンバス */}
-      {pages.length > 0 && pages[currentPageIndex]?.content?.texts && (
+      {pages.length > 0 && pages[currentPageIndex] && (
         <Canvas
-          texts={pages[currentPageIndex].content.texts}
-          images={pages[currentPageIndex].content.images}
+          pageElements={pages[currentPageIndex].pageElements}
           pageData={pages[currentPageIndex]}
-          backgroundColor={pages[currentPageIndex]?.content?.backgroundColor || "#ffffff"} // ここで渡す
+          backgroundColor={pages[currentPageIndex]?.backgroundColor || "#ffffff"}
           onUpdateImage={updateImage}
           onDeleteImage={deleteImage}
           onSelectText={(index) => {
