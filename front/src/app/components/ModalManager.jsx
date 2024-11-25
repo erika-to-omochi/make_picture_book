@@ -26,7 +26,7 @@ export default function ModalManager() {
       if (bookData?.id) {
         setModalData({
           title: bookData.title || "",
-          author: bookData.authorName || "",
+          author: bookData.author_name || "",
           tags: bookData.tags || "",
           visibility: bookData.visibility === 0 ? "public" : "private",
         });
