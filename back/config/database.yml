@@ -14,3 +14,10 @@ development:
 test:
   <<: *default
   database: app_test
+
+production:
+  <<: *default
+  username: root
+  password: password
+  database: app_production
+  host: db
