@@ -7,7 +7,7 @@ import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
 
-function Canvas({ showActionButtons }) {
+function Canvas({ showActionButtons, isReadOnly }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -116,6 +116,7 @@ function Canvas({ showActionButtons }) {
 
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
+    if (isReadOnly) return;
     const update = {
       positionX: e.target.x(),
       positionY: e.target.y()
@@ -129,6 +130,7 @@ function Canvas({ showActionButtons }) {
 
   // 変形終了時の処理
   const handleTransformEnd = (index, e, type) => {
+    if (isReadOnly) return;
     const node = type === 'text' ? textRefs.current[index] : imageRefs.current[index];
     const newProperties = {
       positionX: node.x(),
@@ -163,6 +165,7 @@ function Canvas({ showActionButtons }) {
 
   // テキストクリック時の処理
   const handleTextClick = (index) => {
+    if (isReadOnly) return;
     console.log("Text clicked at index:", index);
     setSelectedTextIndex(index);
     setSelectedImageIndex(null);
@@ -170,6 +173,7 @@ function Canvas({ showActionButtons }) {
 
   // 画像クリック時の処理
 const handleImageClick = (index) => {
+  if (isReadOnly) return;
   console.log("Image clicked at index:", index);
   setSelectedImageIndex(index);
   setSelectedTextIndex(null);
@@ -217,7 +221,7 @@ const handleImageClick = (index) => {
                 text={element.text}
                 x={element.positionX}
                 y={element.positionY}
-                draggable
+                draggable={!isReadOnly}
                 onDragEnd={(e) => handleDragEnd(index, e, 'text')}
                 onTransformEnd={(e) => handleTransformEnd(index, e, 'text')}
                 fontSize={element.fontSize}
@@ -238,7 +242,7 @@ const handleImageClick = (index) => {
                   image={loadedImage.image}
                   x={element.positionX}
                   y={element.positionY}
-                  draggable
+                  draggable={!isReadOnly}
                   onDragEnd={(e) => handleDragEnd(index, e, 'image')}
                   onTransformEnd={(e) => handleTransformEnd(index, e, 'image')}
                   onClick={() => { handleImageClick(index); }}
@@ -250,7 +254,7 @@ const handleImageClick = (index) => {
             }
             return null;
           })}
-          {(selectedTextIndex !== null || selectedImageIndex !== null) && (
+          {(!isReadOnly && (selectedTextIndex !== null || selectedImageIndex !== null)) && (
             <Transformer ref={transformerRef} anchorSize={8} borderDash={[6, 2]} keepRatio={true} />
           )}
         </Layer>
