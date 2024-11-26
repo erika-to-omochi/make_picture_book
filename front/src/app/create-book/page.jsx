@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CreateBookFooter from '../components/CreateBookFooter';
 import useCanvasStore from '../../stores/canvasStore';
 
@@ -17,6 +17,7 @@ export default function CreateBookPage() {
     currentPageIndex,
     handleAddText,
     setBackgroundColor,
+    resetCanvas,
   } = useCanvasStore();
 
   const currentPage = pages[currentPageIndex] || {
@@ -24,6 +25,11 @@ export default function CreateBookPage() {
     pageCharacters: [],
     backgroundColor: '#ffffff',
   };
+
+  useEffect(() => {
+    // 作成ページに遷移したらストアをリセット
+    resetCanvas();
+  }, [resetCanvas]);
 
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
