@@ -3,7 +3,7 @@ class RefreshToken < ApplicationRecord
 
   before_create :hash_token
 
-  validates :token, presence: true
+  validates :token, presence: true, uniqueness: true
   validates :expires_at, presence: true
 
   def hash_token
