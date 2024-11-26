@@ -17,8 +17,6 @@ function BookDetailPage() {
   const {
     bookData,
     currentPageIndex,
-    updateImage,
-    deleteImage,
     pages,
     fetchBookData,
   } = useCanvasStore();
@@ -84,15 +82,8 @@ function BookDetailPage() {
       {/* キャンバス */}
       {pages.length > 0 && pages[currentPageIndex] && (
         <Canvas
-          pageElements={pages[currentPageIndex].pageElements}
-          pageData={pages[currentPageIndex]}
-          backgroundColor={pages[currentPageIndex]?.backgroundColor || "#ffffff"}
-          onUpdateImage={updateImage}
-          onDeleteImage={deleteImage}
-          onSelectText={(index) => {
-            useCanvasStore.getState().setSelectedTextIndex(index);
-          }}
           showActionButtons={false}
+          isReadOnly={true}
         />
       )}
 
