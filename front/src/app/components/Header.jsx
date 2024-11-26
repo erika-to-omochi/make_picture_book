@@ -68,7 +68,7 @@ const Header = () => {
           >
             {isLoggedIn ? (
               <>
-                <Link href="/mypage">
+                <Link href="/myPage">
                   <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
                     <FaUser className="text-icon" /> {userName}のマイページ
                   </p>
