@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import axios from '../../api/axios';
+import axiosInstance from '../../api/axios';
 import { FaRegCommentDots, FaPrint, FaEdit, FaTrash } from 'react-icons/fa';
 import useCanvasStore from '../../stores/canvasStore';
 
@@ -24,18 +24,18 @@ function BookDetailPage() {
   // 作者判定の状態管理
   const [isAuthor, setIsAuthor] = useState(false);
 
-    // 書籍データの取得
-    useEffect(() => {
-      if (bookId) {
-        fetchBookData(bookId);
-      }
-    }, [bookId, fetchBookData]);
+  // 書籍データの取得
+  useEffect(() => {
+    if (bookId) {
+      fetchBookData(bookId);
+    }
+  }, [bookId, fetchBookData]);
 
   // 作者判定APIを呼び出し
   useEffect(() => {
     const checkAuthorStatus = async () => {
       try {
-        const response = await axios.get(`/api/v1/books/${bookId}/author_status`);
+        const response = await axiosInstance.get(`/api/v1/books/${bookId}/author_status`);
         setIsAuthor(response.data.is_author); // 作者かどうかを状態に設定
       } catch (error) {
         console.error("Error checking author status:", error);
@@ -60,7 +60,7 @@ function BookDetailPage() {
     const confirmDelete = window.confirm("この絵本を削除しますか？");
     if (!confirmDelete) return;
     try {
-      await axios.delete(`/api/v1/books/${bookId}`);
+      await axiosInstance.delete(`/api/v1/books/${bookId}`);
       alert("絵本を削除しました。");
       router.push("/index-books"); // 削除後にリスト画面にリダイレクト
     } catch (error) {

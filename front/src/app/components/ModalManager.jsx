@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import useCanvasStore from '../../stores/canvasStore';
-import axios from '../../api/axios';
+import axiosInstance from '../../api/axios';
 import { useRouter } from 'next/navigation';
 
 export default function ModalManager() {

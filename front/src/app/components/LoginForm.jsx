@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import axios from '../../api/axios';
+import axiosInstance from '../../api/axios';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '../../stores/authStore';
 
@@ -18,7 +18,7 @@ export default function LoginForm() {
     e.preventDefault();
 
     try {
-      const response = await axios.post('/api/v1/auth/sign_in', {
+      const response = await axiosInstance.post('/api/v1/auth/sign_in', {
         user: {
           email: email,
           password: password,
