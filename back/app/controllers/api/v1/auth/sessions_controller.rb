@@ -11,6 +11,8 @@ class Api::V1::Auth::SessionsController < Devise::SessionsController
         expires_at: 7.days.from_now
       )
 
+      # リフレッシュトークンを生成
+      refresh_token = user.refresh_tokens.create!(expires_at: 7.days.from_now)
       # JWTアクセストークンを生成
       access_token = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first
 
