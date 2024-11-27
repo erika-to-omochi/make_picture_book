@@ -1,17 +1,22 @@
 class RefreshToken < ApplicationRecord
   belongs_to :user
 
-  before_create :hash_token
+  before_create :generate_token
 
   validates :token, presence: true, uniqueness: true
   validates :expires_at, presence: true
 
-  def hash_token
-    Rails.logger.debug "Original Token before hashing: #{self.token}"
-    self.token = Digest::SHA256.hexdigest(self.token)
-    Rails.logger.debug "Token after hashing: #{self.token}"
+  attr_reader :plain_token
+
+  private
+
+  # トークンを生成
+  def generate_token
+    @plain_token = SecureRandom.hex(32) # 平文トークンを生成
+    self.token = Digest::SHA256.hexdigest(@plain_token) # ハッシュ化したトークンを保存
   end
 
+  # 平文トークンからDB上のハッシュ化トークンを探す
   def self.find_by_token(token)
     hashed_token = Digest::SHA256.hexdigest(token)
     find_by(token: hashed_token)

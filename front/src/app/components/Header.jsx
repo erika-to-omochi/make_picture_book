@@ -17,7 +17,8 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("userName");
     setLogoutMessage("【ログアウトしました】");
     router.push("/");

@@ -8,7 +8,6 @@ class Api::V1::Auth::SessionsController < Devise::SessionsController
     if user&.valid_password?(params.dig(:user, :password))
       # リフレッシュトークンを生成
       refresh_token = user.refresh_tokens.create!(
-        token: SecureRandom.hex(32),
         expires_at: 7.days.from_now
       )
 
@@ -18,7 +17,7 @@ class Api::V1::Auth::SessionsController < Devise::SessionsController
       render json: {
         message: 'ログインしました',
         access_token: access_token,
-        refresh_token: refresh_token.token,
+        refresh_token: refresh_token.plain_token,
         user: UserSerializer.new(user).serializable_hash
       }, status: :ok
     else

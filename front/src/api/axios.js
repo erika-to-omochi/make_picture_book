@@ -13,7 +13,8 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
-    if (token) {
+    const excludeUrls = ['/api/v1/auth/sign_in', '/api/v1/auth/sign_up', '/api/v1/auth/refresh'];
+    if (token && !excludeUrls.includes(config.url)) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
@@ -28,12 +29,18 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+    const refreshUrl = '/api/v1/auth/refresh';
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.url !== refreshUrl
+    ) {
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
-          const response = await axiosInstance.post('/api/v1/auth/refresh', {
+          const response = await axiosInstance.post(refreshUrl, {
             refresh_token: refreshToken,
           });
           const newAccessToken = response.data.access_token;

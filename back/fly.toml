@@ -1,14 +1,9 @@
-# fly.toml app configuration file generated for back-make-books on 2024-11-04T12:00:31+09:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
 app = 'back-make-books'
 primary_region = 'syd'
 console_command = '/rails/bin/rails console'
 
 [build]
-
+  dockerfile = "./Dockerfile"
 
 [http_service]
   internal_port = 3000
@@ -20,3 +15,11 @@ console_command = '/rails/bin/rails console'
 
 [[vm]]
   size = 'shared-cpu-1x'
+
+[[statics]]
+  guest_path = '/rails/public'
+  url_prefix = '/'
+
+[env]
+  RAILS_ENV = "production"
+  PORT = "3000"
