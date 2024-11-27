@@ -17,6 +17,7 @@ axiosInstance.interceptors.request.use(
     const excludeUrls = ['/api/v1/auth/sign_in', '/api/v1/auth/sign_up', '/api/v1/auth/refresh'];
     if (token && !excludeUrls.includes(config.url)) {
       config.headers['Authorization'] = `Bearer ${token}`;
+      console.log('Authorization Header Set:', config.headers['Authorization']);
     }
     return config;
   },
@@ -45,6 +46,7 @@ axiosInstance.interceptors.response.use(
             refresh_token: refreshToken,
           });
           const newAccessToken = response.data.access_token;
+          console.log('New Access Token:', newAccessToken);
           localStorage.setItem('access_token', newAccessToken);
           axiosInstance.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`;
           originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
