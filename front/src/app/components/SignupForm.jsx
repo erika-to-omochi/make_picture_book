@@ -32,11 +32,11 @@ export default function SignupForm() {
       setSuccessMessage("登録が完了しました");
       setErrorMessages([]);
 
-      const accessToken = response.data.access_token;
-      const refreshToken = response.data.refresh_token;
+      const access_token = response.data.access_token;
+      const refresh_token = response.data.refresh_token;
 
-      localStorage.setItem('access_token', accessToken);
-      localStorage.setItem('refresh_token', refreshToken);
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
       localStorage.setItem('userName', name);
 
       // 状態を更新してヘッダーを即座に切り替える

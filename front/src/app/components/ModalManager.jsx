@@ -50,42 +50,6 @@ export default function ModalManager() {
     setModalData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // トークン管理関数
-  const checkTokenExpiration = (token) => {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Math.floor(Date.now() / 1000);
-      return payload.exp < currentTime;
-    } catch (error) {
-      console.error("Failed to parse token:", error);
-      return true; // トークンが無効とみなす
-    }
-  };
-
-  const refreshAccessToken = async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-      alert("リフレッシュトークンがありません。再度ログインしてください。");
-      throw new Error("リフレッシュトークンがありません");
-    }
-
-    // トークンの有効期限を確認し、必要であれば更新
-    if (checkTokenExpiration(token)) {
-      token = await refreshAccessToken();
-    }
-
-    try {
-      const response = await axios.post('/auth/refresh', { refresh_token: refreshToken });
-      const newAccessToken = response.data.access_token;
-      localStorage.setItem('access_token', newAccessToken);
-      return newAccessToken;
-    } catch (error) {
-      console.error("Failed to refresh token:", error);
-      alert("ログインセッションが切れています。再度ログインしてください。");
-      throw error;
-    }
-  };
-
   // モーダル保存処理
   const handleModalSave = async () => {
     try {
@@ -104,66 +68,66 @@ export default function ModalManager() {
       // 書籍の更新または新規作成
       if (newBookId) {
         // 更新
-        const updateBookResponse = await axios.put(`/api/v1/books/${newBookId}`, bookDataPayload);
+        const updateBookResponse = await axiosInstance.put(`/api/v1/books/${newBookId}`, bookDataPayload);
         isUpdate = true;
       } else {
         // 新規作成
-        const createBookResponse = await axios.post('/api/v1/books', bookDataPayload);
+        const createBookResponse = await axiosInstance.post('/api/v1/books', bookDataPayload);
         newBookId = createBookResponse.data.book.id;
         console.log(`New book created with id: ${newBookId}`);
       }
 
-       // ページの更新または新規作成
+      // ページの更新または新規作成
       for (const page of pages) {
-      // page_elements の構築
-      const pageElements = [];
+        // page_elements の構築
+        const pageElements = [];
 
-      // テキスト要素を page_elements に変換
-      page.pageElements.forEach((element) => {
-        if (element.elementType === 'text') {
-          pageElements.push({
-            element_type: 'text', // スネークケースで送信
-            text: element.text,
-            font_size: element.fontSize,
-            font_color: element.fontColor,
-            position_x: element.positionX,
-            position_y: element.positionY,
-            rotation: element.rotation || 0,
-            scale_x: element.scaleX || 1,
-            scale_y: element.scaleY || 1,
-          });
-        } else if (element.elementType === 'image') {
-          pageElements.push({
-            element_type: 'image', // スネークケースで送信
-            src: element.src,
-            position_x: element.positionX,
-            position_y: element.positionY,
-            rotation: element.rotation || 0,
-            scale_x: element.scaleX || 1,
-            scale_y: element.scaleY || 1,
-          });
-        }
-      });
+        // テキスト要素を page_elements に変換
+        page.pageElements.forEach((element) => {
+          if (element.elementType === 'text') {
+            pageElements.push({
+              element_type: 'text', // スネークケースで送信
+              text: element.text,
+              font_size: element.fontSize,
+              font_color: element.fontColor,
+              position_x: element.positionX,
+              position_y: element.positionY,
+              rotation: element.rotation || 0,
+              scale_x: element.scaleX || 1,
+              scale_y: element.scaleY || 1,
+            });
+          } else if (element.elementType === 'image') {
+            pageElements.push({
+              element_type: 'image', // スネークケースで送信
+              src: element.src,
+              position_x: element.positionX,
+              position_y: element.positionY,
+              rotation: element.rotation || 0,
+              scale_x: element.scaleX || 1,
+              scale_y: element.scaleY || 1,
+            });
+          }
+        });
 
-      // page_characters の構築（今後本リリースで修正していく）
-      const pageCharacters = page.page_characters || [];
+        // page_characters の構築（今後本リリースで修正していく）
+        const pageCharacters = page.page_characters || [];
 
-      const payload = {
-        page: {
-          book_id: newBookId,
-          page_number: page.page_number,
-          background_color: page.backgroundColor || '#ffffff',
-          page_elements_attributes: pageElements,
-          page_characters_attributes: pageCharacters,
-        },
-      };
+        const payload = {
+          page: {
+            book_id: newBookId,
+            page_number: page.page_number,
+            background_color: page.backgroundColor || '#ffffff',
+            page_elements_attributes: pageElements,
+            page_characters_attributes: pageCharacters,
+          },
+        };
 
         if (page.id) {
           // ページ更新
-          await axios.put(`/api/v1/books/${newBookId}/pages/${page.id}`, payload);
+          await axiosInstance.put(`/api/v1/books/${newBookId}/pages/${page.id}`, payload);
         } else {
           // 新規作成
-          await axios.post(`/api/v1/books/${newBookId}/pages`, payload);
+          await axiosInstance.post(`/api/v1/books/${newBookId}/pages`, payload);
         }
       }
 
