@@ -24,12 +24,12 @@ function BookDetailPage() {
   // 作者判定の状態管理
   const [isAuthor, setIsAuthor] = useState(false);
 
-    // 書籍データの取得
-    useEffect(() => {
-      if (bookId) {
-        fetchBookData(bookId);
-      }
-    }, [bookId, fetchBookData]);
+  // 書籍データの取得
+  useEffect(() => {
+    if (bookId) {
+      fetchBookData(bookId);
+    }
+  }, [bookId, fetchBookData]);
 
   // 作者判定APIを呼び出し
   useEffect(() => {
