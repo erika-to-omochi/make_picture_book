@@ -13,6 +13,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
+    console.log('Access Token:', token);
     const excludeUrls = ['/api/v1/auth/sign_in', '/api/v1/auth/sign_up', '/api/v1/auth/refresh'];
     if (token && !excludeUrls.includes(config.url)) {
       config.headers['Authorization'] = `Bearer ${token}`;

@@ -6,7 +6,7 @@ class Api::V1::Auth::RegistrationsController < Devise::RegistrationsController
 
     if resource.save
       # リフレッシュトークンを生成
-      refresh_token = user.refresh_tokens.create!(expires_at: 7.days.from_now)
+      refresh_token = resource.refresh_tokens.create!(expires_at: 7.days.from_now)
       # JWTアクセストークンを生成
       access_token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
 

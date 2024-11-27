@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import axios from '../api/axios';
+import axiosInstance from '../api/axios';
 
 const useCanvasStore = create((set, get) => ({
   selectedTextIndex: null,
@@ -181,8 +181,7 @@ deleteImage: (index) =>
   fetchBookData: async (bookId) => {
     if (get().bookData) return;
     try {
-      const response = await axios.get(`/api/v1/books/${bookId}/`);
-
+      const response = await axiosInstance.get(`/api/v1/books/${bookId}/`);
       if (response.data && Array.isArray(response.data.pages)) {
         const formattedPages = response.data.pages.map((page) => ({
           pageNumber: page.page_number,

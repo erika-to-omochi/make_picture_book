@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+import axiosInstance from "../../api/axios";
 
 function useFetchBooks() {
   const [books, setBooks] = useState([]); // 絵本データを格納
@@ -10,7 +10,7 @@ function useFetchBooks() {
     // APIからデータを取得
     const fetchBooks = async () => {
       try {
-        const response = await axios.get("/api/v1/books");
+        const response = await axiosInstance.get("/api/v1/books");
         const sortedBooks = response.data.sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at) // 新しい順にソート
         );

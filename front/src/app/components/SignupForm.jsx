@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from '../../api/axios';
+import axiosInstance from '../../api/axios';
 import useAuthStore from '../../stores/authStore';
 
 export default function SignupForm() {
@@ -20,7 +20,7 @@ export default function SignupForm() {
     e.preventDefault();
 
     try {
-      const response = await axios.post('/api/v1/auth', {
+      const response = await axiosInstance.post('/api/v1/auth', {
         user: {
           name: name,
           email: email,
@@ -29,14 +29,15 @@ export default function SignupForm() {
         },
       });
 
+
       setSuccessMessage("登録が完了しました");
       setErrorMessages([]);
 
-      const access_token = response.data.access_token;
-      const refresh_token = response.data.refresh_token;
+      const accessToken = response.data.access_token;
+      const refreshToken = response.data.refresh_token;
 
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
+      localStorage.setItem('access_token', accessToken);
+      localStorage.setItem('refresh_token', refreshToken);
       localStorage.setItem('userName', name);
 
       // 状態を更新してヘッダーを即座に切り替える

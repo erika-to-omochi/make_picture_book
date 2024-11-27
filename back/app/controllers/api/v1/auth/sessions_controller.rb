@@ -6,10 +6,6 @@ class Api::V1::Auth::SessionsController < Devise::SessionsController
     user = User.find_by(email: user_params[:email])
 
     if user&.valid_password?(params.dig(:user, :password))
-      # リフレッシュトークンを生成
-      refresh_token = user.refresh_tokens.create!(
-        expires_at: 7.days.from_now
-      )
 
       # リフレッシュトークンを生成
       refresh_token = user.refresh_tokens.create!(expires_at: 7.days.from_now)
