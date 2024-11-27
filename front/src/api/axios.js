@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
-    if (token) {
+    if (token && !['/api/v1/auth/sign_in', '/api/v1/auth/sign_up'].includes(config.url)) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
