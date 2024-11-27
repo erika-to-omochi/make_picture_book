@@ -17,7 +17,6 @@ test:
 
 production:
   <<: *default
-  username: root
-  password: password
   database: app_production
-  host: db
+  username: user
+  password: password
