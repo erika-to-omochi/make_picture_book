@@ -19,6 +19,9 @@ export default function ModalManager() {
   const { pages, resetCanvas, bookData } = useCanvasStore(); // bookDataを直接取得
   const router = useRouter();
 
+  console.log('Axios Instance:', axiosInstance);
+
+
     // モーダル開閉ロジック
     const openModal = (type) => {
       setModalType(type);
