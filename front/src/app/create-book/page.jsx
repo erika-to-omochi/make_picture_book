@@ -2,10 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
-import { useRouter } from "next/navigation";
 import CreateBookFooter from '../components/CreateBookFooter';
 import useCanvasStore from '../../stores/canvasStore';
-import useAuthStore from '../../stores/authStore';
 
 const Canvas = dynamic(() => import('../components/Canvas'), {
   ssr: false,
@@ -13,8 +11,6 @@ const Canvas = dynamic(() => import('../components/Canvas'), {
 
 export default function CreateBookPage() {
   const [activePanel, setActivePanel] = useState(null);
-  const { isAuthenticated } = useAuthStore();
-  const router = useRouter();
 
   const {
     pages,
@@ -29,13 +25,6 @@ export default function CreateBookPage() {
     pageCharacters: [],
     backgroundColor: '#ffffff',
   };
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      alert('ログインが必要です');
-      router.push('/login'); // ログインページにリダイレクト
-    }
-  }, [isAuthenticated, router]);
 
   useEffect(() => {
     // 作成ページに遷移したらストアをリセット
