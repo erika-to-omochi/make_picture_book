@@ -6,8 +6,9 @@ import useAuthStore from '../../stores/authStore';
 import BookList from "../components/BookList";
 
 function MyPage() {
-  const { books, loading, error } = useFetchBooks();
   const { userName } = useAuthStore();
+  const { books, loading, error } = useFetchBooks(true); // myBooks を true に設定
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error loading books.</p>;
