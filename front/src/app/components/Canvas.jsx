@@ -7,7 +7,7 @@ import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
 
-function Canvas({ showActionButtons, isReadOnly }) {
+function Canvas({ showActionButtons, isReadOnly, allowAddPage }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -291,10 +291,17 @@ const handleImageClick = (index) => {
               if (currentPageIndex < pages.length - 1) {
                 setCurrentPageIndex(currentPageIndex + 1);
               } else {
-                addPage();
+                if (allowAddPage) { // ページ追加が許可されている場合のみ追加
+                  addPage();
+                } else {
+                  alert("このページではページの追加はできません。");
+                }
               }
             }}
-            className="p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-blue-500 hover:bg-blue-100 hover:shadow-md"
+            className={`p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-blue-500 hover:bg-blue-100 hover:shadow-md ${
+              !allowAddPage && currentPageIndex >= pages.length - 1 ? 'cursor-not-allowed opacity-50' : ''
+            }`}
+            disabled={!allowAddPage && currentPageIndex >= pages.length - 1} // ページ追加が許可されていないかつ最後のページの場合に無効化
           >
             <FaChevronCircleRight size={32} />
           </button>
