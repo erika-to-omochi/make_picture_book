@@ -200,6 +200,7 @@ deleteImage: (index) =>
           })),
           pageCharacters: page.page_characters || [],
         }));
+        console.log("Formatted Pages:", formattedPages); // デバッグ用
         set({ pages: formattedPages, bookData: response.data });
       } else {
         console.error("Fetched pages data is invalid:", response.data.pages);

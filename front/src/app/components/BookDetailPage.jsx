@@ -27,9 +27,20 @@ function BookDetailPage() {
   // 書籍データの取得
   useEffect(() => {
     if (bookId) {
-      fetchBookData(bookId);
+      fetchBookData(bookId).then(() => {
+        console.log("Fetched pages:", pages);
+      });
     }
-  }, [bookId, fetchBookData]);
+  }, [bookId, fetchBookData]); // pagesを依存配列から除外
+
+  // pagesが更新されたときにログを出力
+  useEffect(() => {
+    console.log("Updated pages:", pages);
+  }, [pages]);
+
+  if (!bookId) {
+    return <div>Loading...</div>;
+  }
 
   // 作者判定APIを呼び出し
   useEffect(() => {
