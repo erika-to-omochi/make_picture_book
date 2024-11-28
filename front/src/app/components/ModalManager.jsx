@@ -19,9 +19,6 @@ export default function ModalManager() {
   const { pages, resetCanvas, bookData } = useCanvasStore(); // bookDataを直接取得
   const router = useRouter();
 
-  console.log('Axios Instance:', axiosInstance);
-
-
     // モーダル開閉ロジック
     const openModal = (type) => {
       setModalType(type);
@@ -80,6 +77,8 @@ export default function ModalManager() {
         console.log(`New book created with id: ${newBookId}`);
       }
 
+      console.log("Pages before saving:", pages);
+
       // ページの更新または新規作成
       for (const page of pages) {
         // page_elements の構築
@@ -89,6 +88,7 @@ export default function ModalManager() {
         page.pageElements.forEach((element) => {
           if (element.elementType === 'text') {
             pageElements.push({
+              id: element.id,
               element_type: 'text', // スネークケースで送信
               text: element.text,
               font_size: element.fontSize,
@@ -101,6 +101,7 @@ export default function ModalManager() {
             });
           } else if (element.elementType === 'image') {
             pageElements.push({
+              id: element.id,
               element_type: 'image', // スネークケースで送信
               src: element.src,
               position_x: element.positionX,
@@ -118,7 +119,7 @@ export default function ModalManager() {
         const payload = {
           page: {
             book_id: newBookId,
-            page_number: page.page_number,
+            page_number: page.pageNumber,
             background_color: page.backgroundColor || '#ffffff',
             page_elements_attributes: pageElements,
             page_characters_attributes: pageCharacters,
