@@ -234,6 +234,7 @@ deleteImage: (index) =>
   resetCanvas: () => set({
     selectedTextIndex: null,
     selectedImageIndex: null,
+    bookData: null,
     pages: [
       {
         bookId: 1,

@@ -32,6 +32,20 @@ class Api::V1::PagesController < ApplicationController
     end
   end
 
+  def update
+    page = Page.find_by(id: params[:id])
+    if page
+      if page.update(page_params)
+        render json: { page: page.as_json(include: [:page_characters, :page_elements]) }, status: :ok
+      else
+        Rails.logger.debug("Validation errors: #{page.errors.full_messages}")
+        render json: { errors: page.errors.full_messages }, status: :unprocessable_entity
+      end
+    else
+      render json: { error: 'Page not found' }, status: :not_found
+    end
+  end
+
   private
 
   def page_params
