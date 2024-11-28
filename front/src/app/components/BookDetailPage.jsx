@@ -33,15 +33,6 @@ function BookDetailPage() {
     }
   }, [bookId, fetchBookData]); // pagesを依存配列から除外
 
-  // pagesが更新されたときにログを出力
-  useEffect(() => {
-    console.log("Updated pages:", pages);
-  }, [pages]);
-
-  if (!bookId) {
-    return <div>Loading...</div>;
-  }
-
   // 作者判定APIを呼び出し
   useEffect(() => {
     const checkAuthorStatus = async () => {
