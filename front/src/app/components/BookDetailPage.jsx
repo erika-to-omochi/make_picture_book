@@ -28,7 +28,6 @@ function BookDetailPage() {
   useEffect(() => {
     if (bookId) {
       fetchBookData(bookId).then(() => {
-        console.log("Fetched pages:", pages);
       });
     }
   }, [bookId, fetchBookData]); // pagesを依存配列から除外
