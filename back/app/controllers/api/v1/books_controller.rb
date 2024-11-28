@@ -10,6 +10,18 @@ class Api::V1::BooksController < ApplicationController
     render json: { error: "Book not found" }, status: :not_found
   end
 
+  def my_books
+    books = current_user.books
+
+    render json: books.as_json(
+      only: [:id, :title, :author_name, :created_at, :user_id],
+      include: {
+        pages: { only: [:page_number] },
+        tags: { only: [:name] }
+      }
+    ), status: :ok
+  end
+
   def index
     books = Book.all
     render json: books.as_json(
