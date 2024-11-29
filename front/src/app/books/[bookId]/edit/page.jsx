@@ -58,6 +58,7 @@ function EditBookPage() {
             useCanvasStore.getState().setSelectedTextIndex(index);
           }}
           showActionButtons={true}
+          allowAddPage={true}
         />
       )}
 
