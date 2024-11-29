@@ -4,6 +4,9 @@ import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import CreateBookFooter from '../components/CreateBookFooter';
 import useCanvasStore from '../../stores/canvasStore';
+import useAuthStore from '../../stores/authStore';
+import { useRouter } from 'next/navigation';
+
 
 const Canvas = dynamic(() => import('../components/Canvas'), {
   ssr: false,
