@@ -13,7 +13,6 @@ const Canvas = dynamic(() => import('../components/Canvas'), {
 
 export default function CreateBookPage() {
   const [activePanel, setActivePanel] = useState(null);
-
   const {
     pages,
     currentPageIndex,
