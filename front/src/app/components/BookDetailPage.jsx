@@ -85,6 +85,7 @@ function BookDetailPage() {
         <Canvas
           showActionButtons={false}
           isReadOnly={true}
+          allowAddPage={false}
         />
       )}
 
