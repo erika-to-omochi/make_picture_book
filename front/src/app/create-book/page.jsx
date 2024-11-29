@@ -4,6 +4,9 @@ import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import CreateBookFooter from '../components/CreateBookFooter';
 import useCanvasStore from '../../stores/canvasStore';
+import useAuthStore from '../../stores/authStore';
+import { useRouter } from 'next/navigation';
+
 
 const Canvas = dynamic(() => import('../components/Canvas'), {
   ssr: false,
@@ -11,7 +14,6 @@ const Canvas = dynamic(() => import('../components/Canvas'), {
 
 export default function CreateBookPage() {
   const [activePanel, setActivePanel] = useState(null);
-
   const {
     pages,
     currentPageIndex,
@@ -26,10 +28,20 @@ export default function CreateBookPage() {
     backgroundColor: '#ffffff',
   };
 
+  const { isLoggedIn, userName } = useAuthStore();
+  const router = useRouter();
+
   useEffect(() => {
     // 作成ページに遷移したらストアをリセット
     resetCanvas();
   }, [resetCanvas]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      alert('このページにアクセスするにはログインが必要です。ログインページに移動します。');
+      router.push('/login'); // ログインページのパスに変更してください
+    }
+  }, [isLoggedIn, router]);
 
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
