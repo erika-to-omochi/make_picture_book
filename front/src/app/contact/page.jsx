@@ -74,7 +74,7 @@ const ContactForm = () => {
         {/* お問い合わせ内容の種類 */}
         <div>
           <label className="block text-lg font-medium text-heading">
-            お問い合わせ内容の種類（必須）
+            お問い合わせ内容の種類
           </label>
           <div className="space-y-2 mt-2">
             {["ご質問", "ご意見・ご要望", "不具合の報告", "その他"].map((type) => (
@@ -110,7 +110,7 @@ const ContactForm = () => {
         {/* お問い合わせ内容 */}
         <div>
           <label className="block text-lg font-medium text-heading">
-            お問い合わせ内容（必須）
+            お問い合わせ内容
           </label>
           <textarea
             name="content"
@@ -123,7 +123,7 @@ const ContactForm = () => {
 
         {/* 名前 */}
         <div>
-          <label className="block text-lg font-medium text-heading">【任意】お名前(個別回答をご希望の際はご入力ください)</label>
+          <label className="block text-lg font-medium text-heading">お名前</label>
           <input
             type="text"
             name="name"
@@ -136,7 +136,7 @@ const ContactForm = () => {
         {/* メールアドレス */}
         <div>
           <label className="block text-lg font-medium text-heading">
-          【任意】メールアドレス(個別回答をご希望の際はご入力ください）
+          メールアドレス
           </label>
           <input
             type="email"
