@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get 'health/check'
+  post '/forms', to: 'forms#create'
   # Devise の認証ルート
   devise_for :users, path: 'api/v1/auth', controllers: {
     sessions: 'api/v1/auth/sessions',

@@ -1,6 +1,8 @@
 class ApplicationController < ActionController::API
   include Devise::Controllers::Helpers # Deviseのヘルパーを利用可能にする
+  include ActionController::RequestForgeryProtection
 
+  protect_from_forgery with: :null_session
   before_action :configure_permitted_parameters, if: :devise_controller?
 
   protected
