@@ -111,10 +111,14 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage }) {
           setSelectedImageIndex(null);
         }
       }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault(); // デフォルトのアクションを防ぐ
+        undo();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex]);
+  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex, undo]);
 
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
