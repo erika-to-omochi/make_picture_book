@@ -16,6 +16,7 @@ export default function ModalManager() {
     visibility: "public",
   });
 
+  const [isLoading, setIsLoading] = useState(false); // ローディング状態
   const { pages, resetCanvas, bookData } = useCanvasStore(); // bookDataを直接取得
   const router = useRouter();
 
@@ -52,6 +53,7 @@ export default function ModalManager() {
 
   // モーダル保存処理
   const handleModalSave = async () => {
+    setIsLoading(true);
     try {
       // 書籍データのペイロード
       const bookDataPayload = {
@@ -148,6 +150,8 @@ export default function ModalManager() {
     } catch (error) {
       console.error("保存中にエラーが発生しました:", error);
       alert("保存中にエラーが発生しました");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -165,7 +169,10 @@ export default function ModalManager() {
       >
         下書き保存
       </button>
-
+      {/* ローディングインジケーターの表示 */}
+      {isLoading && (
+        <span className="loading loading-dots loading-lg mt-4"></span>
+      )}
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
