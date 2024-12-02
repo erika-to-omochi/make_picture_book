@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { FaTree, FaUser, FaBriefcase } from "react-icons/fa";
 import { MdFormatColorFill, MdOutlineTextFields } from "react-icons/md";
 import TextInputCanvas from "./TextInputCanvas";
@@ -14,11 +14,31 @@ export default function CreateBookFooter({
   togglePanel,
   handleAddText,
   handleUpdateText,
-  selectedText,
   setBackgroundColor,
 }) {
 
   const handleAddImage = useCanvasStore((state) => state.handleAddImage);
+  const pages = useCanvasStore((state) => state.pages);
+
+  // 最近使用した背景色を計算
+  const recentColors = useMemo(() => {
+    // ページをページ番号の降順にソート（新しい順）
+    const sortedPages = [...pages].sort((a, b) => b.pageNumber - a.pageNumber);
+    const colors = sortedPages.map((page) => page.backgroundColor);
+    const uniqueColors = [];
+    colors.forEach((color) => {
+      if (!uniqueColors.includes(color)) {
+        uniqueColors.push(color);
+      }
+    });
+    return uniqueColors.slice(0, 5); // 最大5色保持
+  }, [pages]);
+
+  // 背景色を選択した際に履歴を更新
+  const handleBackgroundColorChange = (color) => {
+    setBackgroundColor(color);
+    // 履歴はuseMemoで管理されるため、ここでは更新不要
+  };
 
   // パネルごとのコンテンツを関数として定義
   const renderPanelContent = () => {
@@ -38,15 +58,30 @@ export default function CreateBookFooter({
         return <ObjectImages onImageSelect={handleImageSelect} />;
       case "背景色":
         return (
-          <div className="flex items-center p-4 gap-2">
-            <label>背景色を選択:</label>
-            <input
-              type="color"
-              onChange={(e) => {
-                setBackgroundColor(e.target.value)
-              }}
-              className="w-12 h-12"
-            />
+          <div className="flex flex-col p-4 gap-4">
+            <div className="flex items-center gap-2">
+              <label>背景色を選択:</label>
+              <input
+                type="color"
+                onChange={(e) => handleBackgroundColorChange(e.target.value)}
+                className="w-12 h-12"
+              />
+            </div>
+            {recentColors.length > 0 && (
+              <div className="flex items-center gap-2">
+                <label>直近で使った色:</label>
+                <div className="flex gap-2">
+                  {recentColors.map((color, index) => (
+                    <div
+                      key={index}
+                      className="w-8 h-8 cursor-pointer border border-gray-300"
+                      style={{ backgroundColor: color }}
+                      onClick={() => handleBackgroundColorChange(color)} // クリックで再選択
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         );
       default:
