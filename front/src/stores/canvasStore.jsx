@@ -219,7 +219,6 @@ const useCanvasStore = create((set, get) => ({
       return {
         pages: updatedPages,
         currentPageIndex: updatedPages.length - 1,
-        history: [...history, pages],
       };
     });
   },
