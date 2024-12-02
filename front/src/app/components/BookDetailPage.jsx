@@ -86,6 +86,7 @@ function BookDetailPage() {
           showActionButtons={false}
           isReadOnly={true}
           allowAddPage={false}
+          showUndoButton={false}
         />
       )}
       {/* アイコンボタン */}

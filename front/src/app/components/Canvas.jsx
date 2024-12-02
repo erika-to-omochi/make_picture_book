@@ -7,7 +7,7 @@ import { FaChevronCircleLeft, FaChevronCircleRight, FaUndo } from "react-icons/f
 import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
 
-function Canvas({ showActionButtons, isReadOnly, allowAddPage }) {
+function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -147,7 +147,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage }) {
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
     if (isReadOnly) return;
-    const node = e.target;
+        const node = e.target;
     const newPos = node.getPosition();
     const update = {
       positionX: newPos.x,
@@ -320,33 +320,36 @@ const handleImageClick = (index) => {
             />
             <span className="text-bodyText font-semibold">/ {pages.length}</span>
           </div>
-          <button
-            onClick={() => {
-              if (currentPageIndex < pages.length - 1) {
-                setCurrentPageIndex(currentPageIndex + 1);
-              } else {
-                if (allowAddPage) { // ページ追加が許可されている場合のみ追加
-                  addPage();
+            <button
+              onClick={() => {
+                if (currentPageIndex < pages.length - 1) {
+                  setCurrentPageIndex(currentPageIndex + 1);
                 } else {
-                  alert("このページではページの追加はできません。");
+                  if (allowAddPage) { // ページ追加が許可されている場合のみ追加
+                    addPage();
+                  } else {
+                    alert("このページではページの追加はできません。");
+                  }
                 }
-              }
-            }}
-            className={`p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${
-              !allowAddPage && currentPageIndex >= pages.length - 1 ? 'cursor-not-allowed opacity-50' : ''
-            }`}
-            disabled={!allowAddPage && currentPageIndex >= pages.length - 1} // ページ追加が許可されていないかつ最後のページの場合に無効化
-          >
-            <FaChevronCircleRight size={32} />
-          </button>
+              }}
+              className={`p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${
+                !allowAddPage && currentPageIndex >= pages.length - 1 ? 'cursor-not-allowed opacity-50' : ''
+              }`}
+              disabled={!allowAddPage && currentPageIndex >= pages.length - 1} // ページ追加が許可されていないかつ最後のページの場合に無効化
+            >
+              <FaChevronCircleRight size={32} />
+            </button>
           {/* Undo Button */}
-          <button
-            onClick={() => undo()}
-            disabled={history.length === 0}
-            className={`p-2 text-gray-900 flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${history.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <FaUndo size={24} />
-          </button>
+          {showUndoButton && (
+            <button
+              onClick={() => undo()}
+              disabled={history.length === 0}
+              className={`p-2 text-gray-900 flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${history.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <FaUndo size={24} />
+            </button>
+          )}
+
         </div>
         {showActionButtons && (
           <div style={{ display: "flex", gap: "10px", marginTop: "10px", marginBottom: "400px" }}>
