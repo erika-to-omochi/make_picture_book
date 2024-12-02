@@ -31,8 +31,12 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage }) {
   const textRefs = useRef([]);
   const imageRefs = useRef([]);
 
-  const stageWidth = typeof window !== "undefined" ? window.innerWidth * 0.8 : 800;
-  const stageHeight = stageWidth * 0.75;
+  // 仮想キャンバスの寸法を定義
+  const VIRTUAL_CANVAS_WIDTH = 800;
+  const VIRTUAL_CANVAS_HEIGHT = 600;
+  const [stageWidth, setStageWidth] = useState(VIRTUAL_CANVAS_WIDTH);
+  const [stageHeight, setStageHeight] = useState(VIRTUAL_CANVAS_HEIGHT);
+  const [scale, setScale] = useState({ scaleX: 1, scaleY: 1 });
 
   // ローカルステートとして loadedImages を管理
   const [loadedImages, setLoadedImages] = useState([]);
@@ -48,6 +52,26 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage }) {
     pageCharacters: [],
     id: null,
   };
+
+  // ウィンドウのリサイズを処理し、キャンバスサイズとスケールを調整
+  useEffect(() => {
+    const handleResize = () => {
+      const newStageWidth = window.innerWidth * 0.6;
+      const newStageHeight = newStageWidth * 0.714;
+      const newScaleX = newStageWidth / VIRTUAL_CANVAS_WIDTH;
+      const newScaleY = newStageHeight / VIRTUAL_CANVAS_HEIGHT;
+      setStageWidth(newStageWidth);
+      setStageHeight(newStageHeight);
+      setScale({ scaleX: newScaleX, scaleY: newScaleY });
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // 初回呼び出し
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // 画像の読み込み
   useEffect(() => {
@@ -123,9 +147,11 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage }) {
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
     if (isReadOnly) return;
+    const node = e.target;
+    const newPos = node.getPosition();
     const update = {
-      positionX: e.target.x(),
-      positionY: e.target.y()
+      positionX: newPos.x,
+      positionY: newPos.y
     };
     if (type === 'text') {
       handleUpdateText(index, update);
@@ -205,6 +231,8 @@ const handleImageClick = (index) => {
         ref={stageRef}
         width={stageWidth}
         height={stageHeight}
+        scaleX={scale.scaleX}
+        scaleY={scale.scaleY}
         onMouseDown={handleStageMouseDown}
         style={{ border: '1px solid #ccc' }} // 確認用に境界線を追加
       >
@@ -212,8 +240,8 @@ const handleImageClick = (index) => {
           <Rect
             x={0}
             y={0}
-            width={stageWidth}
-            height={stageHeight}
+            width={VIRTUAL_CANVAS_WIDTH}
+            height={VIRTUAL_CANVAS_HEIGHT}
             fill={currentPage.backgroundColor || "#ffffff"}
             onMouseDown={handleStageMouseDown}
             name="background"

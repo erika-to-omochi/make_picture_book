@@ -73,13 +73,13 @@ function BookDetailPage() {
   if (!bookData) return <p>Loading...</p>;
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-8">
-      {/* タイトルと著者 */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">{bookData.title}</h1>
-        <p className="text-lg text-bodyText">作者: {bookData.author_name}</p>
-      </div>
-
+    <>
+    {/* タイトルと著者を外側に移動 */}
+    <div className="text-center mt-4">
+      <h1 className="text-3xl font-bold mb-2">{bookData.title}</h1>
+      <p className="text-lg text-bodyText">作者: {bookData.author_name}</p>
+    </div>
+    <div className="flex flex-col items-center justify-center space-y-4 overflow-y-auto w-full min-h-0 mb-40">
       {/* キャンバス */}
       {pages.length > 0 && pages[currentPageIndex] && (
         <Canvas
@@ -88,7 +88,6 @@ function BookDetailPage() {
           allowAddPage={false}
         />
       )}
-
       {/* アイコンボタン */}
       <div className="flex space-x-6">
         <button
@@ -125,6 +124,7 @@ function BookDetailPage() {
         )}
       </div>
     </div>
+    </>
   );
 }
 
