@@ -1,7 +1,7 @@
 export default function PrivacyPolicyPage() {
   return (
     <article className="mx-4 pb-16 pt-4 *:my-4 md:container md:m-auto md:max-w-[800px] leading-loose">
-      <h1 className="text-center text-3xl font-bold mb-6">プライバシーポリシー</h1>
+      <h1 className="text-xl text-center md:text-2xl">プライバシーポリシー</h1>
 
       <section>
         <h2 className="font-bold my-2">お客様から取得する情報</h2>
