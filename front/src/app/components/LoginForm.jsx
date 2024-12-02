@@ -90,15 +90,6 @@ export default function LoginForm() {
           </button>
         </div>
       </form>
-
-      {/* デバッグ情報を表示 */}
-      {debugInfo && (
-        <div className="mt-4 p-4 border rounded bg-gray-100">
-          <h3 className="text-lg font-semibold">デバッグ情報</h3>
-          <p>Access Token: {debugInfo.access_token}</p>
-          <p>Refresh Token: {debugInfo.refresh_token}</p>
-        </div>
-      )}
     </div>
   );
 }
