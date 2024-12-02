@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
 import useCanvasStore from '../../stores/canvasStore';
-import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
+import { FaChevronCircleLeft, FaChevronCircleRight, FaUndo } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
 
@@ -22,6 +22,8 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage }) {
     deleteImage,
     updateImage,
     handleUpdateText,
+    undo,
+    history,
   } = useCanvasStore();
 
   const transformerRef = useRef(null);
@@ -109,10 +111,14 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage }) {
           setSelectedImageIndex(null);
         }
       }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault(); // デフォルトのアクションを防ぐ
+        undo();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex]);
+  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex, undo]);
 
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
@@ -194,7 +200,7 @@ const handleImageClick = (index) => {
   }, [loadedImages]);
 
   return (
-    <div className="flex flex-col items-center pt-5 pb-20 overflow-y-auto">
+    <div className="flex flex-col items-center pt-5 overflow-y-auto">
       <Stage
         ref={stageRef}
         width={stageWidth}
@@ -298,12 +304,20 @@ const handleImageClick = (index) => {
                 }
               }
             }}
-            className={`p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-blue-500 hover:bg-blue-100 hover:shadow-md ${
+            className={`p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${
               !allowAddPage && currentPageIndex >= pages.length - 1 ? 'cursor-not-allowed opacity-50' : ''
             }`}
             disabled={!allowAddPage && currentPageIndex >= pages.length - 1} // ページ追加が許可されていないかつ最後のページの場合に無効化
           >
             <FaChevronCircleRight size={32} />
+          </button>
+          {/* Undo Button */}
+          <button
+            onClick={() => undo()}
+            disabled={history.length === 0}
+            className={`p-2 text-gray-900 flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${history.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <FaUndo size={24} />
           </button>
         </div>
         {showActionButtons && (
