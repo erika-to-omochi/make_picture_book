@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaHome, FaBook, FaEdit, FaInfoCircle, FaFileAlt, FaShieldAlt, FaEnvelope, FaUser, FaUserPlus, FaSignOutAlt, FaGithub } from 'react-icons/fa';
@@ -24,6 +24,29 @@ const Header = () => {
     router.push("/");
     setTimeout(() => setLogoutMessage(null), 3000);
   };
+
+  // メニューを閉じるクリックイベントリスナー
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const headerElement = document.querySelector("header");
+
+      // ヘッダー内をクリックした場合は何もしない
+      if (headerElement && headerElement.contains(event.target)) {
+        return;
+      }
+
+      // ヘッダー外をクリックした場合はメニューを閉じる
+      setIsMenuOpen(false);
+    };
+
+    // イベントリスナーを追加
+    document.addEventListener("click", handleClickOutside);
+
+    // コンポーネントのアンマウント時にクリーンアップ
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>

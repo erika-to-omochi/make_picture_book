@@ -67,6 +67,7 @@ export default function CreateBookPage() {
         onComplete={onComplete}
         onSaveDraft={onSaveDraft}
         showActionButtons={true}
+        allowAddPage={true}
       />
 
       <CreateBookFooter
