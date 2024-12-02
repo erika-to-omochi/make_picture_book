@@ -33,7 +33,7 @@ class FormsController < ApplicationController
       'entry.1355840158' => form_params[:name],        # 名前
       'entry.1146681366' => form_params[:email],       # アドレス
       'entry.636494628' => form_params[:rating],       # 評価
-      'entry.429882784' => form_params[:rating_reason],# 理由
+      'entry.1728339345' => form_params[:rating_reason],# 理由
       'entry.649895501' => "了承しました。"            # 固定値：了承
     }
 
