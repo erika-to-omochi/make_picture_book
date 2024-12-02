@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { FaTree, FaUser, FaBriefcase } from "react-icons/fa";
 import { MdFormatColorFill, MdOutlineTextFields } from "react-icons/md";
 import TextInputCanvas from "./TextInputCanvas";
@@ -56,6 +57,32 @@ export default function CreateBookFooter({
   const handleImageSelect = (src) => {
     handleAddImage(src);
   };
+
+  // Footer以外をクリックしたときに閉じる
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const footerElement = document.querySelector("footer");
+      const panelElement = document.querySelector(".fixed.left-0.bottom-0");
+
+      // Footerとパネル以外をクリックした場合に閉じる
+      if (
+        footerElement &&
+        !footerElement.contains(event.target) &&
+        panelElement &&
+        !panelElement.contains(event.target)
+      ) {
+        togglePanel(null);
+      }
+    };
+
+    // イベントリスナーを追加
+    document.addEventListener("click", handleClickOutside);
+
+    // クリーンアップ
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [togglePanel]);
 
   return (
     <>

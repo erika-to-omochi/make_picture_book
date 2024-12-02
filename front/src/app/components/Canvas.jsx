@@ -194,7 +194,7 @@ const handleImageClick = (index) => {
   }, [loadedImages]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "20px" }}>
+    <div className="flex flex-col items-center pt-5 pb-20 overflow-y-auto">
       <Stage
         ref={stageRef}
         width={stageWidth}
@@ -307,7 +307,7 @@ const handleImageClick = (index) => {
           </button>
         </div>
         {showActionButtons && (
-          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+          <div style={{ display: "flex", gap: "10px", marginTop: "10px", marginBottom: "400px" }}>
             <ModalManager />
           </div>
         )}
