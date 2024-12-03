@@ -29,9 +29,6 @@ export default function LoginForm() {
 
       // リフレッシュトークンとアクセストークンを保存
       if (access_token && refresh_token) {
-        localStorage.setItem('access_token', access_token);
-        localStorage.setItem('refresh_token', refresh_token);
-
         console.log('Access Token:', access_token);
         console.log('Refresh Token:', refresh_token);
 
@@ -41,9 +38,8 @@ export default function LoginForm() {
       }
 
       const userName = user?.data?.attributes?.name;
-      if (userName) {
-        login(userName);
-        localStorage.setItem('userName', userName);
+      if (userName && access_token && refresh_token) {
+        login(userName, access_token, refresh_token);
         showLoginMessage(userName);
       } else {
         console.warn("レスポンスに 'user.data.attributes.name' が含まれていません");

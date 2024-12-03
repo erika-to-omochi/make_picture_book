@@ -11,14 +11,18 @@ const useBooksStore = create((set) => ({
   fetchPublishedBooks: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await axiosInstance.get('/api/v1/books');
-      const sortedBooks = response.data.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      );
-      set({ publishedBooks: sortedBooks, loading: false });
+      const response = await axiosInstance.get('/api/v1/books'); // 修正後の index エンドポイント
+      if (Array.isArray(response.data)) {
+        const sortedBooks = response.data.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        set({ publishedBooks: sortedBooks, loading: false });
+      } else {
+        throw new Error("Invalid data format for publishedBooks");
+      }
     } catch (err) {
       console.error("Error fetching published books:", err);
-      set({ error: err, loading: false });
+      set({ error: err.message || "Error fetching published books", loading: false });
     }
   },
 
@@ -27,13 +31,17 @@ const useBooksStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await axiosInstance.get('/api/v1/books/my_books');
-      const sortedBooks = response.data.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      );
-      set({ myBooks: sortedBooks, loading: false });
+      if (Array.isArray(response.data)) {
+        const sortedBooks = response.data.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        set({ myBooks: sortedBooks, loading: false });
+      } else {
+        throw new Error("Invalid data format for myBooks");
+      }
     } catch (err) {
       console.error("Error fetching my books:", err);
-      set({ error: err, loading: false });
+      set({ error: err.message || "Error fetching my books", loading: false });
     }
   },
 }));

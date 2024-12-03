@@ -14,7 +14,7 @@ class Api::V1::BooksController < ApplicationController
     books = current_user.books
 
     render json: books.as_json(
-      only: [:id, :title, :author_name, :created_at, :user_id],
+      only: [:id, :title, :author_name, :created_at, :user_id, :is_draft],
       include: {
         pages: { only: [:page_number] },
         tags: { only: [:name] }
@@ -23,7 +23,7 @@ class Api::V1::BooksController < ApplicationController
   end
 
   def index
-    books = Book.all
+    books = Book.published
     render json: books.as_json(
       only: [:id, :title, :author_name, :created_at],
       include: {
