@@ -59,6 +59,7 @@ function EditBookPage() {
           }}
           showActionButtons={true}
           allowAddPage={true}
+          showUndoButton={true}
         />
       )}
 
