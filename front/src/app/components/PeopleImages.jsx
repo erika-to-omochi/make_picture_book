@@ -7,8 +7,7 @@ export default function PeopleImages({ onImageSelect }) {
 
   return (
     <div
-      className="grid grid-cols-8 gap-4 overflow-y-scroll"
-      style={{ maxHeight: '250px' }}
+      className="grid grid-cols-8 md:grid-cols-3 gap-2 overflow-y-scroll max-h-[250px] md:max-h-[800px] lg:max-h-[1000px]"
     >
       {images.map((src, index) => (
         <div key={index} className="w-20 h-20 flex items-center justify-center">
@@ -19,7 +18,7 @@ export default function PeopleImages({ onImageSelect }) {
             height={48}
             onClick={() => {
               console.log("Image clicked:", src);
-              onImageSelect && onImageSelect(src)
+              onImageSelect && onImageSelect(src);
             }}
           />
         </div>

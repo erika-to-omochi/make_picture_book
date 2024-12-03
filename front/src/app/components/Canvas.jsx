@@ -226,7 +226,8 @@ const handleImageClick = (index) => {
   }, [loadedImages]);
 
   return (
-    <div className="flex flex-col items-center pt-5 overflow-y-auto">
+    <div className="flex flex-col items-center md:items-end md:pr-16 pt-5 overflow-y-auto min-h-screen">
+      <div className="w-full max-w-4xl">
       <Stage
         ref={stageRef}
         width={stageWidth}
@@ -234,7 +235,6 @@ const handleImageClick = (index) => {
         scaleX={scale.scaleX}
         scaleY={scale.scaleY}
         onMouseDown={handleStageMouseDown}
-        style={{ border: '1px solid #ccc' }} // 確認用に境界線を追加
       >
         <Layer>
           <Rect
@@ -293,9 +293,10 @@ const handleImageClick = (index) => {
           )}
         </Layer>
       </Stage>
-      <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+      </div>
+      <div className="mt-5 flex flex-col items-center gap-4 w-full max-w-4xl">
         {/* ページ移動エリア */}
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+        <div className="flex gap-4 items-center justify-center">
           <button
             onClick={() => setCurrentPageIndex(currentPageIndex - 1)}
             disabled={currentPageIndex === 0}
