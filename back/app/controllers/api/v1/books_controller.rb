@@ -19,7 +19,7 @@ class Api::V1::BooksController < ApplicationController
     books = Book.my_books(current_user.id)
 
     render json: books.as_json(
-      only: [:id, :title, :author_name, :created_at, :user_id, :is_draft],
+      only: [:id, :title, :author_name, :created_at, :user_id, :is_draft, :visibility],
       include: {
         pages: { only: [:page_number] },
         tags: { only: [:name] }

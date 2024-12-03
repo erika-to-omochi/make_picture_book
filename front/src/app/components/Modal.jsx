@@ -24,7 +24,7 @@ export default function Modal({ isOpen, onClose, onSave, modalType, title, setTi
             </label>
             <label className="inline-flex items-center">
               <input type="radio" value="private" checked={visibility === "private"} onChange={() => setVisibility("private")} />
-              <span className="ml-2">自分のみ</span>
+              <span className="ml-2">公開しない</span>
             </label>
           </div>
         )}
