@@ -1,40 +1,49 @@
+// src/components/BookList.jsx
 "use client";
 
 import React from "react";
 import PropTypes from 'prop-types';
 import { FaLock, FaLockOpen, FaEdit, FaCheckCircle } from 'react-icons/fa';
 
-function BookList({ books }) {
+function BookList({ books, pageType }) {
   return (
     <div className="space-y-4">
       {books.map((book) => {
-        console.log(`Book ID: ${book.id}, Visibility: ${book.visibility}, Type: ${typeof book.visibility}, is_draft: ${book.is_draft}`);
-
         // 公開範囲とステータスの詳細を取得する関数
         const getVisibilityDetails = (book) => {
+          if (pageType !== "myPage") {
+            // BookListPageでは公開範囲を表示しない
+            return null;
+          }
+
           if (book.is_draft) {
-            // 下書きの場合は公開範囲を表示しない
+            // 下書きの場合は「非公開」と表示
             return null;
           } else {
             // 下書きでない場合は公開範囲に基づく表示
             return {
               text: book.visibility === 0 ? "公開" : "非公開",
-              className: book.visibility === 0 ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800',
+              className: book.visibility === 0 ? 'bg-gray-200 text-green-800' : 'bg-gray-200 text-red-800',
               icon: book.visibility === 0 ? <FaLockOpen className="mr-1" aria-label="公開" /> : <FaLock className="mr-1" aria-label="非公開" />,
             };
           }
         };
 
         const getStatusDetails = (book) => {
+          if (pageType !== "myPage") {
+            // BookListPageではステータスを表示しない
+            return null;
+          }
+
           return book.is_draft
             ? {
                 text: "下書き",
-                className: 'bg-yellow-200 text-yellow-800',
+                className: 'bg-gray-200 text-yellow-800',
                 icon: <FaEdit className="mr-1" aria-label="下書き" />,
               }
             : {
                 text: "完成",
-                className: 'bg-blue-200 text-blue-800',
+                className: 'bg-gray-200 text-blue-800',
                 icon: <FaCheckCircle className="mr-1" aria-label="完成" />,
               };
         };
@@ -51,7 +60,7 @@ function BookList({ books }) {
               <h2 className="text-xl font-semibold">{book.title}</h2>
               <p className="text-bodyText text-sm">作者: {book.author_name}</p>
               <div className="flex space-x-2 mt-2">
-                {/* 公開範囲の表示（下書きでない場合のみ） */}
+                {/* 公開範囲の表示（MyPageのみ） */}
                 {visibility && (
                   <span
                     className={`flex items-center px-2 py-1 text-xs font-semibold rounded ${visibility.className}`}
@@ -61,14 +70,16 @@ function BookList({ books }) {
                     {visibility.text}
                   </span>
                 )}
-                {/* ステータスの表示 */}
-                <span
-                  className={`flex items-center px-2 py-1 text-xs font-semibold rounded ${status.className}`}
-                  title={status.text}
-                >
-                  {status.icon}
-                  {status.text}
-                </span>
+                {/* ステータスの表示（MyPageのみ） */}
+                {status && (
+                  <span
+                    className={`flex items-center px-2 py-1 text-xs font-semibold rounded ${status.className}`}
+                    title={status.text}
+                  >
+                    {status.icon}
+                    {status.text}
+                  </span>
+                )}
               </div>
             </div>
             <button
@@ -86,6 +97,7 @@ function BookList({ books }) {
 
 BookList.propTypes = {
   books: PropTypes.array.isRequired,
+  pageType: PropTypes.oneOf(['myPage', 'bookListPage']).isRequired,
 };
 
 export default BookList;
