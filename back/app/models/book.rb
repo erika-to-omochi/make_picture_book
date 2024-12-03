@@ -11,6 +11,7 @@ class Book < ApplicationRecord
   validates :visibility, inclusion: { in: [0, 1] } #0 = 全体公開, 1 = 自分のみ
   validates :is_draft, inclusion: { in: [true, false] }
 
-  scope :published, -> { where(is_draft: false) }
+  scope :published, -> { where(is_draft: false, visibility: 0) }
   scope :drafts, -> { where(is_draft: true) }
+  scope :my_books, ->(user_id) { where(user_id: user_id) }
 end
