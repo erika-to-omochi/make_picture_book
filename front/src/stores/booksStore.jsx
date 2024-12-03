@@ -11,7 +11,7 @@ const useBooksStore = create((set) => ({
   fetchPublishedBooks: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await axiosInstance.get('/api/v1/books'); // 修正後の index エンドポイント
+      const response = await axiosInstance.get('/api/v1/books/public_books'); // 修正後の index エンドポイント
       if (Array.isArray(response.data)) {
         const sortedBooks = response.data.sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at)

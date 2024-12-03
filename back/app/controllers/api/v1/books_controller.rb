@@ -10,11 +10,16 @@ class Api::V1::BooksController < ApplicationController
     render json: { error: "Book not found" }, status: :not_found
   end
 
+  def public_books
+    books = Book.published
+    render json: books, include: [:tags, :pages]
+  end
+
   def my_books
-    books = current_user.books
+    books = Book.my_books(current_user.id)
 
     render json: books.as_json(
-      only: [:id, :title, :author_name, :created_at, :user_id, :is_draft],
+      only: [:id, :title, :author_name, :created_at, :user_id, :is_draft, :visibility],
       include: {
         pages: { only: [:page_number] },
         tags: { only: [:name] }
