@@ -6,6 +6,7 @@ import useCanvasStore from '../../stores/canvasStore';
 import { FaChevronCircleLeft, FaChevronCircleRight, FaUndo } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
+import useIsMobile from '../../hooks/useIsMobile'; // 必要に応じてパスを調整
 
 function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton }) {
   const {
@@ -33,7 +34,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
 
   // 仮想キャンバスの寸法を定義
   const VIRTUAL_CANVAS_WIDTH = 800;
-  const VIRTUAL_CANVAS_HEIGHT = 600;
+  const VIRTUAL_CANVAS_HEIGHT = 568;
   const [stageWidth, setStageWidth] = useState(VIRTUAL_CANVAS_WIDTH);
   const [stageHeight, setStageHeight] = useState(VIRTUAL_CANVAS_HEIGHT);
   const [scale, setScale] = useState({ scaleX: 1, scaleY: 1 });
@@ -53,11 +54,15 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
     id: null,
   };
 
+  // カスタムフックを使用してモバイル判定
+  const isMobile = useIsMobile();
+
   // ウィンドウのリサイズを処理し、キャンバスサイズとスケールを調整
   useEffect(() => {
     const handleResize = () => {
       const newStageWidth = window.innerWidth * 0.6;
-      const newStageHeight = newStageWidth * 0.714;
+      const aspectRatio = VIRTUAL_CANVAS_HEIGHT / VIRTUAL_CANVAS_WIDTH; // 正しいアスペクト比を計算
+      const newStageHeight = newStageWidth * aspectRatio;
       const newScaleX = newStageWidth / VIRTUAL_CANVAS_WIDTH;
       const newScaleY = newStageHeight / VIRTUAL_CANVAS_HEIGHT;
       setStageWidth(newStageWidth);
@@ -147,7 +152,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
     if (isReadOnly) return;
-        const node = e.target;
+    const node = e.target;
     const newPos = node.getPosition();
     const update = {
       positionX: newPos.x,
@@ -189,9 +194,9 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
         scaleX: newProperties.scaleX,
         scaleY: newProperties.scaleY,
       });
-        // スケールをリセットしてストアに保存
-        node.scaleX(1);
-        node.scaleY(1);
+      // スケールをリセットしてストアに保存
+      node.scaleX(1);
+      node.scaleY(1);
     }
   };
 
@@ -204,12 +209,12 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
   };
 
   // 画像クリック時の処理
-const handleImageClick = (index) => {
-  if (isReadOnly) return;
-  console.log("Image clicked at index:", index);
-  setSelectedImageIndex(index);
-  setSelectedTextIndex(null);
-};
+  const handleImageClick = (index) => {
+    if (isReadOnly) return;
+    console.log("Image clicked at index:", index);
+    setSelectedImageIndex(index);
+    setSelectedTextIndex(null);
+  };
 
   // ステージクリック時の処理
   const handleStageMouseDown = (e) => {
@@ -226,77 +231,88 @@ const handleImageClick = (index) => {
   }, [loadedImages]);
 
   return (
-    <div className="flex flex-col items-center md:items-end md:pr-16 pt-5 overflow-y-auto min-h-screen">
-      <div className="w-full max-w-4xl">
-      <Stage
-        ref={stageRef}
-        width={stageWidth}
-        height={stageHeight}
-        scaleX={scale.scaleX}
-        scaleY={scale.scaleY}
-        onMouseDown={handleStageMouseDown}
+    <div
+      className={`flex flex-col pt-5 overflow-y-auto ${
+        isMobile ? 'items-center' : 'items-end'
+      }`}
+    >
+      {/* キャンバスコンテナ */}
+      <div
+        className={`max-w-none ${
+          isMobile ? 'mx-auto' : 'mr-10' // 左マージンを追加
+      }`}
       >
-        <Layer>
-          <Rect
-            x={0}
-            y={0}
-            width={VIRTUAL_CANVAS_WIDTH}
-            height={VIRTUAL_CANVAS_HEIGHT}
-            fill={currentPage.backgroundColor || "#ffffff"}
-            onMouseDown={handleStageMouseDown}
-            name="background"
-          />
-          {currentPage.pageElements.map((element, index) => {
-            if (element.elementType === 'text') {
-              return (
-                <Text
-                key={`text-${index}`}
-                ref={(el) => (textRefs.current[index] = el)}
-                text={element.text}
-                x={element.positionX}
-                y={element.positionY}
-                draggable={!isReadOnly}
-                onDragEnd={(e) => handleDragEnd(index, e, 'text')}
-                onTransformEnd={(e) => handleTransformEnd(index, e, 'text')}
-                fontSize={element.fontSize}
-                fill={element.fontColor}
-                onClick={() => handleTextClick(index)}
-                rotation={element.rotation || 0}
-                scaleX={1}
-                scaleY={1}
-              />
-              );
-            } else if (element.elementType === 'image') {
-              const loadedImage = loadedImages.find(img => img.src === element.src);
-              if (!loadedImage) return null;
-              return (
-                <KonvaImage
-                  key={`image-${index}`}
-                  ref={(el) => (imageRefs.current[index] = el)}
-                  image={loadedImage.image}
-                  x={element.positionX}
-                  y={element.positionY}
-                  draggable={!isReadOnly}
-                  onDragEnd={(e) => handleDragEnd(index, e, 'image')}
-                  onTransformEnd={(e) => handleTransformEnd(index, e, 'image')}
-                  onClick={() => { handleImageClick(index); }}
-                  scaleX={element.scaleX || 1}
-                  scaleY={element.scaleY || 1}
-                  rotation={element.rotation || 0}
-                />
-              );
-            }
-            return null;
-          })}
-          {(!isReadOnly && (selectedTextIndex !== null || selectedImageIndex !== null)) && (
-            <Transformer ref={transformerRef} anchorSize={8} borderDash={[6, 2]} keepRatio={true} />
-          )}
-        </Layer>
-      </Stage>
+        <Stage
+          ref={stageRef}
+          width={stageWidth}
+          height={stageHeight}
+          scaleX={scale.scaleX}
+          scaleY={scale.scaleY}
+          onMouseDown={handleStageMouseDown}
+        >
+          <Layer>
+            <Rect
+              x={0}
+              y={0}
+              width={VIRTUAL_CANVAS_WIDTH}
+              height={VIRTUAL_CANVAS_HEIGHT}
+              fill={currentPage.backgroundColor || "#ffffff"}
+              onMouseDown={handleStageMouseDown}
+              name="background"
+            />
+            {currentPage.pageElements.map((element, index) => {
+              if (element.elementType === 'text') {
+                return (
+                  <Text
+                    key={`text-${index}`}
+                    ref={(el) => (textRefs.current[index] = el)}
+                    text={element.text}
+                    x={element.positionX}
+                    y={element.positionY}
+                    draggable={!isReadOnly}
+                    onDragEnd={(e) => handleDragEnd(index, e, 'text')}
+                    onTransformEnd={(e) => handleTransformEnd(index, e, 'text')}
+                    fontSize={element.fontSize}
+                    fill={element.fontColor}
+                    onClick={() => handleTextClick(index)}
+                    rotation={element.rotation || 0}
+                    scaleX={1}
+                    scaleY={1}
+                  />
+                );
+              } else if (element.elementType === 'image') {
+                const loadedImage = loadedImages.find(img => img.src === element.src);
+                if (!loadedImage) return null;
+                return (
+                  <KonvaImage
+                    key={`image-${index}`}
+                    ref={(el) => (imageRefs.current[index] = el)}
+                    image={loadedImage.image}
+                    x={element.positionX}
+                    y={element.positionY}
+                    draggable={!isReadOnly}
+                    onDragEnd={(e) => handleDragEnd(index, e, 'image')}
+                    onTransformEnd={(e) => handleTransformEnd(index, e, 'image')}
+                    onClick={() => { handleImageClick(index); }}
+                    scaleX={element.scaleX || 1}
+                    scaleY={element.scaleY || 1}
+                    rotation={element.rotation || 0}
+                  />
+                );
+              }
+              return null;
+            })}
+            {(!isReadOnly && (selectedTextIndex !== null || selectedImageIndex !== null)) && (
+              <Transformer ref={transformerRef} anchorSize={8} borderDash={[6, 2]} keepRatio={true} />
+            )}
+          </Layer>
+        </Stage>
       </div>
-      <div className="mt-5 flex flex-col items-center gap-4 w-full max-w-4xl">
+
+      {/* 下部の要素コンテナ */}
+      <div className="mt-5 flex flex-col items-center gap-4 w-full max-w-4xl mx-auto">
         {/* ページ移動エリア */}
-        <div className="flex gap-4 items-center justify-center">
+        <div className="flex gap-4 items-center justify-center w-full">
           <button
             onClick={() => setCurrentPageIndex(currentPageIndex - 1)}
             disabled={currentPageIndex === 0}
@@ -306,7 +322,7 @@ const handleImageClick = (index) => {
           </button>
           {/* 現在のページ / 総ページ数 */}
           <div className="flex items-center space-x-2">
-          <input
+            <input
               type="number"
               min={1}
               max={pages.length}
@@ -321,26 +337,26 @@ const handleImageClick = (index) => {
             />
             <span className="text-bodyText font-semibold">/ {pages.length}</span>
           </div>
-            <button
-              onClick={() => {
-                if (currentPageIndex < pages.length - 1) {
-                  setCurrentPageIndex(currentPageIndex + 1);
+          <button
+            onClick={() => {
+              if (currentPageIndex < pages.length - 1) {
+                setCurrentPageIndex(currentPageIndex + 1);
+              } else {
+                if (allowAddPage) { // ページ追加が許可されている場合のみ追加
+                  addPage();
                 } else {
-                  if (allowAddPage) { // ページ追加が許可されている場合のみ追加
-                    addPage();
-                  } else {
-                    alert("このページではページの追加はできません。");
-                  }
+                  alert("このページではページの追加はできません。");
                 }
-              }}
-              className={`p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${
-                !allowAddPage && currentPageIndex >= pages.length - 1 ? 'cursor-not-allowed opacity-50' : ''
-              }`}
-              disabled={!allowAddPage && currentPageIndex >= pages.length - 1} // ページ追加が許可されていないかつ最後のページの場合に無効化
-            >
-              <FaChevronCircleRight size={32} />
-            </button>
-          {/* Undo Button */}
+              }
+            }}
+            className={`p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${
+              !allowAddPage && currentPageIndex >= pages.length - 1 ? 'cursor-not-allowed opacity-50' : ''
+            }`}
+            disabled={!allowAddPage && currentPageIndex >= pages.length - 1} // ページ追加が許可されていないかつ最後のページの場合に無効化
+          >
+            <FaChevronCircleRight size={32} />
+          </button>
+          {/* Undo ボタン */}
           {showUndoButton && (
             <button
               onClick={() => undo()}
@@ -350,10 +366,10 @@ const handleImageClick = (index) => {
               <FaUndo size={24} />
             </button>
           )}
-
         </div>
+        {/* ModalManager を中央に配置 */}
         {showActionButtons && (
-          <div style={{ display: "flex", gap: "10px", marginTop: "10px", marginBottom: "400px" }}>
+          <div className="flex gap-2 mt-2 mb-40 justify-center w-full">
             <ModalManager />
           </div>
         )}

@@ -57,8 +57,8 @@ function MyPage() {
     );
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-8">
-      <h1 className="text-3xl font-bold mb-6">{userName}さんの絵本</h1>
+    <div className="flex flex-col items-center justify-center p-8 space-y-8 pb-32">
+      <h1 className="text-3xl font-bold mb-4">{userName}さんの絵本</h1>
       <BookList books={myBooks} pageType="myPage" />
     </div>
   );

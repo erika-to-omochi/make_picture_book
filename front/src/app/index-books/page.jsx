@@ -16,7 +16,7 @@ function BookListPage() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <span className="loading loading-dots loading-lg"></span>
           <p className="mt-4 text-lg font-semibold">ページを読み込んでいます...</p>
@@ -32,8 +32,8 @@ function BookListPage() {
     );
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-8">
-      <h1 className="text-3xl font-bold mb-6">みんなの絵本</h1>
+    <div className="flex flex-col items-center justify-center p-8 space-y-8 pb-32">
+      <h1 className="text-3xl font-bold mb-4">みんなの絵本</h1>
       <BookList books={publishedBooks} pageType="bookListPage" />
     </div>
   );

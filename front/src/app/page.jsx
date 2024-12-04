@@ -20,7 +20,7 @@ function App() {
         style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}
       >
         <div className="flex items-center mb-2">
-          <h2 className="text-2xl font-bold text-heading">チュートリアル</h2>
+          <h2 className="text-2xl font-bold text-heading">チュートリアル ( ※未実装です )</h2>
           <FaInfoCircle size={32} className="ml-2 text-icon" />
         </div>
         <p className="text-sm text-bodyText mb-4">再生して使い方を見る</p>
@@ -54,6 +54,7 @@ function App() {
           imageSrc="home/index.jpg"
           altText="Library"
           additionalInfo="この画面をクリックすると絵本の一覧が見れます"
+          path="/index-books"
         />
         <BookCard
           title="絵本を作ってみる"
@@ -61,6 +62,7 @@ function App() {
           imageSrc="home/make.jpg"
           altText="Create Library"
           additionalInfo="絵本作成にはユーザー登録が必要です"
+          path="/create-book"
         />
       </div>
     </div>

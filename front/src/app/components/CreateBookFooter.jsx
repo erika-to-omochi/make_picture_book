@@ -1,5 +1,3 @@
-// front/src/app/components/CreateBookFooter.jsx
-
 "use client";
 
 import React, { useEffect, useMemo, useRef } from "react";
@@ -10,9 +8,8 @@ import PeopleImages from "./PeopleImages";
 import NatureImages from "./NatureImages";
 import ObjectImages from "./ObjectImages";
 import useCanvasStore from "../../stores/canvasStore";
-import useIsMobile from "@/hooks/useIsMobile"; // カスタムフックをインポート
-import Sidebar from "./Sidebar"; // サイドバーコンポーネントをインポート
-
+import useIsMobile from "@/hooks/useIsMobile";
+import Sidebar from "./Sidebar";
 export default function CreateBookFooter({
   activePanel,
   togglePanel,
@@ -145,7 +142,7 @@ export default function CreateBookFooter({
           ref={panelRef} // パネルに ref を割り当て
           className={`fixed shadow-lg p-4 transition-transform duration-300 bg-white bg-opacity-50 ${
             isMobile
-              ? `left-0 bottom-0 w-full h-1/3 transform ${
+              ? `left-0 bottom-24 w-full h-1/4 transform ${
                   activePanel ? "translate-y-0" : "translate-y-full"
                 }`
               : `top-20 left-20 w-1/4 h-full transform ${
@@ -163,7 +160,7 @@ export default function CreateBookFooter({
       {isMobile ? (
         <footer
           ref={footerRef} // フッターに ref を割り当て
-          className="flex justify-start gap-4 p-4 text-bodyText text-sm bg-white bg-opacity-80 fixed bottom-0 w-full shadow-inner"
+          className="flex justify-center gap-4 p-4 text-bodyText text-sm bg-white bg-opacity-80 fixed bottom-0 w-full shadow-inner"
         >
           <button
             onClick={() => togglePanel("人物")}

@@ -59,7 +59,7 @@ function TextInputCanvas({}) {
         </div>
 
         {/* サイズ選択フィールド */}
-        <div className="w-full flex items-center gap-2 mb-4">
+        <div className="w-full flex items-center gap-2">
           <label className="whitespace-nowrap">サイズ : </label>
           <input
             type="number"
