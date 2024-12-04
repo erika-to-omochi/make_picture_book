@@ -2,6 +2,7 @@
 
 import React, { forwardRef } from "react";
 
+// Sidebar コンポーネントを forwardRef でラップ
 const Sidebar = forwardRef(({ children }, ref) => {
   return (
     <div
@@ -16,5 +17,8 @@ const Sidebar = forwardRef(({ children }, ref) => {
     </div>
   );
 });
+
+// displayName を設定して ESLint エラーを解消
+Sidebar.displayName = "Sidebar";
 
 export default Sidebar;
