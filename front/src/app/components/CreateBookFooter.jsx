@@ -112,7 +112,7 @@ export default function CreateBookFooter({
           ) {
             togglePanel(null);
           }
-        } else {
+        } /*else {
           // デスクトップ/タブレットの場合、サイドバーとパネル以外をクリック
           if (
             sidebarRef.current &&
@@ -122,7 +122,8 @@ export default function CreateBookFooter({
           ) {
             togglePanel(null);
           }
-        }
+        }*/
+
       }
     };
 
