@@ -16,6 +16,7 @@ Rails.application.routes.draw do
       resources :books  do
         resources :pages, only: [:index, :show, :create, :update, :destroy]
         collection do
+          get :public_books
           get :my_books
         end
         member do

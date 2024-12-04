@@ -9,9 +9,21 @@ import useAuthStore from '../../stores/authStore';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { userName, isLoggedIn, logout, loginMessage } = useAuthStore();
+  const { userName, isLoggedIn, logout, loginMessage, setUserName } = useAuthStore();
   const router = useRouter();
   const [logoutMessage, setLogoutMessage] = useState(null);
+
+  // クライアントサイドで userName を初期化
+  useEffect(() => {
+    const storedUserName = localStorage.getItem('userName');
+    const storedAccessToken = localStorage.getItem('access_token');
+    const storedRefreshToken = localStorage.getItem('refresh_token');
+    if (storedUserName && storedAccessToken && storedRefreshToken) {
+      setUserName(storedUserName);
+      // 必要に応じて accessToken と refreshToken をストアに設定
+      useAuthStore.setState({ accessToken: storedAccessToken, refreshToken: storedRefreshToken });
+    }
+  }, [setUserName]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -97,11 +109,9 @@ const Header = () => {
                     <FaUser className="text-icon" /> {userName}のマイページ
                   </p>
                 </Link>
-                <Link href="/">
-                  <p onClick={() => { toggleMenu(); handleLogout(); }} className="flex items-center gap-2 mb-4 cursor-pointer">
-                    <FaSignOutAlt className="text-icon" /> ログアウト
-                  </p>
-                </Link>
+                <button onClick={() => { toggleMenu(); handleLogout(); }} className="flex items-center gap-2 mb-4 cursor-pointer">
+                  <FaSignOutAlt className="text-icon" /> ログアウト
+                </button>
               </>
             ) : (
               <>

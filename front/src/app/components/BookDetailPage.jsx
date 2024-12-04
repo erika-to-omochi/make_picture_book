@@ -6,12 +6,14 @@ import dynamic from "next/dynamic";
 import axiosInstance from '../../api/axios';
 import { FaRegCommentDots, FaPrint, FaEdit, FaTrash } from 'react-icons/fa';
 import useCanvasStore from '../../stores/canvasStore';
+import useIsMobile from "@/hooks/useIsMobile";
 
 const Canvas = dynamic(() => import("./Canvas"), { ssr: false });
 
 function BookDetailPage() {
   const { bookId } = useParams();
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   // Zustandストアから状態とアクションを取得
   const {
@@ -27,10 +29,9 @@ function BookDetailPage() {
   // 書籍データの取得
   useEffect(() => {
     if (bookId) {
-      fetchBookData(bookId).then(() => {
-      });
+      fetchBookData(bookId).then(() => {});
     }
-  }, [bookId, fetchBookData]); // pagesを依存配列から除外
+  }, [bookId, fetchBookData]);
 
   // 作者判定APIを呼び出し
   useEffect(() => {
@@ -73,56 +74,56 @@ function BookDetailPage() {
   if (!bookData) return <p>Loading...</p>;
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-8">
-      {/* タイトルと著者 */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">{bookData.title}</h1>
-        <p className="text-lg text-bodyText">作者: {bookData.author_name}</p>
-      </div>
-
-      {/* キャンバス */}
-      {pages.length > 0 && pages[currentPageIndex] && (
-        <Canvas
-          showActionButtons={false}
-          isReadOnly={true}
-          allowAddPage={false}
-        />
-      )}
-
-      {/* アイコンボタン */}
-      <div className="flex space-x-6">
-        <button
-          onClick={handleComment}
-          className="flex flex-col items-center justify-center p-4 border border-bodyText rounded-md text-bodyText hover:bg-gray-100 transition"
-        >
-          <FaRegCommentDots className="text-bodyText" size={32} />
-          <span className="text-sm mt-2">コメント</span>
-        </button>
-        <button
-          onClick={handlePrint}
-          className="flex flex-col items-center justify-center p-4 border border-bodyText rounded-md text-bodyText hover:bg-gray-100 transition"
-        >
-          <FaPrint className="text-bodyText" size={32} />
-          <span className="text-sm mt-2">印刷する</span>
-        </button>
-        {isAuthor && (
-          <>
-            <button
-              onClick={handleEdit}
-              className="flex flex-col items-center justify-center p-4 border border-bodyText rounded-md text-bodyText hover:bg-gray-100 transition"
-            >
-              <FaEdit className="text-bodyText" size={32} />
-              <span className="text-sm mt-2">編集する</span>
-            </button>
-            <button
-              onClick={handleDelete}
-              className="flex flex-col items-center justify-center p-4 border border-bodyText rounded-md text-bodyText hover:bg-gray-100 transition"
-            >
-              <FaTrash className="text-bodyText" size={32} />
-              <span className="text-sm mt-2">削除する</span>
-            </button>
-          </>
+    <div className="flex flex-col items-center justify-center">
+      {/* メインコンテナ: モバイルはflex-col, デスクトップはflex-row */}
+      <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} items-center justify-center space-y-4 ${!isMobile ? 'space-y-0 space-x-6' : ''} w-full max-w-5xl`}>
+        {/* キャンバスコンテナ */}
+        {pages.length > 0 && pages[currentPageIndex] && (
+          <div className="flex-shrink-0">
+            <Canvas
+              showActionButtons={false}
+              isReadOnly={true}
+              allowAddPage={false}
+              showUndoButton={false}
+            />
+          </div>
         )}
+
+        {/* アイコンボタンコンテナ: モバイルはflex-row, デスクトップはflex-col */}
+        <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'space-x-6' : 'space-y-4'}`}>
+          <button
+            onClick={handleComment}
+            className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-16 h-16"
+          >
+            <FaRegCommentDots className="text-gray-700" size={24} />
+            <span style={{ fontSize: '0.6rem' }} className="mt-1">コメント</span>
+          </button>
+          <button
+            onClick={handlePrint}
+            className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-16 h-16"
+          >
+            <FaPrint className="text-gray-700" size={24} />
+            <span style={{ fontSize: '0.6rem' }} className="mt-1">印刷する</span>
+          </button>
+          {isAuthor && (
+            <>
+              <button
+                onClick={handleEdit}
+                className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-16 h-16"
+              >
+                <FaEdit className="text-gray-700" size={24} />
+                <span style={{ fontSize: '0.6rem' }} className="mt-1">編集する</span>
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-16 h-16"
+              >
+                <FaTrash className="text-gray-700" size={24} />
+                <span style={{ fontSize: '0.6rem' }} className="mt-1">削除する</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
