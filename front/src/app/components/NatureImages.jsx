@@ -7,8 +7,7 @@ export default function NatureImages({ onImageSelect }) {
 
   return (
     <div
-      className="grid grid-cols-8 gap-4 overflow-y-scroll"
-      style={{ maxHeight: '250px' }}
+      className="grid grid-cols-8 md:grid-cols-3 gap-2 overflow-y-scroll max-h-[175px] md:max-h-[800px] lg:max-h-[700px]"
     >
       {images.map((src, index) => (
         <div key={index} className="w-20 h-20 flex items-center justify-center">

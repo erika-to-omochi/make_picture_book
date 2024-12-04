@@ -146,7 +146,7 @@ export default function ModalManager() {
 
       resetCanvas();
       closeModal();
-      router.push('/index-books');
+      router.push('/myPage');
     } catch (error) {
       console.error("保存中にエラーが発生しました:", error);
       alert("保存中にエラーが発生しました");

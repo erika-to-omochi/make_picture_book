@@ -5,11 +5,13 @@ import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import useCanvasStore from "../../../../stores/canvasStore";
 import CreateBookFooter from "@/app/components/CreateBookFooter";
+import useIsMobile from "@/hooks/useIsMobile";
 
 const Canvas = dynamic(() => import("../../../components/Canvas"), { ssr: false });
 
 function EditBookPage() {
   const { bookId } = useParams();
+  const isMobile = useIsMobile();
 
   const {
     setBackgroundColor,
@@ -39,29 +41,25 @@ function EditBookPage() {
   if (!bookData) return <p>Loading...</p>;
 
   return (
-    <div className="flex flex-col items-center justify-center p-8">
-      {/* タイトルと著者 */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">{bookData.title}</h1>
-        <p className="text-lg text-bodyText">作者: {bookData.author_name}</p>
-      </div>
-
+    <div className={`flex flex-col overflow-y-auto ${isMobile ? 'items-center' : 'items-end'}`}>
       {/* キャンバス */}
-      {pages.length > 0 && pages[currentPageIndex] && (
-        <Canvas
-          pageElements={pages[currentPageIndex].pageElements}
-          pageData={pages[currentPageIndex]}
-          backgroundColor={pages[currentPageIndex]?.backgroundColor || "#ffffff"}
-          onUpdateImage={updateImage}
-          onDeleteImage={deleteImage}
-          onSelectText={(index) => {
-            useCanvasStore.getState().setSelectedTextIndex(index);
-          }}
-          showActionButtons={true}
-          allowAddPage={true}
-          showUndoButton={true}
-        />
-      )}
+      <div className={`max-w-none ${isMobile ? 'mx-auto' : 'mr-10'}`}>
+        {pages.length > 0 && pages[currentPageIndex] && (
+          <Canvas
+            pageElements={pages[currentPageIndex].pageElements}
+            pageData={pages[currentPageIndex]}
+            backgroundColor={pages[currentPageIndex]?.backgroundColor || "#ffffff"}
+            onUpdateImage={updateImage}
+            onDeleteImage={deleteImage}
+            onSelectText={(index) => {
+              useCanvasStore.getState().setSelectedTextIndex(index);
+            }}
+            showActionButtons={true}
+            allowAddPage={true}
+            showUndoButton={true}
+          />
+        )}
+      </div>
 
       {/* フッター */}
       <CreateBookFooter
