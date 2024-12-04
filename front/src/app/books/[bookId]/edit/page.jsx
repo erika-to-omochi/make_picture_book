@@ -36,7 +36,22 @@ function EditBookPage() {
     setActivePanel((prev) => (prev === panelName ? null : panelName));
   };
 
-  if (!bookData) return <p>Loading...</p>;
+  if (loading)
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <span className="loading loading-dots loading-lg"></span>
+        <p className="mt-4 text-lg font-semibold">ページを読み込んでいます...</p>
+      </div>
+    </div>
+  );
+
+if (error)
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <p className="text-red-500 text-lg">絵本の読み込み中にエラーが発生しました。</p>
+    </div>
+  );
 
   return (
     <div className="flex flex-col items-center justify-center p-8">

@@ -194,6 +194,7 @@ const handleImageClick = (index) => {
   }, [loadedImages]);
 
   return (
+<<<<<<< Updated upstream
     <div className="flex flex-col items-center pt-5 pb-20 overflow-y-auto">
       <Stage
         ref={stageRef}
@@ -311,6 +312,152 @@ const handleImageClick = (index) => {
             <ModalManager />
           </div>
         )}
+=======
+    <div
+      className={`flex flex-col pt-5 overflow-y-auto ${
+        isMobile ? 'items-center' : 'items-end'
+      }`}
+    >
+      <div className="flex flex-col items-center gap-5">
+        {/* キャンバスコンテナ */}
+        <div
+          className={`max-w-none ${
+            isMobile ? 'mx-auto' : 'mr-10' // 左マージンを追加
+        }`}
+        >
+          <Stage
+            ref={stageRef}
+            width={stageWidth}
+            height={stageHeight}
+            scaleX={scale.scaleX}
+            scaleY={scale.scaleY}
+            onMouseDown={handleStageMouseDown}
+          >
+            <Layer>
+              <Rect
+                x={0}
+                y={0}
+                width={VIRTUAL_CANVAS_WIDTH}
+                height={VIRTUAL_CANVAS_HEIGHT}
+                fill={currentPage.backgroundColor || "#ffffff"}
+                onMouseDown={handleStageMouseDown}
+                name="background"
+              />
+              {currentPage.pageElements.map((element, index) => {
+                if (element.elementType === 'text') {
+                  return (
+                    <Text
+                      key={`text-${index}`}
+                      ref={(el) => (textRefs.current[index] = el)}
+                      text={element.text}
+                      x={element.positionX}
+                      y={element.positionY}
+                      draggable={!isReadOnly}
+                      onDragEnd={(e) => handleDragEnd(index, e, 'text')}
+                      onTransformEnd={(e) => handleTransformEnd(index, e, 'text')}
+                      fontSize={element.fontSize}
+                      fill={element.fontColor}
+                      onClick={() => handleTextClick(index)}
+                      rotation={element.rotation || 0}
+                      scaleX={1}
+                      scaleY={1}
+                    />
+                  );
+                } else if (element.elementType === 'image') {
+                  const loadedImage = loadedImages.find(img => img.src === element.src);
+                  if (!loadedImage) return null;
+                  return (
+                    <KonvaImage
+                      key={`image-${index}`}
+                      ref={(el) => (imageRefs.current[index] = el)}
+                      image={loadedImage.image}
+                      x={element.positionX}
+                      y={element.positionY}
+                      draggable={!isReadOnly}
+                      onDragEnd={(e) => handleDragEnd(index, e, 'image')}
+                      onTransformEnd={(e) => handleTransformEnd(index, e, 'image')}
+                      onClick={() => { handleImageClick(index); }}
+                      scaleX={element.scaleX || 1}
+                      scaleY={element.scaleY || 1}
+                      rotation={element.rotation || 0}
+                    />
+                  );
+                }
+                return null;
+              })}
+              {(!isReadOnly && (selectedTextIndex !== null || selectedImageIndex !== null)) && (
+                <Transformer ref={transformerRef} anchorSize={8} borderDash={[6, 2]} keepRatio={true} />
+              )}
+            </Layer>
+          </Stage>
+        </div>
+
+        {/* 下部の要素コンテナ */}
+        <div className="mt-5 flex flex-col items-center gap-4 w-full max-w-4xl mx-auto">
+          {/* ページ移動エリア */}
+          <div className="flex gap-4 items-center justify-center w-full">
+            <button
+              onClick={() => setCurrentPageIndex(currentPageIndex - 1)}
+              disabled={currentPageIndex === 0}
+              className="p-2 text-bodyText flex items-center justify-center"
+            >
+              <FaChevronCircleLeft size={32} />
+            </button>
+            {/* 現在のページ / 総ページ数 */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="number"
+                min={1}
+                max={pages.length}
+                value={currentPageIndex + 1}
+                onChange={(e) => {
+                  const page = parseInt(e.target.value, 10) - 1; // ユーザーの入力をインデックスに変換
+                  if (page >= 0 && page < pages.length) {
+                    setCurrentPageIndex(page); // ページを設定
+                  }
+                }}
+                className="w-16 p-1 text-center border rounded-md border-gray-300"
+              />
+              <span className="text-bodyText font-semibold">/ {pages.length}</span>
+            </div>
+            <button
+              onClick={() => {
+                if (currentPageIndex < pages.length - 1) {
+                  setCurrentPageIndex(currentPageIndex + 1);
+                } else {
+                  if (allowAddPage) { // ページ追加が許可されている場合のみ追加
+                    addPage();
+                  } else {
+                    alert("このページではページの追加はできません。");
+                  }
+                }
+              }}
+              className={`p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${
+                !allowAddPage && currentPageIndex >= pages.length - 1 ? 'cursor-not-allowed opacity-50' : ''
+              }`}
+              disabled={!allowAddPage && currentPageIndex >= pages.length - 1} // ページ追加が許可されていないかつ最後のページの場合に無効化
+            >
+              <FaChevronCircleRight size={32} />
+            </button>
+            {/* Undo ボタン */}
+            {showUndoButton && (
+              <button
+                onClick={() => undo()}
+                disabled={history.length === 0}
+                className={`p-2 text-gray-900 flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${history.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <FaUndo size={24} />
+              </button>
+            )}
+          </div>
+          {/* ModalManager を中央に配置 */}
+          {showActionButtons && (
+            <div className="flex gap-2 mt-2 mb-40 justify-center w-full">
+              <ModalManager />
+            </div>
+          )}
+        </div>
+>>>>>>> Stashed changes
       </div>
     </div>
   );
