@@ -45,12 +45,10 @@ function TextInputCanvas({}) {
   };
 
   return (
-    <div
-      className="text-input-canvas overflow-y-scroll"
-      style={{ maxHeight: '250px' }}
-    >
-      <div className="flex flex-wrap">
-        <div className="w-full pr-2 mb-4">
+    <div className="grid overflow-y-scroll max-h-[250px] md:max-h-[800px] lg:max-h-[1000px]">
+      <div className="flex flex-wrap lg:flex-col lg:gap-4 lg:items-start">
+        {/* 入力フィールド */}
+        <div className="w-full mb-4">
           <input
             type="text"
             value={inputText}
@@ -59,31 +57,39 @@ function TextInputCanvas({}) {
             className="border p-2 w-full"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <label>サイズ:</label>
+
+        {/* サイズ選択フィールド */}
+        <div className="w-full flex items-center gap-2 mb-4">
+          <label className="whitespace-nowrap">サイズ : </label>
           <input
             type="number"
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
             placeholder="フォントサイズ"
-            className="border p-2 mr-4"
-            style={{ width: '20%' }}
+            className="border p-2"
+            style={{ width: '80px' }} // 必要に応じてサイズ調整
           />
-          <div className="flex items-center p-4 gap-2">
-            <label>文字色:</label>
-            <input
-              type="color"
-              value={fontColor}
-              onChange={(e) => setFontColor(e.target.value)}
-              className="w-12 h-12"
-            />
-          </div>
+        </div>
+
+        {/* 文字色選択フィールド */}
+        <div className="w-full flex items-center gap-2 mb-4">
+          <label>文字色 : </label>
+          <input
+            type="color"
+            value={fontColor}
+            onChange={(e) => setFontColor(e.target.value)}
+            className="w-12 h-12"
+          />
+        </div>
+
+        {/* ボタン */}
+        <div className="w-full">
           <button
             onClick={handleButtonClick}
-            className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 ml-4"
-            style={{ width: '20%' }}
+            className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
+            style={{ width: '80px' }}
           >
-            {selectedText ? 'テキストを更新' : 'キャンバスに追加'}
+            {selectedText ? '更新' : '追加'}
           </button>
         </div>
       </div>

@@ -1,14 +1,13 @@
-// front/src/app/components/Sidebar.jsx
-
 "use client";
 
-import React from "react";
+import React, { forwardRef } from "react";
 
-export default function Sidebar({ children }) {
+const Sidebar = forwardRef(({ children }, ref) => {
   return (
     <div
-      className="fixed top-16 left-0 h-full bg-white shadow-lg p-4 opacity-70"
-      style={{ zIndex: 40 }} // 必要に応じて調整
+      ref={ref} // ref をここに渡す
+      className="fixed top-16 left-0 h-full bg-white shadow-lg p-4 opacity-70 sidebar"
+      style={{ zIndex: 40 }}
     >
       {/* サイドバーのコンテンツ */}
       <div className="flex flex-col items-center gap-4">
@@ -16,5 +15,6 @@ export default function Sidebar({ children }) {
       </div>
     </div>
   );
-}
+});
 
+export default Sidebar;

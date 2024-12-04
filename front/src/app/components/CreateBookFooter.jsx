@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { FaTree, FaUser, FaBriefcase } from "react-icons/fa";
 import { MdFormatColorFill, MdOutlineTextFields } from "react-icons/md";
 import TextInputCanvas from "./TextInputCanvas";
@@ -23,6 +23,11 @@ export default function CreateBookFooter({
   const handleAddImage = useCanvasStore((state) => state.handleAddImage);
   const pages = useCanvasStore((state) => state.pages);
   const isMobile = useIsMobile(); // デバイス判定
+
+  // Refs の作成
+  const panelRef = useRef(null);
+  const sidebarRef = useRef(null);
+  const footerRef = useRef(null);
 
   // 最近使用した背景色を計算
   const recentColors = useMemo(() => {
@@ -96,20 +101,31 @@ export default function CreateBookFooter({
     handleAddImage(src);
   };
 
-  // Footer以外をクリックしたときに閉じる
+  // FooterまたはSidebar以外をクリックしたときに閉じる
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const footerElement = document.querySelector("footer");
-      const panelElement = document.querySelector(".fixed.left-0.bottom-0");
-
-      // Footerとパネル以外をクリックした場合に閉じる
-      if (
-        footerElement &&
-        !footerElement.contains(event.target) &&
-        panelElement &&
-        !panelElement.contains(event.target)
-      ) {
-        togglePanel(null);
+      if (activePanel) {
+        if (isMobile) {
+          // モバイルの場合、フッターとパネル以外をクリック
+          if (
+            footerRef.current &&
+            !footerRef.current.contains(event.target) &&
+            panelRef.current &&
+            !panelRef.current.contains(event.target)
+          ) {
+            togglePanel(null);
+          }
+        } else {
+          // デスクトップ/タブレットの場合、サイドバーとパネル以外をクリック
+          if (
+            sidebarRef.current &&
+            !sidebarRef.current.contains(event.target) &&
+            panelRef.current &&
+            !panelRef.current.contains(event.target)
+          ) {
+            togglePanel(null);
+          }
+        }
       }
     };
 
@@ -120,18 +136,19 @@ export default function CreateBookFooter({
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
-  }, [togglePanel]);
+  }, [togglePanel, isMobile, activePanel]);
 
   return (
     <>
       {activePanel && (
         <div
+          ref={panelRef} // パネルに ref を割り当て
           className={`fixed shadow-lg p-4 transition-transform duration-300 bg-white bg-opacity-50 ${
             isMobile
               ? `left-0 bottom-0 w-full h-1/3 transform ${
                   activePanel ? "translate-y-0" : "translate-y-full"
                 }`
-              : `top-20 left-20 w-1/4.9 h-full transform ${
+              : `top-20 left-20 w-1/4 h-full transform ${
                   activePanel ? "translate-x-0" : "-translate-x-full"
                 }`
           }`}
@@ -145,6 +162,7 @@ export default function CreateBookFooter({
       {/* スマートフォンの場合、フッターとして表示 */}
       {isMobile ? (
         <footer
+          ref={footerRef} // フッターに ref を割り当て
           className="flex justify-start gap-4 p-4 text-bodyText text-sm bg-white bg-opacity-80 fixed bottom-0 w-full shadow-inner"
         >
           <button
@@ -190,7 +208,7 @@ export default function CreateBookFooter({
         </footer>
       ) : (
         // PC/タブレットの場合、サイドバーとして表示
-        <Sidebar>
+        <Sidebar ref={sidebarRef}> {/* サイドバーに ref を割り当て */}
           <div className="flex flex-col items-start gap-4">
             <button
               onClick={() => togglePanel("人物")}
