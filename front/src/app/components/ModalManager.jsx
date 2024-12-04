@@ -167,7 +167,7 @@ export default function ModalManager() {
         onClick={() => openModal("draft")}
         className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
       >
-        下書き保存
+        下書き
       </button>
       {/* ローディングインジケーターの表示 */}
       {isLoading && (
