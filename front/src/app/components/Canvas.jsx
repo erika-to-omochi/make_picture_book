@@ -311,7 +311,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
         </div>
 
         {/* 下部の要素コンテナ */}
-        <div className="mt-5 flex flex-col items-center gap-4 w-full max-w-4xl mx-auto">
+        <div className="mt-5 flex flex-col items-center gap-4 w-full max-w-4xl mx-auto mb-28">
           {/* ページ移動エリア */}
           <div className="flex gap-4 items-center justify-center w-full">
             <button

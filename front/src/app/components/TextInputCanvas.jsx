@@ -45,7 +45,7 @@ function TextInputCanvas({}) {
   };
 
   return (
-    <div className="grid overflow-y-scroll max-h-[250px] md:max-h-[800px] lg:max-h-[1000px]">
+    <div className="grid overflow-y-scroll max-h-[125px] md:max-h-[800px] lg:max-h-[1000px]">
       <div className="flex flex-wrap lg:flex-col lg:gap-4 lg:items-start">
         {/* 入力フィールド */}
         <div className="w-full mb-4">
