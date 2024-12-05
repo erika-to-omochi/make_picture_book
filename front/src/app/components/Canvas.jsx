@@ -364,7 +364,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
                 disabled={history.length === 0}
                 className={`p-2 text-gray-900 flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${history.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <FaUndo size={24} />
+                <FaUndo size={32} />
               </button>
             )}
           </div>

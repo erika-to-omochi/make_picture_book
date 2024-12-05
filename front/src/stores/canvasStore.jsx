@@ -146,7 +146,7 @@ const useCanvasStore = create((set, get) => ({
           fontSize: newText.fontSize,
           fontColor: newText.fontColor,
           positionX: newText.positionX || 100,
-          positionY: newText.positionY || 100,
+          positionY: newText.positionY || 400,
           rotation: newText.rotation || 0,
           scaleX: newText.scaleX || 1,
           scaleY: newText.scaleY || 1,

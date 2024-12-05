@@ -11,7 +11,7 @@ function TextInputCanvas({}) {
   } = useCanvasStore();
 
   const [inputText, setInputText] = useState('');
-  const [fontSize, setFontSize] = useState(24);
+  const [fontSize, setFontSize] = useState(32);
   const [fontColor, setFontColor] = useState('#000000');
 
   // 現在のページから選択されたテキスト情報を取得
@@ -26,7 +26,7 @@ function TextInputCanvas({}) {
       setFontColor(selectedText.fontColor);
     } else {
       setInputText('');
-      setFontSize(24);
+      setFontSize(32);
       setFontColor('#000000');
     }
   }, [selectedText]);
@@ -39,7 +39,7 @@ function TextInputCanvas({}) {
         handleAddText({ text: inputText, fontSize, fontColor });
       }
       setInputText('');
-      setFontSize(24);
+      setFontSize(32);
       setFontColor('#000000');
     }
   };
