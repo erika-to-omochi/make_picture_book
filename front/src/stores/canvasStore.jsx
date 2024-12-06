@@ -134,12 +134,13 @@ const useCanvasStore = create((set, get) => ({
     // テキストはここ
     handleAddText: (newText) => {
       get().pushToHistory();
+      const currentPage = get().pages[get().currentPageIndex];
+      if (!currentPage) {
+        console.error("No current page to add text");
+        return undefined;
+      }
+      const newIndex = currentPage.pageElements.length;
       set((state) => {
-        const currentPage = state.pages[state.currentPageIndex];
-        if (!currentPage) {
-          console.error("No current page to add text");
-          return {};
-        }
         const newTextElement = {
           elementType: 'text',
           text: newText.text,
@@ -158,6 +159,7 @@ const useCanvasStore = create((set, get) => ({
         };
         return { pages: updatedPages };
       });
+      return newIndex;
     },
 
     handleUpdateText: (index, newProperties) => {
