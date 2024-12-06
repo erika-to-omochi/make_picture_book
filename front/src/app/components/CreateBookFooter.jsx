@@ -51,11 +51,11 @@ export default function CreateBookFooter({
           />
         );
       case "自然":
-        return <NatureImages onImageSelect={handleImageSelect} />;
+        return <NatureImages onImageSelect={(src) => handleImageSelect(src, '自然')} />;
       case "人物":
-        return <PeopleImages onImageSelect={handleImageSelect} />;
+        return <PeopleImages onImageSelect={(src) => handleImageSelect(src, '人物')} />;
       case "もの":
-        return <ObjectImages onImageSelect={handleImageSelect} />;
+        return <ObjectImages onImageSelect={(src) => handleImageSelect(src, 'もの')} />;
       case "背景色":
         return (
           <div className="flex flex-col p-4 gap-4">
@@ -89,8 +89,8 @@ export default function CreateBookFooter({
     }
   };
 
-  const handleImageSelect = (src) => {
-    handleAddImage(src);
+  const handleImageSelect = (src, category) => {
+    handleAddImage(src, category);
   };
 
   // アイコンデータ

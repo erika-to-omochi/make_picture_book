@@ -240,13 +240,13 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
     console.log("Image clicked at index:", index);
     setSelectedImageIndex(index);
     setSelectedTextIndex(null);
+
     const imageCategory = currentPage.pageElements[index].imageCategory;
-    if (imageCategory) {
-      setPanel(imageCategory); // 例えば "人物", "自然", "もの"
-    } else {
-      setPanel("画像"); // デフォルトのパネル
+    if (imageCategory === '人物' || imageCategory === '自然' || imageCategory === 'もの') {
+      setPanel(imageCategory);
     }
   };
+
 
   // ステージクリック時の処理
   const handleStageMouseDown = (e) => {
@@ -278,12 +278,10 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
     if (!pointerPosition) return;
 
     const { x, y } = pointerPosition;
-    console.log('Pointer Position:', { x, y });
 
     // スケールを考慮して位置を調整
     const adjustedX = x / scale.scaleX;
     const adjustedY = y / scale.scaleY;
-    console.log('Adjusted Position:', { adjustedX, adjustedY });
 
     const newText = {
       text: '',
@@ -391,7 +389,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
                       draggable={!isReadOnly}
                       onDragEnd={(e) => handleDragEnd(index, e, 'image')}
                       onTransformEnd={(e) => handleTransformEnd(index, e, 'image')}
-                      onClick={() => { handleImageClick(index); }}
+                      onClick={(e) => handleImageClick(index)}
                       scaleX={element.scaleX || 1}
                       scaleY={element.scaleY || 1}
                       rotation={element.rotation || 0}

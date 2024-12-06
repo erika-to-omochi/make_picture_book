@@ -55,7 +55,7 @@ const useCanvasStore = create((set, get) => ({
 
   // アクション
   //画像はここ
-  handleAddImage: (imageSrc) => {
+  handleAddImage: (imageSrc, category) => {
     get().pushToHistory();
     const img = new window.Image();
     img.src = imageSrc;
@@ -74,6 +74,7 @@ const useCanvasStore = create((set, get) => ({
           rotation: 0,
           scaleX: 0.5, // スケールファクターとして初期化
           scaleY: 0.5,
+          imageCategory: category,
         };
         const updatedPages = [...state.pages];
         updatedPages[state.currentPageIndex] = {
