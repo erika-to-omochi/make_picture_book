@@ -247,7 +247,6 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
     }
   };
 
-
   // ステージクリック時の処理
   const handleStageMouseDown = (e) => {
     if (e.target.name() === 'background') {
@@ -406,24 +405,22 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
         </div>
         {/* 編集用の入力フィールド */}
         {editingTextIndex !== null && currentPage.pageElements[editingTextIndex] && (
-          <input
+          <textarea
             type="text"
             value={editingTextValue}
             onChange={(e) => setEditingTextValue(e.target.value)}
             onBlur={() => {
               handleUpdateText(editingTextIndex, { text: editingTextValue });
               setEditingTextIndex(null);
-              setPanel(null); // 編集終了時にパネルを閉じる
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 handleUpdateText(editingTextIndex, { text: editingTextValue });
                 setEditingTextIndex(null);
-                setPanel(null); // 編集終了時にパネルを閉じる
               }
               if (e.key === 'Escape') {
                 setEditingTextIndex(null);
-                setPanel(null); // 編集終了時にパネルを閉じる
               }
             }}
             style={{
