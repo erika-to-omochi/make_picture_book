@@ -16,6 +16,7 @@ export default function ObjectImages({ onImageSelect }) {
             alt={`Person ${index + 1}`}
             width={48}
             height={48}
+            className="cursor-pointer"
             onClick={() => {
               console.log("Image clicked:", src);
               onImageSelect && onImageSelect(src, "もの");
