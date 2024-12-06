@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
 import useCanvasStore from '../../stores/canvasStore';
-import { FaChevronCircleLeft, FaChevronCircleRight, FaUndo } from "react-icons/fa";
+import { FaChevronCircleLeft, FaChevronCircleRight, FaUndo, FaPlus } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
 import useIsMobile from '../../hooks/useIsMobile'; // 必要に応じてパスを調整
@@ -446,13 +446,19 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
         <div className="flex flex-col items-center gap-4 w-full max-w-4xl mx-auto mb-28">
           {/* ページ移動エリア */}
           <div className="flex gap-4 items-center justify-center w-full">
-            <button
-              onClick={() => setCurrentPageIndex(currentPageIndex - 1)}
-              disabled={currentPageIndex === 0}
-              className="p-2 text-bodyText flex items-center justify-center"
-            >
-              <FaChevronCircleLeft size={32} />
-            </button>
+            {/* 前のページボタンとラベル */}
+            <div className="flex flex-col items-center">
+              <button
+                onClick={() => setCurrentPageIndex(currentPageIndex - 1)}
+                disabled={currentPageIndex === 0}
+                className={`p-2 flex items-center justify-center rounded-full transition-transform duration-200 ease-in-out transform hover:-translate-y-1 active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed text-bodyText`}
+                aria-label="前のページ"
+              >
+                <FaChevronCircleLeft size={32} />
+              </button>
+              <span className="mt-1 text-sm text-bodyText">前のページ</span>
+            </div>
+
             {/* 現在のページ / 総ページ数 */}
             <div className="flex items-center space-x-2">
               <input
@@ -466,38 +472,55 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
                     setCurrentPageIndex(page); // ページを設定
                   }
                 }}
-                className="w-16 p-1 text-center border rounded-md border-gray-300"
+                className="w-16 p-1 text-center border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-bodyText"
               />
               <span className="text-bodyText font-semibold">/ {pages.length}</span>
             </div>
-            <button
-              onClick={() => {
-                if (currentPageIndex < pages.length - 1) {
-                  setCurrentPageIndex(currentPageIndex + 1);
-                } else {
-                  if (allowAddPage) { // ページ追加が許可されている場合のみ追加
-                    addPage();
-                  } else {
-                    alert("このページではページの追加はできません。");
-                  }
-                }
-              }}
-              className={`p-2 text-bodyText flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${
-                !allowAddPage && currentPageIndex >= pages.length - 1 ? 'cursor-not-allowed opacity-50' : ''
-              }`}
-              disabled={!allowAddPage && currentPageIndex >= pages.length - 1} // ページ追加が許可されていないかつ最後のページの場合に無効化
-            >
-              <FaChevronCircleRight size={32} />
-            </button>
-            {/* Undo ボタン */}
-            {showUndoButton && (
+
+            {/* 次のページボタンとラベル */}
+            <div className="flex flex-col items-center">
               <button
-                onClick={() => undo()}
-                disabled={history.length === 0}
-                className={`p-2 text-gray-900 flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${history.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => {
+                  if (currentPageIndex < pages.length - 1) {
+                    setCurrentPageIndex(currentPageIndex + 1);
+                  }
+                }}
+                className={`p-2 flex items-center justify-center rounded-full transition-transform duration-200 ease-in-out transform hover:-translate-y-1 active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed text-bodyText`}
+                disabled={currentPageIndex >= pages.length - 1 && !allowAddPage}
+                aria-label="次のページ"
               >
-                <FaUndo size={32} />
+                <FaChevronCircleRight size={32} />
               </button>
+              <span className="mt-1 text-sm text-bodyText">次のページ</span>
+            </div>
+
+            {/* 「+」ボタンの追加とラベル */}
+            {allowAddPage && (
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={addPage}
+                  className={`p-2 flex items-center justify-center rounded-full transition-transform duration-200 ease-in-out transform hover:-translate-y-1 active:translate-y-0.5 text-bodyText`}
+                  aria-label="ページを追加"
+                >
+                  <FaPlus size={32} />
+                </button>
+                <span className="mt-1 text-sm text-bodyText">ページを追加</span>
+              </div>
+            )}
+
+            {/* Undo ボタンとラベル */}
+            {showUndoButton && (
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={() => undo()}
+                  disabled={history.length === 0}
+                  className={`p-2 flex items-center justify-center rounded-full transition-transform duration-200 ease-in-out transform hover:-translate-y-1 active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed text-bodyText`}
+                  aria-label="1つ戻る"
+                >
+                  <FaUndo size={32} />
+                </button>
+                <span className="mt-1 text-sm text-bodyText">1つ戻る</span>
+              </div>
             )}
           </div>
           {/* ModalManager を中央に配置 */}

@@ -74,6 +74,7 @@ export default function CreateBookPage() {
           onComplete={onComplete}
           onSaveDraft={onSaveDraft}
           showActionButtons={true}
+          showUndoButton={true}
           allowAddPage={true}
           setPanel={setPanel}
           togglePanel={togglePanel}
