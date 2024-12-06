@@ -38,6 +38,11 @@ function EditBookPage() {
     setActivePanel((prev) => (prev === panelName ? null : panelName));
   };
 
+  // パネルを設定する関数（Canvas用）
+  const setPanel = (panelName) => {
+    setActivePanel(panelName);
+  };
+
   if (!bookData) return <p>Loading...</p>;
 
   return (
@@ -57,6 +62,9 @@ function EditBookPage() {
             showActionButtons={true}
             allowAddPage={true}
             showUndoButton={true}
+            setPanel={setPanel}
+            togglePanel={togglePanel}
+            activePanel={activePanel}
           />
         )}
       </div>

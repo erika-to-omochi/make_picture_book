@@ -47,6 +47,11 @@ export default function CreateBookPage() {
     setActivePanel(activePanel === panelName ? null : panelName);
   };
 
+  // パネルを設定する関数（Canvas用）
+  const setPanel = (panelName) => {
+    setActivePanel(panelName);
+  };
+
   // 「完成」ボタンの処理
   const onComplete = () => {
     console.log("Document completed", { pages });
@@ -68,6 +73,9 @@ export default function CreateBookPage() {
         onSaveDraft={onSaveDraft}
         showActionButtons={true}
         allowAddPage={true}
+        setPanel={setPanel}
+        togglePanel={togglePanel}
+        activePanel={activePanel}
       />
 
       <CreateBookFooter

@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
 import useIsMobile from '../../hooks/useIsMobile'; // 必要に応じてパスを調整
 
-function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton }) {
+function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, setPanel, activePanel }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -222,6 +222,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
     console.log("Text clicked at index:", index);
     setSelectedTextIndex(index);
     setSelectedImageIndex(null);
+    setPanel("文字");
   };
 
   // 画像クリック時の処理
@@ -230,6 +231,12 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
     console.log("Image clicked at index:", index);
     setSelectedImageIndex(index);
     setSelectedTextIndex(null);
+    const imageCategory = currentPage.pageElements[index].imageCategory;
+    if (imageCategory) {
+      setPanel(imageCategory); // 例えば "人物", "自然", "もの"
+    } else {
+      setPanel("画像"); // デフォルトのパネル
+    }
   };
 
   // ステージクリック時の処理
