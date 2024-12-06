@@ -1,7 +1,10 @@
+// TextInputCanvas.jsx
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import useCanvasStore from '../../stores/canvasStore';
 
-function TextInputCanvas({}) {
+function TextInputCanvas() {
   const {
     selectedTextIndex,
     pages,
@@ -16,21 +19,63 @@ function TextInputCanvas({}) {
 
   // 現在のページから選択されたテキスト情報を取得
   const selectedText = selectedTextIndex !== null
-  ? pages[currentPageIndex]?.pageElements[selectedTextIndex]
-  : null;
+    ? pages[currentPageIndex]?.pageElements[selectedTextIndex]
+    : null;
 
+  // selectedText が変更されたときにローカルステートを更新
   useEffect(() => {
     if (selectedText) {
-      setInputText(selectedText.text);
-      setFontSize(selectedText.fontSize);
-      setFontColor(selectedText.fontColor);
+      if (inputText !== selectedText.text) {
+        setInputText(selectedText.text);
+      }
+      if (fontSize !== selectedText.fontSize) {
+        setFontSize(selectedText.fontSize);
+      }
+      if (fontColor !== selectedText.fontColor) {
+        setFontColor(selectedText.fontColor);
+      }
     } else {
-      setInputText('');
-      setFontSize(32);
-      setFontColor('#000000');
+      if (inputText !== '') {
+        setInputText('');
+      }
+      if (fontSize !== 32) {
+        setFontSize(32);
+      }
+      if (fontColor !== '#000000') {
+        setFontColor('#000000');
+      }
     }
-  }, [selectedText]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedText]); // 依存関係を selectedText のみに限定
 
+  // 入力フィールドの変更ハンドラー
+  const handleInputChange = (e) => {
+    const newText = e.target.value;
+    setInputText(newText);
+    if (selectedTextIndex !== null) {
+      handleUpdateText(selectedTextIndex, { text: newText });
+    }
+  };
+
+  // フォントサイズ変更のハンドラー
+  const handleFontSizeChange = (e) => {
+    const newFontSize = Number(e.target.value);
+    setFontSize(newFontSize);
+    if (selectedTextIndex !== null) {
+      handleUpdateText(selectedTextIndex, { fontSize: newFontSize });
+    }
+  };
+
+  // フォントカラー変更のハンドラー
+  const handleFontColorChange = (e) => {
+    const newFontColor = e.target.value;
+    setFontColor(newFontColor);
+    if (selectedTextIndex !== null) {
+      handleUpdateText(selectedTextIndex, { fontColor: newFontColor });
+    }
+  };
+
+  // 追加ボタンのクリックハンドラー
   const handleButtonClick = () => {
     if (inputText.trim()) {
       if (selectedText) {
@@ -52,7 +97,7 @@ function TextInputCanvas({}) {
           <input
             type="text"
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
+            onChange={handleInputChange}
             placeholder="テキストを入力"
             className="border p-2 w-full"
           />
@@ -64,7 +109,7 @@ function TextInputCanvas({}) {
           <input
             type="number"
             value={fontSize}
-            onChange={(e) => setFontSize(Number(e.target.value))}
+            onChange={handleFontSizeChange}
             placeholder="フォントサイズ"
             className="border p-2"
             style={{ width: '80px' }} // 必要に応じてサイズ調整
@@ -77,21 +122,23 @@ function TextInputCanvas({}) {
           <input
             type="color"
             value={fontColor}
-            onChange={(e) => setFontColor(e.target.value)}
+            onChange={handleFontColorChange}
             className="w-12 h-12"
           />
         </div>
 
-        {/* ボタン */}
-        <div className="w-full">
-          <button
-            onClick={handleButtonClick}
-            className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
-            style={{ width: '80px' }}
-          >
-            {selectedText ? '更新' : '追加'}
-          </button>
-        </div>
+        {/* ボタン（オプション） */}
+        {selectedTextIndex === null && (
+          <div className="w-full">
+            <button
+              onClick={handleButtonClick}
+              className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
+              style={{ width: '80px' }}
+            >
+              追加
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

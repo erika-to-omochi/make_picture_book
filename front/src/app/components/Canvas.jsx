@@ -1,3 +1,4 @@
+// Canvas.jsx
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -146,6 +147,14 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
   // キーボードイベントの処理
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // イベントが入力フィールド内で発生しているかチェック
+      const target = e.target;
+      const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+      if (isInputField) {
+        return; // 入力フィールド内ではCanvasのキーイベントを無視
+      }
+
       if (editingTextIndex === null) {
         if (e.key === 'Backspace') {
           if (selectedTextIndex !== null) {
@@ -256,6 +265,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
     if (currentPage.pageElements[index]) {
       setEditingTextIndex(index);
       setEditingTextValue(currentPage.pageElements[index].text);
+      setPanel("文字"); // 編集モードに入った際にパネルを開く
     } else {
       console.warn(`No page element found at index: ${index}`);
     }
@@ -282,6 +292,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
       rotation: 0,
       scaleX: 1,
       scaleY: 1,
+      elementType: 'text',
     };
 
     // handleAddText が新しいテキストのインデックスを返すようにする
@@ -291,6 +302,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
       setSelectedTextIndex(newIndex);
       setEditingTextIndex(newIndex);
       setEditingTextValue(newText.text);
+      setPanel("文字"); // 新規テキスト追加時に「文字」パネルを開く
     } else {
       console.error("Failed to add new text element.");
     }
@@ -401,14 +413,17 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
             onBlur={() => {
               handleUpdateText(editingTextIndex, { text: editingTextValue });
               setEditingTextIndex(null);
+              setPanel(null); // 編集終了時にパネルを閉じる
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 handleUpdateText(editingTextIndex, { text: editingTextValue });
                 setEditingTextIndex(null);
+                setPanel(null); // 編集終了時にパネルを閉じる
               }
               if (e.key === 'Escape') {
                 setEditingTextIndex(null);
+                setPanel(null); // 編集終了時にパネルを閉じる
               }
             }}
             style={{
