@@ -18,7 +18,6 @@ export default function ObjectImages({ onImageSelect }) {
             height={48}
             className="cursor-pointer"
             onClick={() => {
-              console.log("Image clicked:", src);
               onImageSelect && onImageSelect(src, "もの");
             }}
           />

@@ -1,15 +1,21 @@
-// Canvas.jsx
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage } from 'react-konva';
+import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage,} from 'react-konva';
 import useCanvasStore from '../../stores/canvasStore';
-import { FaChevronCircleLeft, FaChevronCircleRight, FaUndo, FaPlus } from "react-icons/fa";
+import { FaChevronCircleLeft, FaChevronCircleRight, FaUndo, FaPlus,} from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
-import useIsMobile from '../../hooks/useIsMobile'; // 必要に応じてパスを調整
+import useIsMobile from '../../hooks/useIsMobile';
 
-function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, setPanel, allowAddText = true }) {
+function Canvas({
+  showActionButtons,
+  isReadOnly,
+  allowAddPage,
+  showUndoButton,
+  setPanel,
+  allowAddText = true,
+}) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -25,6 +31,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
     updateImage,
     handleUpdateText,
     handleAddText,
+    handleAddImage,
     undo,
     history,
   } = useCanvasStore();
@@ -41,20 +48,24 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
   const [stageHeight, setStageHeight] = useState(VIRTUAL_CANVAS_HEIGHT);
   const [scale, setScale] = useState({ scaleX: 1, scaleY: 1 });
 
+  // コピーした要素を保存するためのref
+  const copiedElement = useRef(null);
+
   // ローカルステートとして loadedImages を管理
   const [loadedImages, setLoadedImages] = useState([]);
 
   const router = useRouter();
 
   // ページの初期化と安全な取得
-  const currentPage = pages[currentPageIndex] || {
-    bookId: 1,
-    pageNumber: pages.length + 1,
-    backgroundColor: '#ffffff',
-    pageElements: [],
-    pageCharacters: [],
-    id: null,
-  };
+  const currentPage =
+    pages[currentPageIndex] || {
+      bookId: 1,
+      pageNumber: pages.length + 1,
+      backgroundColor: '#ffffff',
+      pageElements: [],
+      pageCharacters: [],
+      id: null,
+    };
 
   // カスタムフックを使用してモバイル判定
   const isMobile = useIsMobile();
@@ -65,7 +76,12 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
   const [inputWidth, setInputWidth] = useState(100);
 
   // テキストの幅を測定する関数
-  const getTextWidth = (text, fontSize, fontFamily = 'Arial', fontWeight = 'normal') => {
+  const getTextWidth = (
+    text,
+    fontSize,
+    fontFamily = 'Arial',
+    fontWeight = 'normal'
+  ) => {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     context.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
@@ -98,7 +114,9 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
   useEffect(() => {
     let isMounted = true; // マウント状態を追跡
     const loadImages = async () => {
-      const imageElements = currentPage.pageElements.filter(el => el.elementType === 'image');
+      const imageElements = currentPage.pageElements.filter(
+        (el) => el.elementType === 'image'
+      );
       const promises = imageElements.map((el) => {
         return new Promise((resolve) => {
           const image = new window.Image();
@@ -135,7 +153,10 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
     if (transformerRef.current) {
       if (selectedTextIndex !== null && textRefs.current[selectedTextIndex]) {
         transformerRef.current.nodes([textRefs.current[selectedTextIndex]]);
-      } else if (selectedImageIndex !== null && imageRefs.current[selectedImageIndex]) {
+      } else if (
+        selectedImageIndex !== null &&
+        imageRefs.current[selectedImageIndex]
+      ) {
         transformerRef.current.nodes([imageRefs.current[selectedImageIndex]]);
       } else {
         transformerRef.current.nodes([]);
@@ -147,14 +168,88 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
   // キーボードイベントの処理
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // イベントが入力フィールド内で発生しているかチェック
       const target = e.target;
-      const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      const isInputField =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable;
 
       if (isInputField) {
-        return; // 入力フィールド内ではCanvasのキーイベントを無視
+        return;
       }
 
+      // コピー機能（Ctrl+CまたはCmd+C）
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
+        if (isReadOnly) return; // 読み取り専用モードでは無効化
+
+        e.preventDefault(); // デフォルトのコピー動作を防止
+
+        if (selectedTextIndex !== null) {
+          const textElement = currentPage.pageElements[selectedTextIndex];
+          if (textElement) {
+            copiedElement.current = {
+              type: 'text',
+              data: { ...textElement },
+            };
+          }
+        } else if (selectedImageIndex !== null) {
+          const imageElement = currentPage.pageElements[selectedImageIndex];
+          if (imageElement) {
+            copiedElement.current = {
+              type: 'image',
+              data: { ...imageElement },
+            };
+          }
+        }
+        return;
+      }
+
+      // ペースト機能（Ctrl+VまたはCmd+V）
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+        if (isReadOnly) return; // 読み取り専用モードでは無効化
+
+        e.preventDefault(); // デフォルトのペースト動作を防止
+
+        if (copiedElement.current) {
+          const elementToPaste = { ...copiedElement.current.data };
+
+          // オフセットを適用して重複を回避
+          const OFFSET = 20;
+          elementToPaste.positionX = (elementToPaste.positionX || 0) + OFFSET;
+          elementToPaste.positionY = (elementToPaste.positionY || 0) + OFFSET;
+
+          if (elementToPaste.elementType === 'text') {
+            const newText = {
+              ...elementToPaste,
+              text: elementToPaste.text || '',
+            };
+            const newIndex = handleAddText(newText);
+            if (newIndex !== undefined) {
+              setSelectedTextIndex(newIndex);
+              setEditingTextIndex(newIndex);
+              setEditingTextValue(newText.text);
+              setPanel('文字');
+            }
+          } else if (elementToPaste.elementType === 'image') {
+            const newImage = {
+              ...elementToPaste,
+            };
+            handleAddImage(newImage.src, newImage.imageCategory)
+              .then((newIndex) => {
+                setSelectedImageIndex(newIndex);
+                setPanel(newImage.imageCategory || '画像');
+              })
+              .catch((error) => {
+                console.error("画像のペーストに失敗しました:", error);
+              });
+          }
+        } else {
+          console.warn('ペーストする要素がありません。');
+        }
+        return;
+      }
+
+      // 既存のキーイベント（Backspace, Undo）
       if (editingTextIndex === null) {
         if (e.key === 'Backspace') {
           if (selectedTextIndex !== null) {
@@ -167,13 +262,28 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
         }
       }
       if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
-        e.preventDefault(); // デフォルトのアクションを防ぐ
+        e.preventDefault(); // デフォルトのアンドゥ動作を防止
         undo();
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex, undo, editingTextIndex ]);
+  }, [
+    selectedTextIndex,
+    selectedImageIndex,
+    deleteText,
+    deleteImage,
+    setSelectedTextIndex,
+    setSelectedImageIndex,
+    undo,
+    editingTextIndex,
+    isReadOnly,
+    currentPage.pageElements,
+    handleAddText,
+    handleAddImage,
+    setPanel,
+  ]);
 
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
@@ -182,7 +292,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
     const newPos = node.getPosition();
     const update = {
       positionX: newPos.x,
-      positionY: newPos.y
+      positionY: newPos.y,
     };
     if (type === 'text') {
       handleUpdateText(index, update);
@@ -194,7 +304,8 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
   // 変形終了時の処理
   const handleTransformEnd = (index, e, type) => {
     if (isReadOnly) return;
-    const node = type === 'text' ? textRefs.current[index] : imageRefs.current[index];
+    const node =
+      type === 'text' ? textRefs.current[index] : imageRefs.current[index];
     const newProperties = {
       positionX: node.x(),
       positionY: node.y(),
@@ -203,7 +314,8 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
       scaleY: node.scaleY(),
     };
     if (type === 'text') {
-      const updatedFontSize = currentPage.pageElements[index].fontSize * newProperties.scaleY;
+      const updatedFontSize =
+        currentPage.pageElements[index].fontSize * newProperties.scaleY;
       node.scaleX(1);
       node.scaleY(1);
       handleUpdateText(index, {
@@ -228,7 +340,6 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
   // テキストクリック時の処理
   const handleTextClick = (index) => {
     if (isReadOnly) return;
-    console.log("Text clicked at index:", index);
     setSelectedTextIndex(index);
     setSelectedImageIndex(null);
     setPanel("文字");
@@ -237,12 +348,15 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
   // 画像クリック時の処理
   const handleImageClick = (index) => {
     if (isReadOnly) return;
-    console.log("Image clicked at index:", index);
     setSelectedImageIndex(index);
     setSelectedTextIndex(null);
 
     const imageCategory = currentPage.pageElements[index].imageCategory;
-    if (imageCategory === '人物' || imageCategory === '自然' || imageCategory === 'もの') {
+    if (
+      imageCategory === '人物' ||
+      imageCategory === '自然' ||
+      imageCategory === 'もの'
+    ) {
       setPanel(imageCategory);
     }
   };
@@ -259,8 +373,6 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
   const handleTextDblClick = (index, e) => {
     if (isReadOnly) return;
     e.cancelBubble = true; // イベントの伝播を停止
-    console.log(`Double clicked text at index: ${index}`);
-    console.log('Current page elements:', currentPage.pageElements);
     if (currentPage.pageElements[index]) {
       setEditingTextIndex(index);
       setEditingTextValue(currentPage.pageElements[index].text);
@@ -292,6 +404,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
       scaleX: 1,
       scaleY: 1,
       elementType: 'text',
+      id: '', // handleAddText で設定されるので空文字
     };
 
     // handleAddText が新しいテキストのインデックスを返すようにする
@@ -376,7 +489,9 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
                     />
                   );
                 } else if (element.elementType === 'image') {
-                  const loadedImage = loadedImages.find(img => img.src === element.src);
+                  const loadedImage = loadedImages.find(
+                    (img) => img.src === element.src
+                  );
                   if (!loadedImage) return null;
                   return (
                     <KonvaImage
@@ -397,8 +512,16 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
                 }
                 return null;
               })}
-              {(!isReadOnly && (selectedTextIndex !== null || selectedImageIndex !== null)) && (
-                <Transformer ref={transformerRef} anchorSize={8} borderDash={[6, 2]} keepRatio={true} />
+              {/*
+                Show Transformer only when not read-only and an element is selected
+              */}
+              {!isReadOnly && (selectedTextIndex !== null || selectedImageIndex !== null) && (
+                <Transformer
+                  ref={transformerRef}
+                  anchorSize={8}
+                  borderDash={[6, 2]}
+                  keepRatio={true}
+                />
               )}
             </Layer>
           </Stage>
@@ -425,9 +548,9 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
             }}
             style={{
               position: 'absolute',
-              top: (currentPage.pageElements[editingTextIndex]?.positionY * scale.scaleY) + 'px',
-              left: (currentPage.pageElements[editingTextIndex]?.positionX * scale.scaleX) + 'px',
-              fontSize: (currentPage.pageElements[editingTextIndex]?.fontSize * scale.scaleY) + 'px',
+              top: `${(currentPage.pageElements[editingTextIndex]?.positionY || 0) * scale.scaleY}px`,
+              left: `${(currentPage.pageElements[editingTextIndex]?.positionX || 0) * scale.scaleX}px`,
+              fontSize: `${(currentPage.pageElements[editingTextIndex]?.fontSize || 32) * scale.scaleY}px`,
               color: currentPage.pageElements[editingTextIndex]?.fontColor,
               border: 'none',
               padding: '0px',
@@ -437,6 +560,8 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
               transform: `rotate(${currentPage.pageElements[editingTextIndex]?.rotation || 0}deg)`,
               width: `${inputWidth}px`, // 動的に計算された幅を適用
               fontFamily: 'inherit',
+              resize: 'none', // オプション: リサイズを防止
+              overflow: 'hidden', // オプション: オーバーフローを隠す
             }}
             autoFocus
           />

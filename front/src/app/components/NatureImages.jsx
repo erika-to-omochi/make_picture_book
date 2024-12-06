@@ -18,7 +18,6 @@ export default function NatureImages({ onImageSelect }) {
             height={48}
             className="cursor-pointer"
             onClick={() => {
-              console.log("Image clicked:", src);
               onImageSelect && onImageSelect(src, "自然"); // カテゴリを渡す
             }}
           />
