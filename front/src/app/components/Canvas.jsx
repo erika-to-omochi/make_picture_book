@@ -1,3 +1,4 @@
+// Canvas.jsx
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -8,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
 import useIsMobile from '../../hooks/useIsMobile'; // 必要に応じてパスを調整
 
-function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton }) {
+function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, setPanel, activePanel }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -23,6 +24,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
     deleteImage,
     updateImage,
     handleUpdateText,
+    handleAddText,
     undo,
     history,
   } = useCanvasStore();
@@ -56,6 +58,20 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
 
   // カスタムフックを使用してモバイル判定
   const isMobile = useIsMobile();
+
+  // 編集モードの状態管理
+  const [editingTextIndex, setEditingTextIndex] = useState(null);
+  const [editingTextValue, setEditingTextValue] = useState('');
+  const [inputWidth, setInputWidth] = useState(100);
+
+  // テキストの幅を測定する関数
+  const getTextWidth = (text, fontSize, fontFamily = 'Arial', fontWeight = 'normal') => {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    context.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+    const metrics = context.measureText(text);
+    return metrics.width;
+  };
 
   // ウィンドウのリサイズを処理し、キャンバスサイズとスケールを調整
   useEffect(() => {
@@ -131,13 +147,23 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
   // キーボードイベントの処理
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Backspace') {
-        if (selectedTextIndex !== null) {
-          deleteText(selectedTextIndex);
-          setSelectedTextIndex(null);
-        } else if (selectedImageIndex !== null) {
-          deleteImage(selectedImageIndex);
-          setSelectedImageIndex(null);
+      // イベントが入力フィールド内で発生しているかチェック
+      const target = e.target;
+      const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+      if (isInputField) {
+        return; // 入力フィールド内ではCanvasのキーイベントを無視
+      }
+
+      if (editingTextIndex === null) {
+        if (e.key === 'Backspace') {
+          if (selectedTextIndex !== null) {
+            deleteText(selectedTextIndex);
+            setSelectedTextIndex(null);
+          } else if (selectedImageIndex !== null) {
+            deleteImage(selectedImageIndex);
+            setSelectedImageIndex(null);
+          }
         }
       }
       if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
@@ -147,7 +173,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex, undo]);
+  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex, undo, editingTextIndex ]);
 
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
@@ -194,7 +220,6 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
         scaleX: newProperties.scaleX,
         scaleY: newProperties.scaleY,
       });
-      // スケールをリセットしてストアに保存
       node.scaleX(1);
       node.scaleY(1);
     }
@@ -206,6 +231,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
     console.log("Text clicked at index:", index);
     setSelectedTextIndex(index);
     setSelectedImageIndex(null);
+    setPanel("文字");
   };
 
   // 画像クリック時の処理
@@ -214,34 +240,98 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
     console.log("Image clicked at index:", index);
     setSelectedImageIndex(index);
     setSelectedTextIndex(null);
+
+    const imageCategory = currentPage.pageElements[index].imageCategory;
+    if (imageCategory === '人物' || imageCategory === '自然' || imageCategory === 'もの') {
+      setPanel(imageCategory);
+    }
   };
+
 
   // ステージクリック時の処理
   const handleStageMouseDown = (e) => {
     if (e.target.name() === 'background') {
       resetSelection();
+      setEditingTextIndex(null); // 編集モードを終了
     }
   };
 
-  // ロードされた画像のログ出力（必要に応じて実装）
+  // ダブルクリックでテキスト編集モードに入る
+  const handleTextDblClick = (index, e) => {
+    if (isReadOnly) return;
+    e.cancelBubble = true; // イベントの伝播を停止
+    console.log(`Double clicked text at index: ${index}`);
+    console.log('Current page elements:', currentPage.pageElements);
+    if (currentPage.pageElements[index]) {
+      setEditingTextIndex(index);
+      setEditingTextValue(currentPage.pageElements[index].text);
+      setPanel("文字"); // 編集モードに入った際にパネルを開く
+    } else {
+      console.warn(`No page element found at index: ${index}`);
+    }
+  };
+
+  // ステージダブルクリック時の処理（新規テキスト追加）
+  const handleStageDblClick = (e) => {
+    const stage = stageRef.current;
+    const pointerPosition = stage.getPointerPosition();
+    if (!pointerPosition) return;
+
+    const { x, y } = pointerPosition;
+
+    // スケールを考慮して位置を調整
+    const adjustedX = x / scale.scaleX;
+    const adjustedY = y / scale.scaleY;
+
+    const newText = {
+      text: '',
+      fontSize: 32,
+      fontColor: '#000000',
+      positionX: adjustedX,
+      positionY: adjustedY,
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+      elementType: 'text',
+    };
+
+    // handleAddText が新しいテキストのインデックスを返すようにする
+    const newIndex = handleAddText(newText); // インデックスを取得
+
+    if (newIndex !== undefined) {
+      setSelectedTextIndex(newIndex);
+      setEditingTextIndex(newIndex);
+      setEditingTextValue(newText.text);
+      setPanel("文字"); // 新規テキスト追加時に「文字」パネルを開く
+    } else {
+      console.error("Failed to add new text element.");
+    }
+  };
+
+  // テキストの幅に基づいて入力フィールドの幅を更新
   useEffect(() => {
-    loadedImages.forEach((img, index) => {
-      // 必要に応じて処理
-    });
-  }, [loadedImages]);
+    if (editingTextIndex !== null && currentPage.pageElements[editingTextIndex]) {
+      const element = currentPage.pageElements[editingTextIndex];
+      const text = editingTextValue || element.text || '';
+      const measuredWidth = getTextWidth(text, element.fontSize, 'Arial', 'normal');
+      const paddedWidth = measuredWidth + 20; // パディングとして20pxを追加
+      setInputWidth(paddedWidth < 100 ? 100 : paddedWidth); // 最小幅を100pxに設定
+    }
+  }, [editingTextValue, editingTextIndex, currentPage.pageElements]);
 
   return (
     <div
       className={`flex flex-col pt-2 overflow-y-auto ${
         isMobile ? 'items-center' : 'items-end'
       }`}
+      style={{ position: 'relative' }} // 入力フィールドを絶対配置するために相対位置に設定
     >
       <div className="flex flex-col items-center gap-5">
         {/* キャンバスコンテナ */}
         <div
           className={`max-w-none ${
             isMobile ? 'mx-auto' : 'mr-10' // 左マージンを追加
-        }`}
+          }`}
         >
           <Stage
             ref={stageRef}
@@ -250,6 +340,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
             scaleX={scale.scaleX}
             scaleY={scale.scaleY}
             onMouseDown={handleStageMouseDown}
+            onDblClick={handleStageDblClick} // ステージのダブルクリックイベント
           >
             <Layer>
               <Rect
@@ -263,6 +354,9 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
               />
               {currentPage.pageElements.map((element, index) => {
                 if (element.elementType === 'text') {
+                  if (index === editingTextIndex) {
+                    return null;
+                  }
                   return (
                     <Text
                       key={`text-${index}`}
@@ -276,6 +370,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
                       fontSize={element.fontSize}
                       fill={element.fontColor}
                       onClick={() => handleTextClick(index)}
+                      onDblClick={(e) => handleTextDblClick(index, e)} // イベントオブジェクトを渡す
                       rotation={element.rotation || 0}
                       scaleX={1}
                       scaleY={1}
@@ -294,7 +389,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
                       draggable={!isReadOnly}
                       onDragEnd={(e) => handleDragEnd(index, e, 'image')}
                       onTransformEnd={(e) => handleTransformEnd(index, e, 'image')}
-                      onClick={() => { handleImageClick(index); }}
+                      onClick={(e) => handleImageClick(index)}
                       scaleX={element.scaleX || 1}
                       scaleY={element.scaleY || 1}
                       rotation={element.rotation || 0}
@@ -309,6 +404,46 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
             </Layer>
           </Stage>
         </div>
+        {/* 編集用の入力フィールド */}
+        {editingTextIndex !== null && currentPage.pageElements[editingTextIndex] && (
+          <input
+            type="text"
+            value={editingTextValue}
+            onChange={(e) => setEditingTextValue(e.target.value)}
+            onBlur={() => {
+              handleUpdateText(editingTextIndex, { text: editingTextValue });
+              setEditingTextIndex(null);
+              setPanel(null); // 編集終了時にパネルを閉じる
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleUpdateText(editingTextIndex, { text: editingTextValue });
+                setEditingTextIndex(null);
+                setPanel(null); // 編集終了時にパネルを閉じる
+              }
+              if (e.key === 'Escape') {
+                setEditingTextIndex(null);
+                setPanel(null); // 編集終了時にパネルを閉じる
+              }
+            }}
+            style={{
+              position: 'absolute',
+              top: (currentPage.pageElements[editingTextIndex]?.positionY * scale.scaleY) + 'px',
+              left: (currentPage.pageElements[editingTextIndex]?.positionX * scale.scaleX) + 'px',
+              fontSize: (currentPage.pageElements[editingTextIndex]?.fontSize * scale.scaleY) + 'px',
+              color: currentPage.pageElements[editingTextIndex]?.fontColor,
+              border: 'none',
+              padding: '0px',
+              margin: '0px',
+              background: 'none',
+              outline: 'none',
+              transform: `rotate(${currentPage.pageElements[editingTextIndex]?.rotation || 0}deg)`,
+              width: `${inputWidth}px`, // 動的に計算された幅を適用
+              fontFamily: 'inherit',
+            }}
+            autoFocus
+          />
+        )}
 
         {/* 下部の要素コンテナ */}
         <div className="flex flex-col items-center gap-4 w-full max-w-4xl mx-auto mb-28">
@@ -364,7 +499,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
                 disabled={history.length === 0}
                 className={`p-2 text-gray-900 flex items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-gray-700 hover:bg-gray-200 hover:shadow-md ${history.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <FaUndo size={24} />
+                <FaUndo size={32} />
               </button>
             )}
           </div>

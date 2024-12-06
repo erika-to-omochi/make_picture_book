@@ -55,7 +55,7 @@ const useCanvasStore = create((set, get) => ({
 
   // アクション
   //画像はここ
-  handleAddImage: (imageSrc) => {
+  handleAddImage: (imageSrc, category) => {
     get().pushToHistory();
     const img = new window.Image();
     img.src = imageSrc;
@@ -74,6 +74,7 @@ const useCanvasStore = create((set, get) => ({
           rotation: 0,
           scaleX: 0.5, // スケールファクターとして初期化
           scaleY: 0.5,
+          imageCategory: category,
         };
         const updatedPages = [...state.pages];
         updatedPages[state.currentPageIndex] = {
@@ -134,19 +135,20 @@ const useCanvasStore = create((set, get) => ({
     // テキストはここ
     handleAddText: (newText) => {
       get().pushToHistory();
+      const currentPage = get().pages[get().currentPageIndex];
+      if (!currentPage) {
+        console.error("No current page to add text");
+        return undefined;
+      }
+      const newIndex = currentPage.pageElements.length;
       set((state) => {
-        const currentPage = state.pages[state.currentPageIndex];
-        if (!currentPage) {
-          console.error("No current page to add text");
-          return {};
-        }
         const newTextElement = {
           elementType: 'text',
           text: newText.text,
           fontSize: newText.fontSize,
           fontColor: newText.fontColor,
           positionX: newText.positionX || 100,
-          positionY: newText.positionY || 100,
+          positionY: newText.positionY || 400,
           rotation: newText.rotation || 0,
           scaleX: newText.scaleX || 1,
           scaleY: newText.scaleY || 1,
@@ -158,6 +160,7 @@ const useCanvasStore = create((set, get) => ({
         };
         return { pages: updatedPages };
       });
+      return newIndex;
     },
 
     handleUpdateText: (index, newProperties) => {

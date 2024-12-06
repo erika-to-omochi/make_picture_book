@@ -18,7 +18,7 @@ export default function PeopleImages({ onImageSelect }) {
             height={48}
             onClick={() => {
               console.log("Image clicked:", src);
-              onImageSelect && onImageSelect(src);
+              onImageSelect && onImageSelect(src, "人物");
             }}
           />
         </div>
