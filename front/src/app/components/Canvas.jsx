@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
 import useIsMobile from '../../hooks/useIsMobile'; // 必要に応じてパスを調整
 
-function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, setPanel, activePanel }) {
+function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, setPanel, allowAddText = true }) {
   const {
     selectedTextIndex,
     selectedImageIndex,
@@ -339,7 +339,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
             scaleX={scale.scaleX}
             scaleY={scale.scaleY}
             onMouseDown={handleStageMouseDown}
-            onDblClick={handleStageDblClick} // ステージのダブルクリックイベント
+            onDblClick={allowAddText ? handleStageDblClick : undefined} // 条件付きでダブルクリックイベントを設定
           >
             <Layer>
               <Rect
