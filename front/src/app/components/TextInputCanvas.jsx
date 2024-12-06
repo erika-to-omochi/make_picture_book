@@ -123,7 +123,7 @@ function TextInputCanvas() {
             type="color"
             value={fontColor}
             onChange={handleFontColorChange}
-            className="w-12 h-12"
+            className="w-12 h-12 cursor-pointer"
           />
         </div>
 

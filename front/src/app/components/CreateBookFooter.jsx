@@ -58,13 +58,13 @@ export default function CreateBookFooter({
         return <ObjectImages onImageSelect={(src) => handleImageSelect(src, 'もの')} />;
       case "背景色":
         return (
-          <div className="flex flex-col p-4 gap-4">
+          <div className="flex flex-col p-4 gap-4 overflow-y-scroll max-h-[125px] md:max-h-[800px] lg:max-h-[1000px]">
             <div className="flex items-center gap-2">
               <label>背景色を選択:</label>
               <input
                 type="color"
                 onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                className="w-12 h-12"
+                className="w-12 h-12 cursor-pointer"
               />
             </div>
             {recentColors.length > 0 && (
