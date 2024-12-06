@@ -94,7 +94,7 @@ function TextInputCanvas() {
       <div className="flex flex-wrap lg:flex-col lg:gap-4 lg:items-start">
         {/* 入力フィールド */}
         <div className="w-full mb-4">
-          <input
+          <textarea
             type="text"
             value={inputText}
             onChange={handleInputChange}
