@@ -278,10 +278,12 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton, s
     if (!pointerPosition) return;
 
     const { x, y } = pointerPosition;
+    console.log('Pointer Position:', { x, y });
 
     // スケールを考慮して位置を調整
     const adjustedX = x / scale.scaleX;
     const adjustedY = y / scale.scaleY;
+    console.log('Adjusted Position:', { adjustedX, adjustedY });
 
     const newText = {
       text: '',

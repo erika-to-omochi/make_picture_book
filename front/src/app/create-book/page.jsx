@@ -6,7 +6,7 @@ import CreateBookFooter from '../components/CreateBookFooter';
 import useCanvasStore from '../../stores/canvasStore';
 import useAuthStore from '../../stores/authStore';
 import { useRouter } from 'next/navigation';
-
+import useIsMobile from '@/hooks/useIsMobile';
 
 const Canvas = dynamic(() => import('../components/Canvas'), {
   ssr: false,
@@ -30,6 +30,7 @@ export default function CreateBookPage() {
 
   const { isLoggedIn, userName } = useAuthStore();
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // 作成ページに遷移したらストアをリセット
@@ -66,17 +67,19 @@ export default function CreateBookPage() {
   };
 
   return (
-    <div>
-      <Canvas
-        backgroundColor={currentPage.backgroundColor}
-        onComplete={onComplete}
-        onSaveDraft={onSaveDraft}
-        showActionButtons={true}
-        allowAddPage={true}
-        setPanel={setPanel}
-        togglePanel={togglePanel}
-        activePanel={activePanel}
-      />
+    <div className={`flex flex-col overflow-y-auto ${isMobile ? 'items-center' : 'items-end'}`}>
+      <div className={`max-w-none ${isMobile ? 'mx-auto' : 'mr-10'}`}>
+        <Canvas
+          backgroundColor={currentPage.backgroundColor}
+          onComplete={onComplete}
+          onSaveDraft={onSaveDraft}
+          showActionButtons={true}
+          allowAddPage={true}
+          setPanel={setPanel}
+          togglePanel={togglePanel}
+          activePanel={activePanel}
+        />
+        </div>
 
       <CreateBookFooter
         activePanel={activePanel}
