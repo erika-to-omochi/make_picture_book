@@ -146,13 +146,15 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
   // キーボードイベントの処理
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Backspace') {
-        if (selectedTextIndex !== null) {
-          deleteText(selectedTextIndex);
-          setSelectedTextIndex(null);
-        } else if (selectedImageIndex !== null) {
-          deleteImage(selectedImageIndex);
-          setSelectedImageIndex(null);
+      if (editingTextIndex === null) {
+        if (e.key === 'Backspace') {
+          if (selectedTextIndex !== null) {
+            deleteText(selectedTextIndex);
+            setSelectedTextIndex(null);
+          } else if (selectedImageIndex !== null) {
+            deleteImage(selectedImageIndex);
+            setSelectedImageIndex(null);
+          }
         }
       }
       if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
@@ -162,7 +164,7 @@ function Canvas({ showActionButtons, isReadOnly, allowAddPage, showUndoButton })
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex, undo]);
+  }, [selectedTextIndex, selectedImageIndex, deleteText, deleteImage, setSelectedTextIndex, setSelectedImageIndex, undo, editingTextIndex ]);
 
   // ドラッグ終了時の処理
   const handleDragEnd = (index, e, type) => {
