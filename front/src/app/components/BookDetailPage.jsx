@@ -85,6 +85,7 @@ function BookDetailPage() {
               isReadOnly={true}
               allowAddPage={false}
               showUndoButton={false}
+              allowAddText={false}
             />
           </div>
         )}

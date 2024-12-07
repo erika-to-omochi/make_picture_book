@@ -53,72 +53,81 @@ const useCanvasStore = create((set, get) => ({
     });
   },
 
-  // アクション
-  //画像はここ
+  // 画像の追加（handleAddImage）
   handleAddImage: (imageSrc, category) => {
-    get().pushToHistory();
-    const img = new window.Image();
-    img.src = imageSrc;
-    img.onload = () => {
-      set((state) => {
-        const currentPage = state.pages[state.currentPageIndex];
-        if (!currentPage) {
-          console.error("No current page to add image");
-          return {};
-        }
-        const newImageElement = {
-          elementType: 'image',
-          src: imageSrc,
-          positionX: 100, // 初期位置を調整
-          positionY: 100,
-          rotation: 0,
-          scaleX: 0.5, // スケールファクターとして初期化
-          scaleY: 0.5,
-          imageCategory: category,
-        };
-        const updatedPages = [...state.pages];
-        updatedPages[state.currentPageIndex] = {
-          ...currentPage,
-          pageElements: [...currentPage.pageElements, newImageElement],
-        };
-        console.log("Updated pages:", updatedPages);
-        return { pages: updatedPages };
-      });
-    };
-    img.onerror = () => {
-      console.error("Failed to load image:", imageSrc);
-    };
+    return new Promise((resolve, reject) => {
+      get().pushToHistory();
+      const img = new window.Image();
+      img.src = imageSrc;
+      img.onload = () => {
+        set((state) => {
+          const currentPage = state.pages[state.currentPageIndex];
+          if (!currentPage) {
+            console.error("現在のページが見つかりません。");
+            return {};
+          }
+          const newImageElement = {
+            elementType: 'image',
+            src: imageSrc,
+            positionX: 100, // 初期位置を調整
+            positionY: 100,
+            rotation: 0,
+            scaleX: 0.5, // スケールファクターとして初期化
+            scaleY: 0.5,
+            imageCategory: category,
+            id: get().generateUniqueId(),
+          };
+          const updatedPageElements = [...currentPage.pageElements, newImageElement];
+          const updatedPages = [...state.pages];
+          updatedPages[state.currentPageIndex] = {
+            ...currentPage,
+            pageElements: updatedPageElements,
+          };
+          set({ pages: updatedPages });
+          return { pages: updatedPages };
+        });
+        // 新しく追加された画像のインデックスを返す
+        const newIndex = get().pages[get().currentPageIndex].pageElements.length - 1;
+        resolve(newIndex);
+      };
+      img.onerror = () => {
+        console.error("画像の読み込みに失敗しました:", imageSrc);
+        reject(new Error("画像の読み込みに失敗しました。"));
+      };
+    });
   },
 
+  // 画像の更新
   updateImage: (index, newProperties) => {
-  get().pushToHistory();
-  set((state) => {
-    const currentPage = state.pages[state.currentPageIndex];
-    if (!currentPage) {
-      console.error("No current page to update image");
-      return {};
-    }
-    const updatedElements = currentPage.pageElements.map((element, i) =>
-      i === index && element.elementType === 'image'
-        ? { ...element, ...newProperties }
-        : element
-    );
+    get().pushToHistory();
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
+      if (!currentPage) {
+        console.error("現在のページが見つかりません。");
+        return {};
+      }
+      const updatedElements = currentPage.pageElements.map((element, i) =>
+        i === index && element.elementType === 'image'
+          ? { ...element, ...newProperties }
+          : element
+      );
 
-    const updatedPages = [...state.pages];
-    updatedPages[state.currentPageIndex] = {
-      ...currentPage,
-      pageElements: updatedElements,
-    };
-    return { pages: updatedPages };
-  });
-},
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageElements: updatedElements,
+      };
+      return { pages: updatedPages };
+    });
+  },
 
+  // 画像の削除
   deleteImage: (index) => {
     get().pushToHistory();
     set((state) => {
       const currentPage = state.pages[state.currentPageIndex];
       if (!currentPage) {
-        console.error("No current page to delete image");
+        console.error("現在のページが見つかりません。");
         return {};
       }
       const updatedElements = currentPage.pageElements.filter((el, i) => !(i === index && el.elementType === 'image'));
@@ -132,81 +141,83 @@ const useCanvasStore = create((set, get) => ({
   },
   setSelectedImageIndex: (index) => set({ selectedImageIndex: index }),
 
-    // テキストはここ
-    handleAddText: (newText) => {
-      get().pushToHistory();
-      const currentPage = get().pages[get().currentPageIndex];
+  // テキストの追加
+  handleAddText: (newText) => {
+    get().pushToHistory();
+    const currentPage = get().pages[get().currentPageIndex];
+    if (!currentPage) {
+      console.error("現在のページが見つかりません。");
+      return undefined;
+    }
+    const newIndex = currentPage.pageElements.length;
+    set((state) => {
+      const newTextElement = {
+        elementType: 'text',
+        text: newText.text,
+        fontSize: newText.fontSize,
+        fontColor: newText.fontColor,
+        positionX: newText.positionX || 100,
+        positionY: newText.positionY || 400,
+        rotation: newText.rotation || 0,
+        scaleX: newText.scaleX || 1,
+        scaleY: newText.scaleY || 1,
+        id: get().generateUniqueId(),
+      };
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageElements: [...currentPage.pageElements, newTextElement],
+      };
+      return { pages: updatedPages };
+    });
+    return newIndex;
+  },
+
+  // テキストの更新
+  handleUpdateText: (index, newProperties) => {
+    get().pushToHistory();
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
       if (!currentPage) {
-        console.error("No current page to add text");
-        return undefined;
+        console.error("現在のページが見つかりません。");
+        return {};
       }
-      const newIndex = currentPage.pageElements.length;
-      set((state) => {
-        const newTextElement = {
-          elementType: 'text',
-          text: newText.text,
-          fontSize: newText.fontSize,
-          fontColor: newText.fontColor,
-          positionX: newText.positionX || 100,
-          positionY: newText.positionY || 400,
-          rotation: newText.rotation || 0,
-          scaleX: newText.scaleX || 1,
-          scaleY: newText.scaleY || 1,
-        };
-        const updatedPages = [...state.pages];
-        updatedPages[state.currentPageIndex] = {
-          ...currentPage,
-          pageElements: [...currentPage.pageElements, newTextElement],
-        };
-        return { pages: updatedPages };
-      });
-      return newIndex;
-    },
+      const updatedElements = currentPage.pageElements.map((element, i) =>
+        i === index && element.elementType === 'text'
+          ? { ...element, ...newProperties }
+          : element
+      );
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageElements: updatedElements,
+      };
+      return { pages: updatedPages };
+    });
+  },
 
-    handleUpdateText: (index, newProperties) => {
-      get().pushToHistory();
-      set((state) => {
-        const currentPage = state.pages[state.currentPageIndex];
-        if (!currentPage) {
-          console.error("No current page to update text");
-          return {};
-        }
-        const updatedElements = currentPage.pageElements.map((element, i) =>
-          i === index && element.elementType === 'text'
-            ? { ...element, ...newProperties }
-            : element
-        );
-        const updatedPages = [...state.pages];
-        updatedPages[state.currentPageIndex] = {
-          ...currentPage,
-          pageElements: updatedElements,
-        };
-        return { pages: updatedPages };
-      });
-    },
+  // テキストの削除
+  deleteText: (index) => {
+    get().pushToHistory();
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
+      if (!currentPage) {
+        console.error("現在のページが見つかりません。");
+        return {};
+      }
+      const updatedElements = currentPage.pageElements.filter((el, i) => !(i === index && el.elementType === 'text'));
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageElements: updatedElements,
+      };
+      return { pages: updatedPages };
+    });
+  },
 
-    deleteText: (index) => {
-      get().pushToHistory();
-      set((state) => {
-        const currentPage = state.pages[state.currentPageIndex];
-        if (!currentPage) {
-          console.error("No current page to delete text");
-          return {};
-        }
-        const updatedElements = currentPage.pageElements.filter((el, i) => !(i === index && el.elementType === 'text'));
-        const updatedPages = [...state.pages];
-        updatedPages[state.currentPageIndex] = {
-          ...currentPage,
-          pageElements: updatedElements,
-        };
-        return { pages: updatedPages };
-      });
-    },
+  setSelectedTextIndex: (index) => set({ selectedTextIndex: index }),
 
-    setSelectedTextIndex: (index) => set({ selectedTextIndex: index }),
-
-
-  // ページはここ
+  // ページの追加
   addPage: () => {
     get().pushToHistory();
     set((state) => {
@@ -251,16 +262,16 @@ const useCanvasStore = create((set, get) => ({
         }));
         set({ pages: formattedPages, bookData: response.data });
       } else {
-        console.error("Fetched pages data is invalid:", response.data.pages);
+        console.error("取得したページデータが無効です:", response.data.pages);
         set({ pages: [] });
       }
     } catch (error) {
-      console.error("Failed to fetch book data:", error);
+      console.error("ブックデータの取得に失敗しました:", error);
       set({ pages: [] });
     }
   },
 
-// モーダルはここ
+  // モーダル関連
   resetSelection: () =>
     set({ selectedTextIndex: null, selectedImageIndex: null }),
   setBookData: (data) => set({ bookData: data }),
@@ -270,7 +281,7 @@ const useCanvasStore = create((set, get) => ({
     get().pushToHistory();
     const currentPage = state.pages[state.currentPageIndex];
     if (!currentPage) {
-      console.error("No current page to set background color");
+      console.error("現在のページが見つかりません。");
       return {};
     }
     const updatedPages = [...state.pages];
@@ -299,6 +310,9 @@ const useCanvasStore = create((set, get) => ({
   }),
 
   setPages: (pages) => set({ pages }), // ページ状態を設定するアクションを追加
+
+  // ユーティリティ関数
+  generateUniqueId: () => '_' + Math.random().toString(36).substr(2, 9),
 }));
 
 export default useCanvasStore;
