@@ -90,7 +90,6 @@ export default function ModalManager() {
         page.pageElements.forEach((element) => {
           if (element.elementType === 'text') {
             pageElements.push({
-              id: element.id,
               element_type: 'text', // スネークケースで送信
               text: element.text,
               font_size: element.fontSize,
@@ -103,7 +102,6 @@ export default function ModalManager() {
             });
           } else if (element.elementType === 'image') {
             pageElements.push({
-              id: element.id,
               element_type: 'image', // スネークケースで送信
               src: element.src,
               position_x: element.positionX,
