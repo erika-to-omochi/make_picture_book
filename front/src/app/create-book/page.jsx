@@ -14,13 +14,7 @@ const Canvas = dynamic(() => import('../components/Canvas'), {
 
 export default function CreateBookPage() {
   const [activePanel, setActivePanel] = useState(null);
-  const {
-    pages,
-    currentPageIndex,
-    handleAddText,
-    setBackgroundColor,
-    resetCanvas,
-  } = useCanvasStore();
+  const { pages, currentPageIndex, handleAddText, setBackgroundColor, resetCanvas } = useCanvasStore();
 
   const currentPage = pages[currentPageIndex] || {
     pageElements: [],
@@ -28,7 +22,7 @@ export default function CreateBookPage() {
     backgroundColor: '#ffffff',
   };
 
-  const { isLoggedIn, userName } = useAuthStore();
+  const { isLoggedIn, userName, isHydrated } = useAuthStore();
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -38,11 +32,12 @@ export default function CreateBookPage() {
   }, [resetCanvas]);
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    // ハイドレーションが完了してからログイン状態をチェック
+    if (isHydrated && !isLoggedIn) {
       alert('このページにアクセスするにはログインが必要です。ログインページに移動します。');
       router.push('/login'); // ログインページのパスに変更してください
     }
-  }, [isLoggedIn, router]);
+  }, [isLoggedIn, isHydrated, router]);
 
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
@@ -80,7 +75,7 @@ export default function CreateBookPage() {
           togglePanel={togglePanel}
           activePanel={activePanel}
         />
-        </div>
+      </div>
 
       <CreateBookFooter
         activePanel={activePanel}
