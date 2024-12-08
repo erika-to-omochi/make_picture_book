@@ -1,37 +1,24 @@
+// Header.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaHome, FaBook, FaEdit, FaInfoCircle, FaFileAlt, FaShieldAlt, FaEnvelope, FaUser, FaUserPlus, FaSignOutAlt, FaGithub } from 'react-icons/fa';
+import { FaBook, FaEdit, FaInfoCircle, FaFileAlt, FaShieldAlt, FaEnvelope, FaUser, FaUserPlus, FaSignOutAlt, FaGithub } from 'react-icons/fa';
 import { FaXTwitter } from "react-icons/fa6";
 import useAuthStore from '../../stores/authStore';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { userName, isLoggedIn, logout, loginMessage, setUserName } = useAuthStore();
+  const { userName, isLoggedIn, logout, loginMessage } = useAuthStore();
   const router = useRouter();
   const [logoutMessage, setLogoutMessage] = useState(null);
 
-  // クライアントサイドで userName を初期化
-  useEffect(() => {
-    const storedUserName = localStorage.getItem('userName');
-    const storedAccessToken = localStorage.getItem('access_token');
-    const storedRefreshToken = localStorage.getItem('refresh_token');
-    if (storedUserName && storedAccessToken && storedRefreshToken) {
-      setUserName(storedUserName);
-      // 必要に応じて accessToken と refreshToken をストアに設定
-      useAuthStore.setState({ accessToken: storedAccessToken, refreshToken: storedRefreshToken });
-    }
-  }, [setUserName]);
-
+  // メニューを開閉する関数
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const handleLogout = () => {
     logout();
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("userName");
     setLogoutMessage("【ログアウトしました】");
     router.push("/");
     setTimeout(() => setLogoutMessage(null), 3000);
@@ -41,13 +28,9 @@ const Header = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       const headerElement = document.querySelector("header");
-
-      // ヘッダー内をクリックした場合は何もしない
       if (headerElement && headerElement.contains(event.target)) {
         return;
       }
-
-      // ヘッダー外をクリックした場合はメニューを閉じる
       setIsMenuOpen(false);
     };
 
@@ -105,23 +88,23 @@ const Header = () => {
             {isLoggedIn ? (
               <>
                 <Link href="/myPage">
-                  <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+                  <p onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 mb-4">
                     <FaUser className="text-icon" /> {userName}のマイページ
                   </p>
                 </Link>
-                <button onClick={() => { toggleMenu(); handleLogout(); }} className="flex items-center gap-2 mb-4 cursor-pointer">
+                <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className="flex items-center gap-2 mb-4 cursor-pointer">
                   <FaSignOutAlt className="text-icon" /> ログアウト
                 </button>
               </>
             ) : (
               <>
                 <Link href="/login">
-                  <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+                  <p onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 mb-4">
                     <FaUser className="text-icon" /> ログイン
                   </p>
                 </Link>
                 <Link href="/signup">
-                  <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+                  <p onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 mb-4">
                     <FaUserPlus className="text-icon" /> 新規登録
                   </p>
                 </Link>
@@ -130,34 +113,34 @@ const Header = () => {
             <hr className="border-gray-300 mb-4" />
 
             <Link href="/index-books">
-              <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+              <p onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 mb-4">
                 <FaBook className="text-icon" /> 絵本を見る
               </p>
             </Link>
             <Link href="/create-book">
-              <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+              <p onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 mb-4">
                 <FaEdit className="text-icon" /> 絵本を作る
               </p>
             </Link>
             <Link href="/app-guide">
-              <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+              <p onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 mb-4">
                 <FaInfoCircle className="text-icon" /> アプリの使い方
               </p>
             </Link>
             <hr className="border-gray-300 mb-4" />
 
             <Link href="/terms">
-              <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+              <p onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 mb-4">
                 <FaFileAlt className="text-icon" /> 利用規約
               </p>
             </Link>
             <Link href="/privacy-policy">
-              <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+              <p onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 mb-4">
                 <FaShieldAlt className="text-icon" /> プライバシーポリシー
               </p>
             </Link>
             <Link href="/contact">
-              <p onClick={toggleMenu} className="flex items-center gap-2 mb-4">
+              <p onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 mb-4">
                 <FaEnvelope className="text-icon" /> お問い合わせ
               </p>
             </Link>
