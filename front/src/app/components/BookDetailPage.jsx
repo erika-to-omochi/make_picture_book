@@ -64,7 +64,7 @@ function BookDetailPage() {
     try {
       await axiosInstance.delete(`/api/v1/books/${bookId}`);
       alert("絵本を削除しました。");
-      router.push("/index-books"); // 削除後にリスト画面にリダイレクト
+      router.push("/myPage"); // 削除後にリスト画面にリダイレクト
     } catch (error) {
       console.error("絵本の削除に失敗しました:", error);
       alert("絵本の削除中にエラーが発生しました。");

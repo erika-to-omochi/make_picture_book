@@ -84,34 +84,37 @@ export default function ModalManager() {
       // ページの更新または新規作成
       for (const page of pages) {
         // page_elements の構築
-        const pageElements = [];
-
-        // テキスト要素を page_elements に変換
-        page.pageElements.forEach((element) => {
-          if (element.elementType === 'text') {
-            pageElements.push({
-              element_type: 'text', // スネークケースで送信
-              text: element.text,
-              font_size: element.fontSize,
-              font_color: element.fontColor,
-              position_x: element.positionX,
-              position_y: element.positionY,
-              rotation: element.rotation || 0,
-              scale_x: element.scaleX || 1,
-              scale_y: element.scaleY || 1,
-            });
-          } else if (element.elementType === 'image') {
-            pageElements.push({
-              element_type: 'image', // スネークケースで送信
-              src: element.src,
-              position_x: element.positionX,
-              position_y: element.positionY,
-              rotation: element.rotation || 0,
-              scale_x: element.scaleX || 1,
-              scale_y: element.scaleY || 1,
-            });
-          }
-        });
+        const pageElements = page.pageElements
+          // 空のテキスト要素を除外
+          .filter(el => !(el.elementType === 'text' && (!el.text || el.text.trim() === "")))
+          // 必要なフィールドに変換
+          .map(el => {
+            if (el.elementType === 'text') {
+              return {
+                element_type: 'text',
+                text: el.text || null, // 空の場合は null に設定
+                font_size: el.fontSize,
+                font_color: el.fontColor,
+                position_x: el.positionX,
+                position_y: el.positionY,
+                rotation: el.rotation || 0,
+                scale_x: el.scaleX || 1,
+                scale_y: el.scaleY || 1,
+              };
+            } else if (el.elementType === 'image') {
+              return {
+                element_type: 'image',
+                src: el.src,
+                position_x: el.positionX,
+                position_y: el.positionY,
+                rotation: el.rotation || 0,
+                scale_x: el.scaleX || 1,
+                scale_y: el.scaleY || 1,
+              };
+            }
+            return null; // 他のタイプがあれば適宜処理
+          })
+          .filter(el => el !== null); // 不要な null を除外
 
         // page_characters の構築（今後本リリースで修正していく）
         const pageCharacters = page.page_characters || [];
