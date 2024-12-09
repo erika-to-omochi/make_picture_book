@@ -79,10 +79,16 @@ export default function ModalManager() {
         console.log(`New book created with id: ${newBookId}`);
       }
 
-      console.log("Pages before saving:", pages);
-
       // ページの更新または新規作成
       for (const page of pages) {
+
+        // 削除対象の要素に _destroy フラグを付与
+        const elementsToDelete = page.elementsToDelete || [];
+        const deletedElements = elementsToDelete.map(el => ({
+          id: el.id,
+          _destroy: true,
+        }));
+
         // page_elements の構築
         const pageElements = page.pageElements
           // 空のテキスト要素を除外
@@ -100,6 +106,7 @@ export default function ModalManager() {
                 rotation: el.rotation || 0,
                 scale_x: el.scaleX || 1,
                 scale_y: el.scaleY || 1,
+                _destroy: false,
               };
             } else if (el.elementType === 'image') {
               return {
@@ -110,11 +117,15 @@ export default function ModalManager() {
                 rotation: el.rotation || 0,
                 scale_x: el.scaleX || 1,
                 scale_y: el.scaleY || 1,
+                _destroy: false,
               };
             }
             return null; // 他のタイプがあれば適宜処理
           })
           .filter(el => el !== null); // 不要な null を除外
+
+        // 全ての要素を統合
+        const allPageElements = [...pageElements, ...deletedElements];
 
         // page_characters の構築（今後本リリースで修正していく）
         const pageCharacters = page.page_characters || [];
@@ -124,7 +135,7 @@ export default function ModalManager() {
             book_id: newBookId,
             page_number: page.pageNumber,
             background_color: page.backgroundColor || '#ffffff',
-            page_elements_attributes: pageElements,
+            page_elements_attributes: allPageElements,
             page_characters_attributes: pageCharacters,
           },
         };
