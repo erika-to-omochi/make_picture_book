@@ -20,28 +20,28 @@ export default function ModalManager() {
   const { pages, resetCanvas, bookData } = useCanvasStore(); // bookDataを直接取得
   const router = useRouter();
 
-    // モーダル開閉ロジック
-    const openModal = (type) => {
-      setModalType(type);
-      // BookIdが存在する場合は初期値をセット
-      if (bookData?.id) {
-        setModalData({
-          title: bookData.title || "",
-          author: bookData.author_name || "",
-          tags: bookData.tags || "",
-          visibility: bookData.visibility === 0 ? "public" : "private",
-        });
-      } else {
-        // 初期値を空白にリセット
-        setModalData({
-          title: "",
-          author: "",
-          tags: "",
-          visibility: "public",
-        });
-      }
-      setIsModalOpen(true);
-    };
+  // モーダル開閉ロジック
+  const openModal = (type) => {
+    setModalType(type);
+    // BookIdが存在する場合は初期値をセット
+    if (bookData?.id) {
+      setModalData({
+        title: bookData.title || "",
+        author: bookData.author_name || "",
+        tags: bookData.tags || "",
+        visibility: bookData.visibility === 0 ? "public" : "private",
+      });
+    } else {
+      // 初期値を空白にリセット
+      setModalData({
+        title: "",
+        author: "",
+        tags: "",
+        visibility: "public",
+      });
+    }
+    setIsModalOpen(true);
+  };
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -70,7 +70,7 @@ export default function ModalManager() {
       // 書籍の更新または新規作成
       if (newBookId) {
         // 更新
-        const updateBookResponse = await axiosInstance.put(`/api/v1/books/${newBookId}`, bookDataPayload);
+        await axiosInstance.put(`/api/v1/books/${newBookId}`, bookDataPayload);
         isUpdate = true;
       } else {
         // 新規作成
@@ -83,9 +83,8 @@ export default function ModalManager() {
       for (const page of pages) {
 
         // 削除対象の要素に _destroy フラグを付与
-        const elementsToDelete = page.elementsToDelete || [];
-        const deletedElements = elementsToDelete.map(el => ({
-          id: el.id,
+        const elementsToDelete = (page.elementsToDelete || []).map(el => ({
+          id: typeof el.id === 'number' ? el.id : parseInt(el.id, 10),
           _destroy: true,
         }));
 
@@ -93,41 +92,38 @@ export default function ModalManager() {
         const pageElements = page.pageElements
           // 空のテキスト要素を除外
           .filter(el => !(el.elementType === 'text' && (!el.text || el.text.trim() === "")))
-          // 必要なフィールドに変換
           .map(el => {
-            if (el.elementType === 'text') {
-              return {
-                element_type: 'text',
-                text: el.text || null, // 空の場合は null に設定
-                font_size: el.fontSize,
-                font_color: el.fontColor,
-                position_x: el.positionX,
-                position_y: el.positionY,
-                rotation: el.rotation || 0,
-                scale_x: el.scaleX || 1,
-                scale_y: el.scaleY || 1,
-                _destroy: false,
-              };
-            } else if (el.elementType === 'image') {
-              return {
-                element_type: 'image',
-                src: el.src,
-                position_x: el.positionX,
-                position_y: el.positionY,
-                rotation: el.rotation || 0,
-                scale_x: el.scaleX || 1,
-                scale_y: el.scaleY || 1,
-                _destroy: false,
-              };
+            const baseAttrs = {
+              element_type: el.elementType,
+              text: el.elementType === 'text' ? (el.text || null) : null,
+              src: el.elementType === 'image' ? el.src : null,
+              font_size: el.fontSize || null,
+              font_color: el.fontColor || null,
+              position_x: el.positionX,
+              position_y: el.positionY,
+              rotation: el.rotation || 0,
+              scale_x: el.scaleX || 1,
+              scale_y: el.scaleY || 1,
+              _destroy: false,
+            };
+
+            // IDが存在し、かつ一時的なIDでない場合はIDを整数化して付与
+            // 既存要素の場合、el.idが数字、もしくは数字文字列であるはず
+            if (el.id && typeof el.id === 'string' && !el.id.startsWith('_')) {
+              baseAttrs.id = parseInt(el.id, 10);
+            } else if (typeof el.id === 'number') {
+              baseAttrs.id = el.id;
             }
-            return null; // 他のタイプがあれば適宜処理
+            // 新規要素にはidを付与しない
+
+            return baseAttrs;
           })
           .filter(el => el !== null); // 不要な null を除外
 
-        // 全ての要素を統合
-        const allPageElements = [...pageElements, ...deletedElements];
+        // 全ての要素を統合（削除要素は既存IDを持つはず）
+        const allPageElements = [...pageElements, ...elementsToDelete];
 
-        // page_characters の構築（今後本リリースで修正していく）
+        // page_characters の構築（今後本リリースで修正予定）
         const pageCharacters = page.page_characters || [];
 
         const payload = {
@@ -140,11 +136,10 @@ export default function ModalManager() {
           },
         };
 
+        // 既存ページは更新、新規ページは作成
         if (page.id) {
-          // ページ更新
           await axiosInstance.put(`/api/v1/books/${newBookId}/pages/${page.id}`, payload);
         } else {
-          // 新規作成
           await axiosInstance.post(`/api/v1/books/${newBookId}/pages`, payload);
         }
       }
