@@ -54,11 +54,11 @@ const useCanvasStore = create((set, get) => ({
   },
 
   // 画像の追加（handleAddImage）
-  handleAddImage: (imageSrc, category) => {
+  handleAddImage: (imageData) => {
     return new Promise((resolve, reject) => {
       get().pushToHistory();
       const img = new window.Image();
-      img.src = imageSrc;
+      img.src = imageData.src;
       img.onload = () => {
         set((state) => {
           const currentPage = state.pages[state.currentPageIndex];
@@ -68,13 +68,13 @@ const useCanvasStore = create((set, get) => ({
           }
           const newImageElement = {
             elementType: 'image',
-            src: imageSrc,
-            positionX: 100, // 初期位置を調整
-            positionY: 100,
-            rotation: 0,
-            scaleX: 0.5, // スケールファクターとして初期化
-            scaleY: 0.5,
-            imageCategory: category,
+            src: imageData.src,
+            positionX: imageData.positionX || 100,
+            positionY: imageData.positionY || 100,
+            rotation: imageData.rotation || 0,
+            scaleX: imageData.scaleX || 0.5,
+            scaleY: imageData.scaleY || 0.5,
+            imageCategory: imageData.imageCategory || 'default',
             id: get().generateUniqueId(),
           };
           const updatedPageElements = [...currentPage.pageElements, newImageElement];
@@ -86,12 +86,11 @@ const useCanvasStore = create((set, get) => ({
           set({ pages: updatedPages });
           return { pages: updatedPages };
         });
-        // 新しく追加された画像のインデックスを返す
         const newIndex = get().pages[get().currentPageIndex].pageElements.length - 1;
         resolve(newIndex);
       };
       img.onerror = () => {
-        console.error("画像の読み込みに失敗しました:", imageSrc);
+        console.error("画像の読み込みに失敗しました:", imageData.src);
         reject(new Error("画像の読み込みに失敗しました。"));
       };
     });

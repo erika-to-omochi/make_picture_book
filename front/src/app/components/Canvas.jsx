@@ -234,7 +234,7 @@ function Canvas({
             const newImage = {
               ...elementToPaste,
             };
-            handleAddImage(newImage.src, newImage.imageCategory)
+            handleAddImage({ ...newImage })
               .then((newIndex) => {
                 setSelectedImageIndex(newIndex);
                 setPanel(newImage.imageCategory || '画像');
@@ -248,7 +248,6 @@ function Canvas({
         }
         return;
       }
-
       // 既存のキーイベント（Backspace, Undo）
       if (editingTextIndex === null) {
         if (e.key === 'Backspace') {
