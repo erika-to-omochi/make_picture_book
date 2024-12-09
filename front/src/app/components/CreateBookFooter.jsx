@@ -90,7 +90,16 @@ export default function CreateBookFooter({
   };
 
   const handleImageSelect = (src, category) => {
-    handleAddImage(src, category);
+    const imageData = {
+      src,
+      imageCategory: category,
+      positionX: 100,
+      positionY: 100,
+      rotation: 0,
+      scaleX: 0.5,
+      scaleY: 0.5,
+    };
+    handleAddImage(imageData);
   };
 
   // アイコンデータ
