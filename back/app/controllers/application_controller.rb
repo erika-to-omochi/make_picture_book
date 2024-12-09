@@ -16,6 +16,11 @@ class ApplicationController < ActionController::API
     devise_parameter_sanitizer.permit(:account_update, keys: [:name])
   end
 
+  # JWTの有効期限切れエラーをハンドル
+  rescue_from JWT::ExpiredSignature, with: :handle_jwt_expired
+  rescue_from JWT::DecodeError, with: :handle_jwt_decode_error
+
+
   def authenticate_user!
     begin
       decoded_token = decoded_auth_token
@@ -38,5 +43,13 @@ class ApplicationController < ActionController::API
     Rails.logger.debug("Extracted token: #{token}") # トークンをログ出力
     return nil unless token
     JWT.decode(token, Rails.application.credentials.dig(:jwt, :secret), true, algorithm: 'HS256').first
+  end
+
+  def handle_jwt_expired
+    render json: { error: 'アクセストークンの有効期限が切れています' }, status: :unauthorized
+  end
+
+  def handle_jwt_decode_error
+    render json: { error: '無効なアクセストークンです' }, status: :unauthorized
   end
 end
