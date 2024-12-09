@@ -12,7 +12,9 @@ const useCanvasStore = create((set, get) => ({
       backgroundColor: '#ffffff',
       pageElements: [],
       pageCharacters: [],
+      elementsToDelete: [],
       id: null,
+      elementsToDelete: [],
     },
   ],
   currentPageIndex: 0,
@@ -129,15 +131,23 @@ const useCanvasStore = create((set, get) => ({
         console.error("現在のページが見つかりません。");
         return {};
       }
+      const element = currentPage.pageElements[index];
+      if (element && element.id) {
+        // 既存の要素を削除対象リストに追加
+        const updatedElementsToDelete = [...currentPage.elementsToDelete, { id: element.id }];
+        currentPage.elementsToDelete = updatedElementsToDelete; // ページに直接設定
+      }
       const updatedElements = currentPage.pageElements.filter((el, i) => !(i === index && el.elementType === 'image'));
       const updatedPages = [...state.pages];
       updatedPages[state.currentPageIndex] = {
         ...currentPage,
         pageElements: updatedElements,
+        elementsToDelete: currentPage.elementsToDelete, // 更新済み
       };
       return { pages: updatedPages };
     });
   },
+
   setSelectedImageIndex: (index) => set({ selectedImageIndex: index }),
 
   // テキストの追加
@@ -204,11 +214,18 @@ const useCanvasStore = create((set, get) => ({
         console.error("現在のページが見つかりません。");
         return {};
       }
+      const element = currentPage.pageElements[index];
+      if (element && element.id) {
+        // 既存の要素を削除対象リストに追加
+        const updatedElementsToDelete = [...currentPage.elementsToDelete, { id: element.id }];
+        currentPage.elementsToDelete = updatedElementsToDelete; // ページに直接設定
+      }
       const updatedElements = currentPage.pageElements.filter((el, i) => !(i === index && el.elementType === 'text'));
       const updatedPages = [...state.pages];
       updatedPages[state.currentPageIndex] = {
         ...currentPage,
         pageElements: updatedElements,
+        elementsToDelete: currentPage.elementsToDelete, // 更新済み
       };
       return { pages: updatedPages };
     });
@@ -227,6 +244,7 @@ const useCanvasStore = create((set, get) => ({
         pageElements: [],
         pageCharacters: [],
         id: null,
+        elementsToDelete: [],
       };
       const updatedPages = [...state.pages, newPage];
       return {
@@ -258,6 +276,7 @@ const useCanvasStore = create((set, get) => ({
             scaleY: element.scale_y,
           })),
           pageCharacters: page.page_characters || [],
+          elementsToDelete: [],
         }));
         set({ pages: formattedPages, bookData: response.data });
       } else {
@@ -268,6 +287,16 @@ const useCanvasStore = create((set, get) => ({
       console.error("ブックデータの取得に失敗しました:", error);
       set({ pages: [] });
     }
+  },
+
+  // 更新後に削除リストをクリアするアクション
+  clearElementsToDelete: () => {
+    set((state) => ({
+      pages: state.pages.map((page) => ({
+        ...page,
+        elementsToDelete: [],
+      })),
+    }));
   },
 
   // モーダル関連

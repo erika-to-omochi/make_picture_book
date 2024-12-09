@@ -54,7 +54,7 @@ class Api::V1::PagesController < ApplicationController
       :page_number,
       :background_color,
       page_elements_attributes: [
-        :id,
+        :id,:_destroy,
         :element_type, :text, :src, :font_size, :font_color,
         :position_x, :position_y, :rotation, :scale_x, :scale_y
       ],
