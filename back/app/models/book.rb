@@ -14,4 +14,7 @@ class Book < ApplicationRecord
   scope :published, -> { where(is_draft: false, visibility: 0) }
   scope :drafts, -> { where(is_draft: true) }
   scope :my_books, ->(user_id) { where(user_id: user_id) }
+
+  # デフォルトの1ページあたりの件数を設定（オプション）
+  paginates_per 10
 end

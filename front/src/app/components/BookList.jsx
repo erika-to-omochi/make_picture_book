@@ -1,4 +1,3 @@
-// src/components/BookList.jsx
 "use client";
 
 import React from "react";
