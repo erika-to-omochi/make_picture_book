@@ -12,28 +12,61 @@ class Api::V1::BooksController < ApplicationController
 
   def public_books
     books = Book.published
-    render json: books, include: [:tags, :pages]
+                .order(created_at: :desc)
+                .page(params[:page])
+                .per(params[:per_page] || 10)
+    render json: {
+      books: books.as_json(
+        include: [:tags, :pages]
+      ),
+      pagination: {
+        current_page: books.current_page,
+        next_page: books.next_page,
+        prev_page: books.prev_page,
+        total_pages: books.total_pages,
+        total_count: books.total_count,
+        limit_value: books.limit_value
+      }
+    }, status: :ok
   end
 
   def my_books
     books = Book.my_books(current_user.id)
-
-    render json: books.as_json(
-      only: [:id, :title, :author_name, :created_at, :user_id, :is_draft, :visibility],
-      include: {
-        pages: { only: [:page_number] },
-        tags: { only: [:name] }
+                .order(created_at: :desc)
+                .page(params[:page])
+                .per(params[:per_page] || 10)
+    render json: {
+      books: books.as_json(
+        only: [:id, :title, :author_name, :created_at, :user_id, :is_draft, :visibility],
+        include: {
+          pages: { only: [:page_number] },
+          tags: { only: [:name] }
+        }
+      ),
+      meta: {
+        current_page: books.current_page,
+        next_page: books.next_page,
+        prev_page: books.prev_page,
+        total_pages: books.total_pages,
+        total_count: books.total_count
       }
-    ), status: :ok
+    }, status: :ok
   end
 
   def index
-    books = Book.published
+    books = Book.published.page(params[:page]).per(params[:per_page] || 10)
     render json: books.as_json(
       only: [:id, :title, :author_name, :created_at],
       include: {
         pages: { only: [:page_number] },
         tags: { only: [:name] }
+      },
+      meta: {
+        current_page: books.current_page,
+        next_page: books.next_page,
+        prev_page: books.prev_page,
+        total_pages: books.total_pages,
+        total_count: books.total_count
       }
     ), status: :ok
   end

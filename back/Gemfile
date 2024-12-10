@@ -60,3 +60,5 @@ gem 'devise-i18n'
 gem 'jsonapi-serializer'
 
 gem 'dotenv-rails', groups: [:development, :test]
+
+gem 'kaminari'
