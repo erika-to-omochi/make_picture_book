@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import axiosInstance from '../../api/axios';
@@ -15,6 +15,9 @@ function BookDetailPage() {
   const router = useRouter();
   const isMobile = useIsMobile();
 
+  // コメント投稿セクションへの参照を作成
+  const commentSectionRef = useRef(null);
+
   // Zustandストアから状態とアクションを取得
   const {
     bookData,
@@ -26,10 +29,17 @@ function BookDetailPage() {
   // 作者判定の状態管理
   const [isAuthor, setIsAuthor] = useState(false);
 
+    // コメントの内容を管理する状態
+    const [comment, setComment] = useState("");
+
+    // コメントリストを管理する状態
+    const [comments, setComments] = useState([]);
+
   // 書籍データの取得
   useEffect(() => {
     if (bookId) {
       fetchBookData(bookId).then(() => {});
+      fetchComments(); // コメントリストの取得を追加
     }
   }, [bookId, fetchBookData]);
 
@@ -46,8 +56,30 @@ function BookDetailPage() {
     checkAuthorStatus();
   }, [bookId]);
 
-  const handleComment = () => {
-    console.log('コメントボタンがクリックされました');
+  const fetchComments = async () => {
+    try {
+      const response = await axiosInstance.get(`/api/v1/books/${bookId}/comments`);
+      setComment(response.data.comments);
+    } catch (error) {
+      console.error("コメントの取得に失敗しました", error);
+    }
+  }
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!comment.trim()) {
+      alert("コメントを入力してください。");
+      return;
+    }
+    try {
+      await axiosInstance.post(`/api/v1/books/${bookId}/comments`, { text: comment });
+      alert("コメントを投稿しました。");
+      setComment("");
+      fetchComments(); // コメントリストを再取得
+    } catch (error) {
+      console.error("コメントの投稿に失敗しました:", error);
+      alert("コメントの投稿中にエラーが発生しました。");
+    }
   };
 
   const handlePrint = () => {
@@ -68,6 +100,13 @@ function BookDetailPage() {
     } catch (error) {
       console.error("絵本の削除に失敗しました:", error);
       alert("絵本の削除中にエラーが発生しました。");
+    }
+  };
+
+  // コメントアイコンをクリックしたときにコメントセクションにスクロール
+  const scrollToComments = () => {
+    if (commentSectionRef.current) {
+      commentSectionRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -93,7 +132,8 @@ function BookDetailPage() {
         {/* アイコンボタンコンテナ: モバイルはflex-row, デスクトップはflex-col */}
         <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'space-x-6' : 'space-y-4'}`}>
           <button
-            onClick={handleComment}
+            onClick={scrollToComments}
+            aria-label="コメントを表示するボタン"
             className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-16 h-16"
           >
             <FaRegCommentDots className="text-gray-700" size={24} />
@@ -123,6 +163,44 @@ function BookDetailPage() {
                 <span style={{ fontSize: '0.6rem' }} className="mt-1">削除する</span>
               </button>
             </>
+          )}
+        </div>
+      </div>
+      {/* コメント投稿セクションとコメント一覧を中央揃えにする */}
+      <div ref={commentSectionRef} className="w-full max-w-4xl mx-auto mt-8 p-4 border-t border-gray-300">
+        <h2 className="text-bodyText font-semibold mb-4 text-gray-800">コメントを投稿する</h2>
+        <form onSubmit={handleCommentSubmit} className="flex flex-col space-y-4">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="コメントを入力してください..."
+            className="w-full mx-auto p-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+            rows={4}
+            required
+          />
+          <button
+            type="submit"
+            aria-label="コメントを投稿する"
+            className="w-32 h-10 bg-customButton text-white rounded-md hover:bg-opacity-80 flex items-center justify-center mx-auto"
+          >
+            投稿する
+          </button>
+        </form>
+
+        {/* コメントリストの表示 */}
+        <div className="mt-8 mb-28">
+          <h3 className="text-bodyText font-semibold mb-4 text-gray-800">コメント一覧</h3>
+          {comments.length === 0 ? (
+            <p className="text-gray-500">まだコメントがありません。</p>
+          ) : (
+            <ul className="space-y-4">
+              {comments.map((cmt) => (
+                <li key={cmt.id} className="p-4 border border-gray-200 rounded-md">
+                  <p className="text-bodyText text-gray-800">{cmt.text}</p>
+                  <span className="text-xs text-bodyText text-gray-500">{new Date(cmt.createdAt).toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       </div>
