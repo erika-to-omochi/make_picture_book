@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_11_25_070649) do
+ActiveRecord::Schema[7.1].define(version: 2024_12_11_132316) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -39,6 +39,17 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_25_070649) do
     t.datetime "updated_at", null: false
     t.index ["author_name"], name: "index_books_on_author_name"
     t.index ["user_id"], name: "index_books_on_user_id"
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "user_id", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id", "user_id"], name: "index_comments_on_book_id_and_user_id"
+    t.index ["book_id"], name: "index_comments_on_book_id"
+    t.index ["user_id"], name: "index_comments_on_user_id"
   end
 
   create_table "page_characters", force: :cascade do |t|
@@ -131,6 +142,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_25_070649) do
   add_foreign_key "book_tags", "books"
   add_foreign_key "book_tags", "tags"
   add_foreign_key "books", "users"
+  add_foreign_key "comments", "books"
+  add_foreign_key "comments", "users"
   add_foreign_key "page_characters", "pages"
   add_foreign_key "page_elements", "pages"
   add_foreign_key "pages", "books"

@@ -8,6 +8,7 @@ class User < ApplicationRecord
 
   has_many :refresh_tokens, dependent: :destroy
   has_many :books, dependent: :destroy
+  has_many :comments, dependent: :destroy
 
   def jwt_subject
     id
