@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useBooksStore from "@/stores/booksStore";
 import BookList from "../components/BookList";
@@ -11,37 +11,29 @@ function BookListPage() {
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
 
-  const initialPage = parseInt(pageParam, 10) || 1;
-  const [currentPage, setCurrentPage] = useState(initialPage);
   const perPage = 10;
 
+  // ストアから必要なデータを取得
   const publishedBooks = useBooksStore((state) => state.publishedBooks);
   const pagination = useBooksStore((state) => state.pagination);
   const loading = useBooksStore((state) => state.loading);
   const error = useBooksStore((state) => state.error);
   const fetchPublishedBooks = useBooksStore((state) => state.fetchPublishedBooks);
 
+  // URLの `page` パラメータが変更されたときにデータを取得
   useEffect(() => {
-    fetchPublishedBooks(currentPage, perPage);
-  }, [fetchPublishedBooks, currentPage, perPage]);
+    const page = parseInt(pageParam, 10) || 1;
+    fetchPublishedBooks(page, perPage);
+  }, [fetchPublishedBooks, pageParam, perPage]);
 
-  // URLのクエリパラメータが変更されたときに currentPage を更新
-  useEffect(() => {
-    if (pageParam) {
-      const newPage = parseInt(pageParam, 10);
-      if (!isNaN(newPage) && newPage !== currentPage) {
-        setCurrentPage(newPage);
-      }
-    }
-  }, [pageParam, currentPage]);
-
+  // ページ変更時のハンドラー
   const handlePageChange = (page) => {
     if (page) {
-      setCurrentPage(page);
       router.push(`/index-books?page=${page}`);
     }
   };
 
+  // ローディング状態
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -52,6 +44,7 @@ function BookListPage() {
       </div>
     );
 
+  // エラー状態
   if (error)
     return (
       <div className="flex items-center justify-center h-screen">
@@ -59,6 +52,7 @@ function BookListPage() {
       </div>
     );
 
+  // コンテンツの表示
   return (
     <div className="flex flex-col items-center justify-center p-8 space-y-8 pb-32">
       <h1 className="text-3xl font-bold mb-4">みんなの絵本</h1>
