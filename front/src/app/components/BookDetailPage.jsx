@@ -59,7 +59,7 @@ function BookDetailPage() {
   const fetchComments = async () => {
     try {
       const response = await axiosInstance.get(`/api/v1/books/${bookId}/comments`);
-      setComment(response.data.comments);
+      setComments(response.data);
     } catch (error) {
       console.error("コメントの取得に失敗しました", error);
     }
@@ -72,7 +72,7 @@ function BookDetailPage() {
       return;
     }
     try {
-      await axiosInstance.post(`/api/v1/books/${bookId}/comments`, { text: comment });
+      await axiosInstance.post(`/api/v1/books/${bookId}/comments`, { content: comment });
       alert("コメントを投稿しました。");
       setComment("");
       fetchComments(); // コメントリストを再取得
@@ -174,7 +174,7 @@ function BookDetailPage() {
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="コメントを入力してください..."
-            className="w-full mx-auto p-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className="w-full mx-auto p-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2"
             rows={4}
             required
           />
@@ -195,9 +195,12 @@ function BookDetailPage() {
           ) : (
             <ul className="space-y-4">
               {comments.map((cmt) => (
-                <li key={cmt.id} className="p-4 border border-gray-200 rounded-md">
-                  <p className="text-bodyText text-gray-800">{cmt.text}</p>
-                  <span className="text-xs text-bodyText text-gray-500">{new Date(cmt.createdAt).toLocaleString()}</span>
+                <li key={cmt.id} className="p-4 bg-white/50 rounded-md">
+                  <div className="flex justify-between items-center text-xs text-bodyText text-gray-500 mb-2">
+                    <span>{cmt.user.name}さんからのコメント</span>
+                    <span>{new Date(cmt.created_at).toLocaleString()}</span>
+                  </div>
+                  <p className="text-bodyText text-gray-800">{cmt.content}</p>
                 </li>
               ))}
             </ul>
