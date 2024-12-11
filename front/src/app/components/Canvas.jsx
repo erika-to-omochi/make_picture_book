@@ -567,7 +567,7 @@ function Canvas({
         )}
 
         {/* 下部の要素コンテナ */}
-        <div className="flex flex-col items-center gap-4 w-full max-w-4xl mx-auto mb-28">
+        <div className="flex flex-col items-center gap-4 w-full max-w-4xl mx-auto">
           {/* ページ移動エリア */}
           <div className="flex gap-4 items-center justify-center w-full">
             {/* 前のページボタンとラベル */}

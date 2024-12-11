@@ -32,7 +32,7 @@ const Pagination = ({ pagination, onPageChange }) => {
         onClick={() => onPageChange(prev_page)}
         disabled={!prev_page}
       >
-        Prev
+        «
       </button>
 
       {/* 最初のページへのリンク */}
@@ -49,7 +49,11 @@ const Pagination = ({ pagination, onPageChange }) => {
       {pages.map((page) => (
         <button
           key={page}
-          className={`join-item btn ${page === current_page ? 'btn-active' : ''}`}
+          className={`join-item btn ${
+            page === current_page
+              ? 'bg-bodyText text-white cursor-default'
+              : ''
+          }`}
           onClick={() => onPageChange(page)}
         >
           {page}
@@ -72,7 +76,7 @@ const Pagination = ({ pagination, onPageChange }) => {
         onClick={() => onPageChange(next_page)}
         disabled={!next_page}
       >
-        Next
+        »
       </button>
     </div>
   );
