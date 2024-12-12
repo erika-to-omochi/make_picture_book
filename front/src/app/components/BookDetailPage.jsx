@@ -9,7 +9,6 @@ import useCanvasStore from '../../stores/canvasStore';
 import useIsMobile from "@/hooks/useIsMobile";
 import useAuthStore from '../../stores/authStore';
 
-
 const Canvas = dynamic(() => import("./Canvas"), { ssr: false });
 
 function BookDetailPage() {
@@ -211,15 +210,35 @@ function BookDetailPage() {
             投稿する
           </button>
         </form>
-
         <div className="mt-8 mb-28">
           <h3 className="text-bodyText font-semibold mb-4 text-gray-800">コメント一覧</h3>
           {comments.map((cmt) => (
             <div key={cmt.id} className="p-4 bg-white/50 rounded-md mb-4">
-              <div className="flex justify-between items-center text-xs text-bodyText text-gray-500 mb-2">
-                <span>{cmt.user.name}さんからのコメント</span>
-                <span>{new Date(cmt.created_at).toLocaleString()}</span>
+              <div className="flex items-center text-xs text-bodyText text-gray-500 mb-2">
+                <span className="mr-2">{cmt.user.name}さんからのコメント</span>
+                
+                {cmt.user.name === userName && (
+                  <>
+                    <button
+                      onClick={() => handleCommentEdit(cmt)}
+                      aria-label="コメントを編集する"
+                      className="flex items-center text-gray-500 hover:text-gray-700 transition mx-2"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleCommentDelete(cmt.id)}
+                      aria-label="コメントを削除する"
+                      className="flex items-center text-gray-500 hover:text-gray-700 transition"
+                    >
+                      <FaTrash />
+                    </button>
+                  </>
+                )}
+
+                <span className="ml-auto">{new Date(cmt.created_at).toLocaleString()}</span>
               </div>
+
               {editingComment?.id === cmt.id ? (
                 // 編集モード
                 <div className="flex flex-col space-y-2 w-full">
@@ -249,30 +268,7 @@ function BookDetailPage() {
                 </div>
               ) : (
                 // 通常表示モード
-                <div className="flex justify-between items-center">
-                  <p className="text-bodyText text-gray-800">{cmt.content}</p>
-                  <div className="flex space-x-2">
-                    {/* コメント投稿者と現在のユーザーが一致した場合のみ編集・削除表示 */}
-                    {cmt.user.name === userName && (
-                      <>
-                        <button
-                          onClick={() => handleCommentEdit(cmt)}
-                          aria-label="コメントを編集する"
-                          className="flex items-center text-gray-500 hover:text-gray-700 transition"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={() => handleCommentDelete(cmt.id)}
-                          aria-label="コメントを削除する"
-                          className="flex items-center text-gray-500 hover:text-gray-700 transition"
-                        >
-                          <FaTrash />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
+                <p className="text-bodyText text-gray-800 break-all">{cmt.content}</p>
               )}
             </div>
           ))}
