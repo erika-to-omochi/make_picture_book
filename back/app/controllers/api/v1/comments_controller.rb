@@ -1,7 +1,7 @@
 class Api::V1::CommentsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_book, only: [:index, :create]
-  before_action :set_comment, only: [:destroy]
+  before_action :set_comment, only: [:destroy, :update]
 
   def index
     @comments = @book.comments.includes(:user).order(created_at: :desc)
@@ -16,6 +16,18 @@ class Api::V1::CommentsController < ApplicationController
       render json: @comment.as_json(include: { user: { only: [:id, :name] } }), status: :created
     else
       render json: { errors: @comment.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def update
+    if @comment.user == current_user
+      if @comment.update(comment_params)
+        render json: @comment.as_json(include: { user: { only: [:id, :name] } })
+      else
+        render json: { errors: @comment.errors.full_messages }, status: :unprocessable_entity
+      end
+    else
+      render json: { error: "You are not authorized to update this comment." }, status: :forbidden
     end
   end
 
