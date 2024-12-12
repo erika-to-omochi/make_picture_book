@@ -7,6 +7,8 @@ import axiosInstance from '../../api/axios';
 import { FaRegCommentDots, FaPrint, FaEdit, FaTrash } from 'react-icons/fa';
 import useCanvasStore from '../../stores/canvasStore';
 import useIsMobile from "@/hooks/useIsMobile";
+import useAuthStore from '../../stores/authStore';
+
 
 const Canvas = dynamic(() => import("./Canvas"), { ssr: false });
 
@@ -14,11 +16,10 @@ function BookDetailPage() {
   const { bookId } = useParams();
   const router = useRouter();
   const isMobile = useIsMobile();
+  const { userName } = useAuthStore(); // ログイン中のユーザー名取得
 
-  // コメント投稿セクションへの参照を作成
   const commentSectionRef = useRef(null);
 
-  // Zustandストアから状態とアクションを取得
   const {
     bookData,
     currentPageIndex,
@@ -26,34 +27,24 @@ function BookDetailPage() {
     fetchBookData,
   } = useCanvasStore();
 
-  // 作者判定の状態管理
   const [isAuthor, setIsAuthor] = useState(false);
-
-  // コメントの内容を管理する状態
   const [comment, setComment] = useState("");
-
-  // コメントリストを管理する状態
   const [comments, setComments] = useState([]);
+  const [editingComment, setEditingComment] = useState(null);
+  const [editContent, setEditContent] = useState("");
 
-  // 編集用の状態を追加
-  const [editingComment, setEditingComment] = useState(null); // 編集中のコメントを保存
-  const [editContent, setEditContent] = useState(""); // 編集用の入力値
-
-
-  // 書籍データの取得
   useEffect(() => {
     if (bookId) {
       fetchBookData(bookId).then(() => {});
-      fetchComments(); // コメントリストの取得を追加
+      fetchComments();
     }
   }, [bookId, fetchBookData]);
 
-  // 作者判定APIを呼び出し
   useEffect(() => {
     const checkAuthorStatus = async () => {
       try {
         const response = await axiosInstance.get(`/api/v1/books/${bookId}/author_status`);
-        setIsAuthor(response.data.is_author); // 作者かどうかを状態に設定
+        setIsAuthor(response.data.is_author);
       } catch (error) {
         console.error("Error checking author status:", error);
       }
@@ -80,7 +71,7 @@ function BookDetailPage() {
       await axiosInstance.post(`/api/v1/books/${bookId}/comments`, { content: comment });
       alert("コメントを投稿しました。");
       setComment("");
-      fetchComments(); // コメントリストを再取得
+      fetchComments();
     } catch (error) {
       console.error("コメントの投稿に失敗しました:", error);
       alert("コメントの投稿中にエラーが発生しました。");
@@ -101,14 +92,13 @@ function BookDetailPage() {
     try {
       await axiosInstance.delete(`/api/v1/books/${bookId}`);
       alert("絵本を削除しました。");
-      router.push("/myPage"); // 削除後にリスト画面にリダイレクト
+      router.push("/myPage");
     } catch (error) {
       console.error("絵本の削除に失敗しました:", error);
       alert("絵本の削除中にエラーが発生しました。");
     }
   };
 
-  // コメントアイコンをクリックしたときにコメントセクションにスクロール
   const scrollToComments = () => {
     if (commentSectionRef.current) {
       commentSectionRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -121,7 +111,7 @@ function BookDetailPage() {
     try {
       await axiosInstance.delete(`/api/v1/books/${bookId}/comments/${commentId}`);
       alert("コメントを削除しました。");
-      fetchComments(); // コメントリストを再取得
+      fetchComments();
     } catch (error) {
       console.error("コメントの削除に失敗しました:", error);
       alert("コメントの削除中にエラーが発生しました。");
@@ -129,8 +119,8 @@ function BookDetailPage() {
   };
 
   const handleCommentEdit = (comment) => {
-    setEditingComment(comment); // 編集するコメントを状態に設定
-    setEditContent(comment.content); // 現在のコメント内容を初期値として設定
+    setEditingComment(comment);
+    setEditContent(comment.content);
   };
 
   const handleUpdateComment = async (commentId) => {
@@ -141,8 +131,8 @@ function BookDetailPage() {
     try {
       await axiosInstance.put(`/api/v1/books/${bookId}/comments/${commentId}`, { content: editContent });
       alert("コメントを更新しました。");
-      setEditingComment(null); // 編集状態を解除
-      fetchComments(); // コメントリストを再取得
+      setEditingComment(null);
+      fetchComments();
     } catch (error) {
       console.error("コメントの更新に失敗しました:", error);
       alert("コメントの更新中にエラーが発生しました。");
@@ -153,9 +143,7 @@ function BookDetailPage() {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      {/* メインコンテナ: モバイルはflex-col, デスクトップはflex-row */}
       <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} items-center justify-center space-y-4 ${!isMobile ? 'space-y-0 space-x-6' : ''} w-full max-w-5xl`}>
-        {/* キャンバスコンテナ */}
         {pages.length > 0 && pages[currentPageIndex] && (
           <div className="flex-shrink-0">
             <Canvas
@@ -168,7 +156,6 @@ function BookDetailPage() {
           </div>
         )}
 
-        {/* アイコンボタンコンテナ: モバイルはflex-row, デスクトップはflex-col */}
         <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'space-x-6' : 'space-y-4'}`}>
           <button
             onClick={scrollToComments}
@@ -205,7 +192,6 @@ function BookDetailPage() {
           )}
         </div>
       </div>
-      {/* コメント投稿セクションとコメント一覧を中央揃えにする */}
       <div ref={commentSectionRef} className="w-full max-w-4xl mx-auto mt-8 p-4 border-t border-gray-300">
         <h2 className="text-bodyText font-semibold mb-4 text-gray-800">コメントを投稿する</h2>
         <form onSubmit={handleCommentSubmit} className="flex flex-col space-y-4">
@@ -226,17 +212,16 @@ function BookDetailPage() {
           </button>
         </form>
 
-        {/* コメントリストの表示 */}
         <div className="mt-8 mb-28">
           <h3 className="text-bodyText font-semibold mb-4 text-gray-800">コメント一覧</h3>
           {comments.map((cmt) => (
-            <div key={cmt.id} className="p-4 bg-white/50 rounded-md">
+            <div key={cmt.id} className="p-4 bg-white/50 rounded-md mb-4">
               <div className="flex justify-between items-center text-xs text-bodyText text-gray-500 mb-2">
                 <span>{cmt.user.name}さんからのコメント</span>
                 <span>{new Date(cmt.created_at).toLocaleString()}</span>
               </div>
               {editingComment?.id === cmt.id ? (
-                // 編集モードの場合
+                // 編集モード
                 <div className="flex flex-col space-y-2 w-full">
                   <textarea
                     value={editContent}
@@ -263,27 +248,28 @@ function BookDetailPage() {
                   </div>
                 </div>
               ) : (
-                // 通常表示モードの場合
+                // 通常表示モード
                 <div className="flex justify-between items-center">
                   <p className="text-bodyText text-gray-800">{cmt.content}</p>
                   <div className="flex space-x-2">
-                    {isAuthor && (
-                      <button
-                        onClick={() => handleCommentEdit(cmt)}
-                        aria-label="コメントを編集する"
-                        className="flex items-center text-gray-500 hover:text-gray-700 transition"
-                      >
-                        <FaEdit />
-                      </button>
-                    )}
-                    {isAuthor && (
-                      <button
-                        onClick={() => handleCommentDelete(cmt.id)}
-                        aria-label="コメントを削除する"
-                        className="flex items-center text-gray-500 hover:text-gray-700 transition"
-                      >
-                        <FaTrash />
-                      </button>
+                    {/* コメント投稿者と現在のユーザーが一致した場合のみ編集・削除表示 */}
+                    {cmt.user.name === userName && (
+                      <>
+                        <button
+                          onClick={() => handleCommentEdit(cmt)}
+                          aria-label="コメントを編集する"
+                          className="flex items-center text-gray-500 hover:text-gray-700 transition"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleCommentDelete(cmt.id)}
+                          aria-label="コメントを削除する"
+                          className="flex items-center text-gray-500 hover:text-gray-700 transition"
+                        >
+                          <FaTrash />
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

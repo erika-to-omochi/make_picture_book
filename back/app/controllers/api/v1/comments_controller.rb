@@ -1,5 +1,5 @@
 class Api::V1::CommentsController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [:index]
   before_action :set_book, only: [:index, :create]
   before_action :set_comment, only: [:destroy, :update]
 
