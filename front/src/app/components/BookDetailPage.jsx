@@ -29,11 +29,16 @@ function BookDetailPage() {
   // 作者判定の状態管理
   const [isAuthor, setIsAuthor] = useState(false);
 
-    // コメントの内容を管理する状態
-    const [comment, setComment] = useState("");
+  // コメントの内容を管理する状態
+  const [comment, setComment] = useState("");
 
-    // コメントリストを管理する状態
-    const [comments, setComments] = useState([]);
+  // コメントリストを管理する状態
+  const [comments, setComments] = useState([]);
+
+  // 編集用の状態を追加
+  const [editingComment, setEditingComment] = useState(null); // 編集中のコメントを保存
+  const [editContent, setEditContent] = useState(""); // 編集用の入力値
+
 
   // 書籍データの取得
   useEffect(() => {
@@ -107,6 +112,40 @@ function BookDetailPage() {
   const scrollToComments = () => {
     if (commentSectionRef.current) {
       commentSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleCommentDelete = async (commentId) => {
+    const confirmDelete = window.confirm("このコメントを削除しますか？");
+    if (!confirmDelete) return;
+    try {
+      await axiosInstance.delete(`/api/v1/books/${bookId}/comments/${commentId}`);
+      alert("コメントを削除しました。");
+      fetchComments(); // コメントリストを再取得
+    } catch (error) {
+      console.error("コメントの削除に失敗しました:", error);
+      alert("コメントの削除中にエラーが発生しました。");
+    }
+  };
+
+  const handleCommentEdit = (comment) => {
+    setEditingComment(comment); // 編集するコメントを状態に設定
+    setEditContent(comment.content); // 現在のコメント内容を初期値として設定
+  };
+
+  const handleUpdateComment = async (commentId) => {
+    if (!editContent.trim()) {
+      alert("コメントを入力してください。");
+      return;
+    }
+    try {
+      await axiosInstance.put(`/api/v1/books/${bookId}/comments/${commentId}`, { content: editContent });
+      alert("コメントを更新しました。");
+      setEditingComment(null); // 編集状態を解除
+      fetchComments(); // コメントリストを再取得
+    } catch (error) {
+      console.error("コメントの更新に失敗しました:", error);
+      alert("コメントの更新中にエラーが発生しました。");
     }
   };
 
@@ -190,21 +229,67 @@ function BookDetailPage() {
         {/* コメントリストの表示 */}
         <div className="mt-8 mb-28">
           <h3 className="text-bodyText font-semibold mb-4 text-gray-800">コメント一覧</h3>
-          {comments.length === 0 ? (
-            <p className="text-gray-500">まだコメントがありません。</p>
-          ) : (
-            <ul className="space-y-4">
-              {comments.map((cmt) => (
-                <li key={cmt.id} className="p-4 bg-white/50 rounded-md">
-                  <div className="flex justify-between items-center text-xs text-bodyText text-gray-500 mb-2">
-                    <span>{cmt.user.name}さんからのコメント</span>
-                    <span>{new Date(cmt.created_at).toLocaleString()}</span>
+          {comments.map((cmt) => (
+            <div key={cmt.id} className="p-4 bg-white/50 rounded-md">
+              <div className="flex justify-between items-center text-xs text-bodyText text-gray-500 mb-2">
+                <span>{cmt.user.name}さんからのコメント</span>
+                <span>{new Date(cmt.created_at).toLocaleString()}</span>
+              </div>
+              {editingComment?.id === cmt.id ? (
+                // 編集モードの場合
+                <div className="flex flex-col space-y-2 w-full">
+                  <textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="w-full p-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2"
+                    rows={3}
+                  />
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleUpdateComment(cmt.id)}
+                      className="px-4 py-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
+                    >
+                      保存
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingComment(null);
+                        setEditContent("");
+                      }}
+                      className="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500"
+                    >
+                      キャンセル
+                    </button>
                   </div>
+                </div>
+              ) : (
+                // 通常表示モードの場合
+                <div className="flex justify-between items-center">
                   <p className="text-bodyText text-gray-800">{cmt.content}</p>
-                </li>
-              ))}
-            </ul>
-          )}
+                  <div className="flex space-x-2">
+                    {isAuthor && (
+                      <button
+                        onClick={() => handleCommentEdit(cmt)}
+                        aria-label="コメントを編集する"
+                        className="flex items-center text-gray-500 hover:text-gray-700 transition"
+                      >
+                        <FaEdit />
+                      </button>
+                    )}
+                    {isAuthor && (
+                      <button
+                        onClick={() => handleCommentDelete(cmt.id)}
+                        aria-label="コメントを削除する"
+                        className="flex items-center text-gray-500 hover:text-gray-700 transition"
+                      >
+                        <FaTrash />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>
