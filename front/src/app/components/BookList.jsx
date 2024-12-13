@@ -55,7 +55,7 @@ function BookList({ books, pageType }) {
             <div className="text-center flex-grow">
               <h2 className="text-xl font-bold mt-4 overflow-hidden text-ellipsis whitespace-nowrap">{book.title}</h2>
               <img
-                src="/home/ファビコン.png"
+                src="/home/favicon.png"
                 alt="ファビコン"
                 className="mx-auto my-4 w-16 h-16"
               />
