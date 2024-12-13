@@ -8,7 +8,7 @@ export default function Modal({ isOpen, onClose, onSave, modalType, title, setTi
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg w-80">
-        <h2 className="text-lg font-bold mb-4">{modalType === "draft" ? "下書き保存" : "完成保存"}</h2>
+        <h2 className="text-lg font-bold mb-4">{modalType === "draft" ? "下書き保存（空白でもOKです）" : "完成保存"}</h2>
         <label className="block mb-2">タイトル</label>
         <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full p-2 border rounded mb-4" />
         <label className="block mb-2">作者</label>

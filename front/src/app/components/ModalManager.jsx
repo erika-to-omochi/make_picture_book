@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import useCanvasStore from '../../stores/canvasStore';
+import useBooksStore from '../../stores/booksStore'; // 追加
 import axiosInstance from '../../api/axios';
 import { useRouter } from 'next/navigation';
 
@@ -19,6 +20,10 @@ export default function ModalManager() {
   const [isLoading, setIsLoading] = useState(false); // ローディング状態
   const { pages, resetCanvas, bookData } = useCanvasStore(); // bookDataを直接取得
   const router = useRouter();
+
+  // useBooksStoreとuseCanvasStoreから必要な関数を取得
+  const fetchMyBooks = useBooksStore((state) => state.fetchMyBooks);
+  const fetchBookData = useCanvasStore((state) => state.fetchBookData);
 
   // モーダル開閉ロジック
   const openModal = (type) => {
@@ -42,15 +47,12 @@ export default function ModalManager() {
     }
     setIsModalOpen(true);
   };
-
   const closeModal = () => {
     setIsModalOpen(false);
   };
-
   const handleModalChange = (field, value) => {
     setModalData((prev) => ({ ...prev, [field]: value }));
   };
-
   // モーダル保存処理
   const handleModalSave = async () => {
     setIsLoading(true);
@@ -63,10 +65,8 @@ export default function ModalManager() {
         visibility: modalData.visibility === 'public' ? 0 : 1,
         is_draft: modalType === 'draft',
       };
-
       let newBookId = bookData?.id || null;
       let isUpdate = false;
-
       // 書籍の更新または新規作成
       if (newBookId) {
         // 更新
@@ -78,16 +78,13 @@ export default function ModalManager() {
         newBookId = createBookResponse.data.book.id;
         console.log(`New book created with id: ${newBookId}`);
       }
-
       // ページの更新または新規作成
       for (const page of pages) {
-
         // 削除対象の要素に _destroy フラグを付与
         const elementsToDelete = (page.elementsToDelete || []).map(el => ({
           id: typeof el.id === 'number' ? el.id : parseInt(el.id, 10),
           _destroy: true,
         }));
-
         // page_elements の構築
         const pageElements = page.pageElements
           // 空のテキスト要素を除外
@@ -106,26 +103,20 @@ export default function ModalManager() {
               scale_y: el.scaleY || 1,
               _destroy: false,
             };
-
             // IDが存在し、かつ一時的なIDでない場合はIDを整数化して付与
-            // 既存要素の場合、el.idが数字、もしくは数字文字列であるはず
             if (el.id && typeof el.id === 'string' && !el.id.startsWith('_')) {
               baseAttrs.id = parseInt(el.id, 10);
             } else if (typeof el.id === 'number') {
               baseAttrs.id = el.id;
             }
             // 新規要素にはidを付与しない
-
             return baseAttrs;
           })
           .filter(el => el !== null); // 不要な null を除外
-
         // 全ての要素を統合（削除要素は既存IDを持つはず）
         const allPageElements = [...pageElements, ...elementsToDelete];
-
         // page_characters の構築（今後本リリースで修正予定）
         const pageCharacters = page.page_characters || [];
-
         const payload = {
           page: {
             book_id: newBookId,
@@ -135,7 +126,6 @@ export default function ModalManager() {
             page_characters_attributes: pageCharacters,
           },
         };
-
         // 既存ページは更新、新規ページは作成
         if (page.id) {
           await axiosInstance.put(`/api/v1/books/${newBookId}/pages/${page.id}`, payload);
@@ -143,17 +133,20 @@ export default function ModalManager() {
           await axiosInstance.post(`/api/v1/books/${newBookId}/pages`, payload);
         }
       }
-
-      // 保存完了メッセージの表示
       if (isUpdate) {
         alert('更新が完了しました');
       } else {
         alert('保存が完了しました');
       }
-
       resetCanvas();
       closeModal();
-      router.push('/myPage');
+      // 下書き保存の場合はリロードせずにデータを再取得
+      if (modalType === 'draft') {
+        await fetchMyBooks(); // 最新のユーザーの本を取得
+        await fetchBookData(newBookId); // 現在の本のデータを再取得
+      } else {
+        router.push('/myPage');
+      }
     } catch (error) {
       console.error("保存中にエラーが発生しました:", error);
       alert("保存中にエラーが発生しました");
@@ -161,6 +154,25 @@ export default function ModalManager() {
       setIsLoading(false);
     }
   };
+
+  // キーボードショートカットの設定
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const isSaveShortcut = isMac
+        ? event.metaKey && event.key === 's'
+        : event.ctrlKey && event.key === 's';
+      if (isSaveShortcut) {
+        event.preventDefault();
+        openModal("draft"); // 下書きモードでモーダルを開く
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    // クリーンアップ
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [bookData]);
 
   return (
     <>

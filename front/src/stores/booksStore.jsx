@@ -14,6 +14,7 @@ const useBooksStore = create((set) => ({
   },
   loading: false,
   error: null,
+  setPublishedBooks: (books) => set({ publishedBooks: books }),
 
   // 公開済みの絵本をフェッチ
   fetchPublishedBooks: async (page = 1, perPage = 10) => {
