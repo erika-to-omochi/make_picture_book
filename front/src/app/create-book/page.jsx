@@ -12,8 +12,36 @@ const Canvas = dynamic(() => import('../components/Canvas'), {
   ssr: false,
 });
 
+const Modal = ({ isOpen, onClose, onLogin }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
+        <h2 className="text-lg font-semibold mb-4">ログインが必要です</h2>
+        <p className="mb-4 text-gray-600">このページを使用するにはログインが必要です。ログインしない場合は一覧ページへいきます。</p>
+        <div className="flex justify-center space-x-4">
+          <button
+            onClick={onLogin}
+            className="px-4 py-2 p-2 bg-customButton text-white rounded-md hover:bg-opacity-80"
+          >
+            ログイン
+          </button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+          >
+            一覧ページ
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function CreateBookPage() {
   const [activePanel, setActivePanel] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const { pages, currentPageIndex, handleAddText, setBackgroundColor, resetCanvas } = useCanvasStore();
 
   const currentPage = pages[currentPageIndex] || {
@@ -22,7 +50,7 @@ export default function CreateBookPage() {
     backgroundColor: '#ffffff',
   };
 
-  const { isLoggedIn, userName, isHydrated } = useAuthStore();
+  const { isLoggedIn, isHydrated } = useAuthStore();
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -34,18 +62,22 @@ export default function CreateBookPage() {
   useEffect(() => {
     // ハイドレーションが完了してからログイン状態をチェック
     if (isHydrated && !isLoggedIn) {
-      alert('このページにアクセスするにはログインが必要です。ログインページに移動します。');
-      router.push('/login'); // ログインページのパスに変更してください
+      setShowLoginModal(true); // モーダルを表示
     }
-  }, [isLoggedIn, isHydrated, router]);
+  }, [isLoggedIn, isHydrated]);
 
   const togglePanel = (panelName) => {
     setActivePanel(activePanel === panelName ? null : panelName);
   };
 
-  // パネルを設定する関数（Canvas用）
-  const setPanel = (panelName) => {
-    setActivePanel(panelName);
+  // モーダルで「ログイン」を選択した場合
+  const handleLoginRedirect = () => {
+    router.push('/login'); // ログインページに移動
+  };
+
+  // モーダルで「キャンセル」を選択した場合
+  const handleIndexRedirect = () => {
+    router.push('/index-books');
   };
 
   // 「完成」ボタンの処理
@@ -71,8 +103,7 @@ export default function CreateBookPage() {
           showActionButtons={true}
           showUndoButton={true}
           allowAddPage={true}
-          setPanel={setPanel}
-          togglePanel={togglePanel}
+          togglePanel={togglePanel} // togglePanel を直接渡す
           activePanel={activePanel}
         />
       </div>
@@ -82,6 +113,13 @@ export default function CreateBookPage() {
         togglePanel={togglePanel}
         handleAddText={handleAddText}
         setBackgroundColor={setBackgroundColor}
+      />
+
+      {/* ログインモーダル */}
+      <Modal
+        isOpen={showLoginModal}
+        onClose={handleIndexRedirect}
+        onLogin={handleLoginRedirect}
       />
     </div>
   );

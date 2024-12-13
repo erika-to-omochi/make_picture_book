@@ -150,10 +150,10 @@ const Header = () => {
               © 2024 - 絵本がぽんっ
             </footer>
             <div className="flex justify-center gap-4 mt-4">
-              <Link href="https://github.com" target="_blank">
+              <Link href="https://github.com/erika-to-omochi/make_picture_book" target="_blank">
                 <FaGithub size={24} className="text-icon" />
               </Link>
-              <Link href="https://twitter.com" target="_blank">
+              <Link href="https://x.com/erikaRUNTEQ" target="_blank">
                 <FaXTwitter size={24} className="text-icon" />
               </Link>
             </div>

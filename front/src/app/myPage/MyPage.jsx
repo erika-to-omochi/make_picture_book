@@ -57,6 +57,24 @@ function MyPage() {
     }
   };
 
+  const handleEdit = (bookId) => {
+    console.log(`Editing book with ID: ${bookId}`);
+    router.push(`/books/${bookId}/edit`); // 編集ページに遷移
+  };
+
+  const handleDelete = async (bookId) => {
+    const confirmDelete = window.confirm("この絵本を削除しますか？");
+    if (!confirmDelete) return;
+    try {
+      await axiosInstance.delete(`/api/v1/books/${bookId}`);
+      alert("絵本を削除しました。");
+      fetchMyBooks(currentPage, perPage); // リストを更新
+    } catch (error) {
+      console.error("絵本の削除に失敗しました:", error);
+      alert("絵本の削除中にエラーが発生しました。");
+    }
+  };
+
   if (!isLoggedIn) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -85,7 +103,13 @@ function MyPage() {
   return (
     <div className="flex flex-col items-center justify-center p-6 space-y-4 pb-32">
       <h1 className="text-3xl font-bold">{userName}さんの絵本</h1>
-      <BookList books={myBooks} pageType="myPage" />
+      <BookList
+        books={myBooks}
+        pageType="myPage"
+        isAuthor={true}
+        handleEdit={handleEdit} // 編集ハンドラを渡す
+        handleDelete={handleDelete} // 削除ハンドラを渡す
+      />
       {/* Paginationコンポーネント */}
       <div className="mt-4">
         <Pagination pagination={pagination} onPageChange={handlePageChange} />
