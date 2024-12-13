@@ -11,7 +11,7 @@ function BookListPage() {
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
 
-  const perPage = 10;
+  const perPage = 9;
 
   // ストアから必要なデータを取得
   const publishedBooks = useBooksStore((state) => state.publishedBooks);
@@ -22,7 +22,7 @@ function BookListPage() {
 
   // URLの `page` パラメータが変更されたときにデータを取得
   useEffect(() => {
-    const page = parseInt(pageParam, 10) || 1;
+    const page = parseInt(pageParam, 9) || 1;
     fetchPublishedBooks(page, perPage);
   }, [fetchPublishedBooks, pageParam, perPage]);
 
@@ -54,8 +54,8 @@ function BookListPage() {
 
   // コンテンツの表示
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-8 pb-32">
-      <h1 className="text-3xl font-bold mb-4">みんなの絵本</h1>
+    <div className="flex flex-col items-center justify-center p-8 space-y-6 pb-32">
+      <h1 className="text-3xl font-bold">みんなの絵本</h1>
       <BookList books={publishedBooks} pageType="bookListPage" />
       {/* Paginationコンポーネント */}
       <div className="mt-4">

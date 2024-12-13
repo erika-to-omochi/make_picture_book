@@ -6,20 +6,17 @@ import { FaLock, FaLockOpen, FaEdit, FaCheckCircle } from 'react-icons/fa';
 
 function BookList({ books, pageType }) {
   return (
-    <div className="space-y-4">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {books.map((book) => {
         // 公開範囲とステータスの詳細を取得する関数
         const getVisibilityDetails = (book) => {
           if (pageType !== "myPage") {
-            // BookListPageでは公開範囲を表示しない
             return null;
           }
 
           if (book.is_draft) {
-            // 下書きの場合は「非公開」と表示
             return null;
           } else {
-            // 下書きでない場合は公開範囲に基づく表示
             return {
               text: book.visibility === 0 ? "公開" : "非公開",
               className: book.visibility === 0 ? 'bg-gray-200 text-green-800' : 'bg-gray-200 text-red-800',
@@ -30,7 +27,6 @@ function BookList({ books, pageType }) {
 
         const getStatusDetails = (book) => {
           if (pageType !== "myPage") {
-            // BookListPageではステータスを表示しない
             return null;
           }
 
@@ -53,40 +49,40 @@ function BookList({ books, pageType }) {
         return (
           <div
             key={book.id}
-            className="flex items-center justify-between p-4 bg-white bg-opacity-50 rounded-lg shadow-md"
+            onClick={() => (window.location.href = `/books/${book.id}`)}
+            className="w-[192px] h-[216px] flex flex-col justify-between p-4 bg-white bg-opacity-50 rounded-lg shadow-md cursor-pointer transform transition-transform hover:translate-y-[-5px]"
           >
-            <div>
-              <h2 className="text-xl font-semibold">{book.title}</h2>
-              <p className="text-bodyText text-sm">作者: {book.author_name}</p>
-              <div className="flex space-x-2 mt-2">
-                {/* 公開範囲の表示（MyPageのみ） */}
-                {visibility && (
-                  <span
-                    className={`flex items-center px-2 py-1 text-xs font-semibold rounded ${visibility.className}`}
-                    title={visibility.text}
-                  >
-                    {visibility.icon}
-                    {visibility.text}
-                  </span>
-                )}
-                {/* ステータスの表示（MyPageのみ） */}
-                {status && (
-                  <span
-                    className={`flex items-center px-2 py-1 text-xs font-semibold rounded ${status.className}`}
-                    title={status.text}
-                  >
-                    {status.icon}
-                    {status.text}
-                  </span>
-                )}
-              </div>
+            <div className="text-center flex-grow">
+              <h2 className="text-xl font-bold mt-4 overflow-hidden text-ellipsis whitespace-nowrap">{book.title}</h2>
+              <img
+                src="/home/ファビコン.png"
+                alt="ファビコン"
+                className="mx-auto my-4 w-16 h-16"
+              />
             </div>
-            <button
-              onClick={() => (window.location.href = `/books/${book.id}`)}
-              className="px-4 py-2 ml-4 bg-customButton text-white rounded-md hover:brightness-90"
-            >
-              読む
-            </button>
+            <p className="text-bodyText text-sm mt-auto text-center">作者: {book.author_name}</p>
+            <div className="flex space-x-2 mt-2 justify-center">
+              {/* 公開範囲の表示（MyPageのみ） */}
+              {visibility && (
+                <span
+                  className={`flex items-center px-2 py-1 text-xs font-semibold rounded ${visibility.className}`}
+                  title={visibility.text}
+                >
+                  {visibility.icon}
+                  {visibility.text}
+                </span>
+              )}
+              {/* ステータスの表示（MyPageのみ） */}
+              {status && (
+                <span
+                  className={`flex items-center px-2 py-1 text-xs font-semibold rounded ${status.className}`}
+                  title={status.text}
+                >
+                  {status.icon}
+                  {status.text}
+                </span>
+              )}
+            </div>
           </div>
         );
       })}
