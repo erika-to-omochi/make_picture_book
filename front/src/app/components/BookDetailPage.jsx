@@ -19,12 +19,10 @@ function BookDetailPage() {
 
   const commentSectionRef = useRef(null);
 
-  const {
-    bookData,
-    currentPageIndex,
-    pages,
-    fetchBookData,
-  } = useCanvasStore();
+  const bookData = useCanvasStore((state) => state.bookData);
+  const currentPageIndex = useCanvasStore((state) => state.currentPageIndex);
+  const pages = useCanvasStore((state) => state.pages);
+  const fetchBookData = useCanvasStore((state) => state.fetchBookData);
 
   const [isAuthor, setIsAuthor] = useState(false);
   const [comment, setComment] = useState("");
@@ -34,7 +32,7 @@ function BookDetailPage() {
 
   useEffect(() => {
     if (bookId) {
-      fetchBookData(bookId).then(() => {});
+      fetchBookData(bookId);
       fetchComments();
     }
   }, [bookId, fetchBookData]);
@@ -48,7 +46,9 @@ function BookDetailPage() {
         console.error("Error checking author status:", error);
       }
     };
-    checkAuthorStatus();
+    if (bookId) {
+      checkAuthorStatus();
+    }
   }, [bookId]);
 
   const fetchComments = async () => {
@@ -58,7 +58,7 @@ function BookDetailPage() {
     } catch (error) {
       console.error("コメントの取得に失敗しました", error);
     }
-  }
+  };
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
@@ -141,10 +141,15 @@ function BookDetailPage() {
   if (!bookData) return <p>Loading...</p>;
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} items-center justify-center space-y-4 ${!isMobile ? 'space-y-0 space-x-6' : ''} w-full max-w-5xl`}>
-        {pages.length > 0 && pages[currentPageIndex] && (
-          <div className="flex-shrink-0">
+    <div className="flex flex-col items-center min-h-screen p-4">
+      {pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length && (
+        <>
+          <h2 className="text-lg font-semibold text-gray-800 text-center">
+            {bookData.title || "タイトルがありません"}
+          </h2>
+          {/* relativeコンテナでCanvasとアイコンを重ねて配置 */}
+          <div className="relative flex justify-center">
+            {/* Canvas */}
             <Canvas
               showActionButtons={false}
               isReadOnly={true}
@@ -152,45 +157,54 @@ function BookDetailPage() {
               showUndoButton={false}
               allowAddText={false}
             />
+            {/* アイコン絶対配置：キャンバスの右側に4px */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                right: '-48px', // rightからマイナス方向へ4px分外側に出す
+              }}
+              className="flex flex-col space-y-1"
+            >
+              {isAuthor && (
+                <>
+                  <button
+                    onClick={handleEdit}
+                    className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-10 h-10 md:w-16 md:h-16"
+                  >
+                    <FaEdit className="text-gray-700" size={24} />
+                    <span className="mt-1 text-[0.6rem] hidden md:inline">編集する</span>
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-10 h-10 md:w-16 md:h-16"
+                  >
+                    <FaTrash className="text-gray-700" size={24} />
+                    <span className="mt-1 text-[0.6rem] hidden md:inline">削除する</span>
+                  </button>
+                </>
+              )}
+              <button
+                onClick={scrollToComments}
+                aria-label="コメントを表示するボタン"
+                className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-10 h-10 md:w-16 md:h-16"
+              >
+                <FaRegCommentDots className="text-gray-700" size={24} />
+                <span className="mt-1 text-[0.6rem] hidden md:inline">コメント</span>
+              </button>
+              <button
+                onClick={handlePrint}
+                className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-10 h-10 md:w-16 md:h-16"
+              >
+                <FaPrint className="text-gray-700" size={24} />
+                <span className="mt-1 text-[0.6rem] hidden md:inline">印刷する</span>
+              </button>
+            </div>
           </div>
-        )}
-
-        <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'space-x-6' : 'space-y-4'}`}>
-          <button
-            onClick={scrollToComments}
-            aria-label="コメントを表示するボタン"
-            className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-16 h-16"
-          >
-            <FaRegCommentDots className="text-gray-700" size={24} />
-            <span style={{ fontSize: '0.6rem' }} className="mt-1">コメント</span>
-          </button>
-          <button
-            onClick={handlePrint}
-            className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-16 h-16"
-          >
-            <FaPrint className="text-gray-700" size={24} />
-            <span style={{ fontSize: '0.6rem' }} className="mt-1">印刷する</span>
-          </button>
-          {isAuthor && (
-            <>
-              <button
-                onClick={handleEdit}
-                className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-16 h-16"
-              >
-                <FaEdit className="text-gray-700" size={24} />
-                <span style={{ fontSize: '0.6rem' }} className="mt-1">編集する</span>
-              </button>
-              <button
-                onClick={handleDelete}
-                className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-16 h-16"
-              >
-                <FaTrash className="text-gray-700" size={24} />
-                <span style={{ fontSize: '0.6rem' }} className="mt-1">削除する</span>
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+        </>
+      )}
+      {/* コメントセクションはキャンバスとアイコンを包むコンテナの下に配置 */}
       <div ref={commentSectionRef} className="w-full max-w-4xl mx-auto mt-8 p-4 border-t border-gray-300">
         <h2 className="text-bodyText font-semibold mb-4 text-gray-800">コメントを投稿する</h2>
         <form onSubmit={handleCommentSubmit} className="flex flex-col space-y-4">
@@ -234,12 +248,9 @@ function BookDetailPage() {
                     </button>
                   </>
                 )}
-
                 <span className="ml-auto">{new Date(cmt.created_at).toLocaleString()}</span>
               </div>
-
               {editingComment?.id === cmt.id ? (
-                // 編集モード
                 <div className="flex flex-col space-y-2 w-full">
                   <textarea
                     value={editContent}
@@ -266,7 +277,6 @@ function BookDetailPage() {
                   </div>
                 </div>
               ) : (
-                // 通常表示モード
                 <p className="text-bodyText text-gray-800 break-all">{cmt.content}</p>
               )}
             </div>

@@ -10,7 +10,7 @@ const useBooksStore = create((set) => ({
     prev_page: null,
     total_pages: 1,
     total_count: 0,
-    limit_value: 10,
+    limit_value: 9,
   },
   loading: false,
   error: null,
