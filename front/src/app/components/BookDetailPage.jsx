@@ -216,7 +216,6 @@ function BookDetailPage() {
             <div key={cmt.id} className="p-4 bg-white/50 rounded-md mb-4">
               <div className="flex items-center text-xs text-bodyText text-gray-500 mb-2">
                 <span className="mr-2">{cmt.user.name}さんからのコメント</span>
-                
                 {cmt.user.name === userName && (
                   <>
                     <button

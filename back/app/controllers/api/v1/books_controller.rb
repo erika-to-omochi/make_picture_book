@@ -14,7 +14,7 @@ class Api::V1::BooksController < ApplicationController
     books = Book.published
                 .order(created_at: :desc)
                 .page(params[:page])
-                .per(params[:per_page] || 10)
+                .per(params[:per_page] || 9)
     render json: {
       books: books.as_json(
         include: [:tags, :pages]
@@ -34,7 +34,7 @@ class Api::V1::BooksController < ApplicationController
     books = Book.my_books(current_user.id)
                 .order(created_at: :desc)
                 .page(params[:page])
-                .per(params[:per_page] || 10)
+                .per(params[:per_page] || 9)
     render json: {
       books: books.as_json(
         only: [:id, :title, :author_name, :created_at, :user_id, :is_draft, :visibility],
@@ -54,7 +54,7 @@ class Api::V1::BooksController < ApplicationController
   end
 
   def index
-    books = Book.published.page(params[:page]).per(params[:per_page] || 10)
+    books = Book.published.page(params[:page]).per(params[:per_page] || 9)
     render json: books.as_json(
       only: [:id, :title, :author_name, :created_at],
       include: {

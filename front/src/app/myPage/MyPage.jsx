@@ -12,9 +12,9 @@ function MyPage() {
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
 
-  const initialPage = parseInt(pageParam, 10) || 1;
+  const initialPage = parseInt(pageParam, 9) || 1;
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const perPage = 10;
+  const perPage = 9;
 
   const userName = useAuthStore(state => state.userName);
   const isLoggedIn = useAuthStore(state => state.isLoggedIn);
@@ -43,7 +43,7 @@ function MyPage() {
   // URLのクエリパラメータが変更されたときに currentPage を更新
   useEffect(() => {
     if (pageParam) {
-      const newPage = parseInt(pageParam, 10);
+      const newPage = parseInt(pageParam, 9);
       if (!isNaN(newPage) && newPage !== currentPage) {
         setCurrentPage(newPage);
       }
@@ -83,8 +83,8 @@ function MyPage() {
     );
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-8 pb-32">
-      <h1 className="text-3xl font-bold mb-4">{userName}さんの絵本</h1>
+    <div className="flex flex-col items-center justify-center p-8 space-y-6 pb-32">
+      <h1 className="text-3xl font-bold">{userName}さんの絵本</h1>
       <BookList books={myBooks} pageType="myPage" />
       {/* Paginationコンポーネント */}
       <div className="mt-4">
