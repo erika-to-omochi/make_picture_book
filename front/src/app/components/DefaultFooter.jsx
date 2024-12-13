@@ -13,7 +13,7 @@ export default function DefaultFooter() {
   }
   return (
     <footer
-      className="flex justify-center gap-8 p-4 text-bodyText text-sm"
+      className="flex justify-center gap-8 p-2 text-bodyText text-sm"
       style={{
         backgroundColor: "rgba(255, 255, 255, 0.8)",
         position: "fixed",

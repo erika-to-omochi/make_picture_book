@@ -437,7 +437,7 @@ function Canvas({
       }`}
       style={{ position: 'relative' }} // 入力フィールドを絶対配置するために相対位置に設定
     >
-      <div className="flex flex-col items-center gap-5">
+      <div className="flex flex-col items-center">
         {/* キャンバスコンテナ */}
         <div
           className={`max-w-none ${
@@ -580,7 +580,6 @@ function Canvas({
               >
                 <FaChevronCircleLeft size={32} />
               </button>
-              <span className="mt-1 text-sm text-bodyText">前のページ</span>
             </div>
 
             {/* 現在のページ / 総ページ数 */}
@@ -615,7 +614,6 @@ function Canvas({
               >
                 <FaChevronCircleRight size={32} />
               </button>
-              <span className="mt-1 text-sm text-bodyText">次のページ</span>
             </div>
 
             {/* 「+」ボタンの追加とラベル */}
@@ -628,7 +626,6 @@ function Canvas({
                 >
                   <FaPlus size={32} />
                 </button>
-                <span className="mt-1 text-sm text-bodyText">ページを追加</span>
               </div>
             )}
 
@@ -643,7 +640,6 @@ function Canvas({
                 >
                   <FaUndo size={32} />
                 </button>
-                <span className="mt-1 text-sm text-bodyText">1つ戻る</span>
               </div>
             )}
           </div>
