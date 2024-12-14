@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import axiosInstance from '../../api/axios';
 import { FaRegCommentDots, FaPrint, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaXTwitter } from "react-icons/fa6";
 import useCanvasStore from '../../stores/canvasStore';
 import useIsMobile from "@/hooks/useIsMobile";
 import useAuthStore from '../../stores/authStore';
@@ -138,6 +139,36 @@ function BookDetailPage() {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      // OGP画像生成リクエスト
+      const response = await axiosInstance.get('/ogp', {
+        params: {
+          title: bookData.title,
+          author: bookData.author_name,
+        },
+      });
+
+      if (!response.data || !response.data.url) {
+        throw new Error('OGP画像の生成に失敗しました');
+      }
+
+      const ogpUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${response.data.url}`;
+
+      // TwitterシェアURL生成
+      const tweetText = `絵本ができました🤗📕: ${bookData.title} 作者: ${bookData.author_name}`;
+      const twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+        window.location.href
+      )}&text=${encodeURIComponent(tweetText)}&image=${encodeURIComponent(ogpUrl)}`;
+
+      // Twitterシェアリンクを新しいタブで開く
+      window.open(twitterShareUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('OGP画像の生成中にエラーが発生しました:', error);
+      alert('シェアに失敗しました。もう一度お試しください。');
+    }
+  };
+
   if (!bookData) return <p>Loading...</p>;
 
   return (
@@ -185,6 +216,14 @@ function BookDetailPage() {
                   </button>
                 </>
               )}
+              <button
+                onClick={handleShare}
+                aria-label="Xにシェアするボタン"
+                className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-10 h-10 md:w-16 md:h-16"
+              >
+                <FaXTwitter className="text-gray-700" size={24} />
+                <span className="mt-1 text-[0.6rem] hidden md:inline">シェア</span>
+              </button>
               <button
                 onClick={scrollToComments}
                 aria-label="コメントを表示するボタン"
