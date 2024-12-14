@@ -26,5 +26,6 @@ Rails.application.routes.draw do
       end
     end
   end
+  get 'ogp', to: 'ogp#show'
   root to: 'health#check'
 end

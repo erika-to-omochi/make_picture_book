@@ -155,6 +155,8 @@ GEM
       net-pop
       net-smtp
     marcel (1.0.4)
+    meta-tags (2.22.1)
+      actionpack (>= 6.0.0, < 8.1)
     mini_mime (1.1.5)
     minitest (5.25.2)
     msgpack (1.7.5)
@@ -181,8 +183,10 @@ GEM
       racc (~> 1.4)
     nokogiri (1.16.7-x86_64-linux)
       racc (~> 1.4)
+    observer (0.1.2)
     orm_adapter (0.5.0)
     pg (1.5.9)
+    pkg-config (1.5.8)
     psych (5.2.0)
       stringio
     puma (6.4.3)
@@ -234,6 +238,9 @@ GEM
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
+    rmagick (6.0.1)
+      observer (~> 0.1)
+      pkg-config (~> 1.4)
     securerandom (0.3.2)
     stringio (3.1.2)
     thor (1.3.2)
@@ -270,10 +277,12 @@ DEPENDENCIES
   dotenv-rails
   jsonapi-serializer
   kaminari
+  meta-tags
   pg (~> 1.1)
   puma (>= 5.0)
   rack-cors
   rails (~> 7.1.5)
+  rmagick
   tzinfo-data
 
 RUBY VERSION

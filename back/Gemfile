@@ -62,3 +62,6 @@ gem 'jsonapi-serializer'
 gem 'dotenv-rails', groups: [:development, :test]
 
 gem 'kaminari'
+
+gem 'rmagick'
+gem 'meta-tags'
