@@ -139,11 +139,34 @@ function BookDetailPage() {
     }
   };
 
-  const handleShare = () => {
-    const url = window.location.href; // 現在のページURLを取得
-    const text = encodeURIComponent(`絵本ができました🤗📕: ${bookData.title} 作者： ${bookData.author_name}`);
-    const twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${text}`;
-    window.open(twitterShareUrl, '_blank', 'noopener,noreferrer');
+  const handleShare = async () => {
+    try {
+      // OGP画像生成リクエスト
+      const response = await axiosInstance.get('/ogp', {
+        params: {
+          title: bookData.title,
+          author: bookData.author_name,
+        },
+      });
+
+      if (!response.data || !response.data.url) {
+        throw new Error('OGP画像の生成に失敗しました');
+      }
+
+      const ogpUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${response.data.url}`;
+
+      // TwitterシェアURL生成
+      const tweetText = `絵本ができました🤗📕: ${bookData.title} 作者: ${bookData.author_name}`;
+      const twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+        window.location.href
+      )}&text=${encodeURIComponent(tweetText)}&image=${encodeURIComponent(ogpUrl)}`;
+
+      // Twitterシェアリンクを新しいタブで開く
+      window.open(twitterShareUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('OGP画像の生成中にエラーが発生しました:', error);
+      alert('シェアに失敗しました。もう一度お試しください。');
+    }
   };
 
   if (!bookData) return <p>Loading...</p>;

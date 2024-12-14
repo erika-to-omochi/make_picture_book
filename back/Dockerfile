@@ -29,6 +29,7 @@ RUN apt-get update -qq && \
         libpq-dev \
         imagemagick \
         libmagickwand-dev \
+        fonts-noto-cjk \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -56,6 +57,7 @@ RUN apt-get update -qq && \
         postgresql-client \
         imagemagick \
         libmagickwand-dev \
+        fonts-noto-cjk \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
 
