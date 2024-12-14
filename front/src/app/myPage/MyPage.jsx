@@ -102,7 +102,6 @@ function MyPage() {
 
   return (
     <div className="flex flex-col items-center justify-center p-6 space-y-4 pb-32">
-      <h1 className="text-3xl font-bold">{userName}さんの絵本</h1>
       <BookList
         books={myBooks}
         pageType="myPage"

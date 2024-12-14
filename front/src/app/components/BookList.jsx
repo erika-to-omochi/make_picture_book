@@ -6,7 +6,7 @@ import { FaLock, FaLockOpen, FaEdit, FaCheckCircle, FaTrash } from "react-icons/
 
 function BookList({ books, pageType, isAuthor, handleEdit, handleDelete }) {
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 grid-cols-3 auto-rows-[276px]">
       {books.map((book) => {
         // 公開範囲とステータスの詳細を取得する関数
         const getVisibilityDetails = (book) => {
@@ -58,7 +58,7 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete }) {
           <div
             key={book.id}
             onClick={() => (window.location.href = `/books/${book.id}`)}
-            className="relative w-[192px] h-[216px] flex flex-col justify-between p-4 bg-white bg-opacity-50 rounded-lg shadow-md cursor-pointer transform transition-transform hover:translate-y-[-5px]"
+            className="relative w-[192px] h-[216px] flex flex-col justify-between p-4 bg-customBackground rounded-lg shadow-md cursor-pointer transform transition-transform hover:translate-y-[-20px]"
           >
             {/* 編集と削除ボタン（作者のみ表示） */}
             {isAuthor && (
