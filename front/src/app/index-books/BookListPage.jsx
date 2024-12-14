@@ -55,7 +55,6 @@ function BookListPage() {
   // コンテンツの表示
   return (
     <div className="flex flex-col items-center justify-center p-6 space-y-4 pb-32">
-      <h1 className="text-3xl font-bold">みんなの絵本</h1>
       <BookList books={publishedBooks} pageType="bookListPage" />
       {/* Paginationコンポーネント */}
       <div className="mt-4">

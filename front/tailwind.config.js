@@ -13,6 +13,7 @@ module.exports = {
         customButton: "#D37C70",
         heading: "#6B5858",
         bodyText: "#8A7D7D",
+        customBackground: 'rgb(249, 239, 229)', //　要素とかの薄いピンク
       },
     },
   },
