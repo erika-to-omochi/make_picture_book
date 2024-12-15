@@ -101,29 +101,19 @@ export default function Page({ params }) {
 
   return (
     <>
-      {/* メタタグの設定 */}
-      <Head>
-        <title>{metadata.title}</title>
-        <meta name="description" content={metadata.description} />
-
-        {/* Open Graph Meta Tags */}
-        <meta property="og:title" content={metadata.openGraph.title} />
-        <meta property="og:description" content={metadata.openGraph.description} />
-        <meta property="og:url" content={metadata.openGraph.url} />
-        <meta property="og:image" content={metadata.openGraph.images[0].url} />
-        <meta property="og:image:width" content={metadata.openGraph.images[0].width.toString()} />
-        <meta property="og:image:height" content={metadata.openGraph.images[0].height.toString()} />
-        <meta property="og:image:alt" content={metadata.openGraph.images[0].alt} />
-
-        {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content={metadata.twitter.card} />
-        <meta name="twitter:title" content={metadata.twitter.title} />
-        <meta name="twitter:description" content={metadata.twitter.description} />
-        <meta name="twitter:image" content={metadata.twitter.image} />
-      </Head>
-
-      {/* 絵本詳細ページの表示 */}
-      <BookDetailPage bookId={bookId} bookData={bookData} />
-    </>
+    <Head>
+      {/* 必要に応じてデフォルトのメタタグを上書き */}
+      <title>{metadata.title}</title>
+      <meta name="description" content={metadata.description} />
+      <meta property="og:title" content={metadata.openGraph.title} />
+      <meta property="og:description" content={metadata.openGraph.description} />
+      <meta property="og:url" content={metadata.openGraph.url} />
+      <meta property="og:image" content={metadata.openGraph.images[0].url} />
+      <meta name="twitter:title" content={metadata.twitter.title} />
+      <meta name="twitter:description" content={metadata.twitter.description} />
+      <meta name="twitter:image" content={metadata.twitter.image} />
+    </Head>
+    <BookDetailPage bookId={bookId} bookData={bookData} />
+  </>
   );
 }
