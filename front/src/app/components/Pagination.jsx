@@ -35,16 +35,6 @@ const Pagination = ({ pagination, onPageChange }) => {
         «
       </button>
 
-      {/* 最初のページへのリンク */}
-      {current_page > 3 && (
-        <>
-          <button className="join-item btn" onClick={() => onPageChange(1)}>
-            1
-          </button>
-          {current_page > 4 && <button className="join-item btn btn-disabled">...</button>}
-        </>
-      )}
-
       {/* ページ番号ボタン */}
       {pages.map((page) => (
         <button
@@ -59,16 +49,6 @@ const Pagination = ({ pagination, onPageChange }) => {
           {page}
         </button>
       ))}
-
-      {/* 最後のページへのリンク */}
-      {current_page < total_pages - 2 && (
-        <>
-          {current_page < total_pages - 3 && <button className="join-item btn btn-disabled">...</button>}
-          <button className="join-item btn" onClick={() => onPageChange(total_pages)}>
-            {total_pages}
-          </button>
-        </>
-      )}
 
       {/* 次ページボタン */}
       <button
