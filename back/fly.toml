@@ -20,6 +20,10 @@ console_command = '/rails/bin/rails console'
   guest_path = '/rails/public'
   url_prefix = '/'
 
+[mounts]
+source = "ogp_data"
+destination = "/rails/public/ogp"
+
 [env]
   RAILS_ENV = "production"
   PORT = "3000"
