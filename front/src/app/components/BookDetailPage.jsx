@@ -156,7 +156,7 @@ function BookDetailPage() {
       const ogpUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${response.data.url}`;
 
       // TwitterシェアURL生成
-      const tweetText = `絵本ができました🤗📕: ${bookData.title} 作者: ${bookData.author_name}`;
+      const tweetText = `絵本はどうですか🤗📕？: ${bookData.title} 作者: ${bookData.author_name}`;
       const twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
         window.location.href
       )}&text=${encodeURIComponent(tweetText)}&image=${encodeURIComponent(ogpUrl)}`;
