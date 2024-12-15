@@ -22,10 +22,10 @@ export const metadata = {
   openGraph: {
     title: "絵本がぽんっ",
     description: "絵本を作るアプリです",
-    url: process.env.NEXT_PUBLIC_BASE_URL,
+    url: process.env.NEXT_PUBLIC_API_BASE_URL,
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/default-ogp.png`,
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/default-ogp.png`,
         width: 1200,
         height: 630,
         alt: "デフォルトOGP画像",
