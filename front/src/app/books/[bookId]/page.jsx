@@ -45,10 +45,10 @@ export async function generateMetadata({ params }) {
 
   return {
     title: `${bookData.title} - 絵本がぽんっ`,
-    description: `${bookData.title} の詳細情報`,
+    description: `${bookData.title} を見にいく`,
     openGraph: {
       title: bookData.title,
-      description: `${bookData.title} の詳細情報`,
+      description: `${bookData.title} を見にいく`,
       url: `${baseUrl}/books/${bookId}`,
       images: [
         {
@@ -62,7 +62,7 @@ export async function generateMetadata({ params }) {
     twitter: {
       card: "summary_large_image",
       title: bookData.title,
-      description: `${bookData.title} の詳細情報`,
+      description: `${bookData.title} を見にいく`,
       images: [ogpUrl],
     },
   };
