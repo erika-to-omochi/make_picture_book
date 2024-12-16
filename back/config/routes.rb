@@ -27,5 +27,10 @@ Rails.application.routes.draw do
     end
   end
   get 'ogp', to: 'ogp#show'
+
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
+
   root to: 'health#check'
 end

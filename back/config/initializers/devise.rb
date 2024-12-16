@@ -1,6 +1,6 @@
 Devise.setup do |config|
-  # メール送信者の設定
-  config.mailer_sender = 'no-reply@yourdomain.com'
+  config.mailer_sender = 'no-reply@ehon-ga-pon.com'
+
 
   require 'devise/orm/active_record'
 
