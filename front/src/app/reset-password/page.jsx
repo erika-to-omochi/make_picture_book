@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axiosInstance from "../../api/axios";
 
 export default function ResetPasswordPage({ searchParams }) {
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState(""); // エラーメッセージ用
   const router = useRouter();
 
   const token = searchParams.token;
@@ -14,6 +16,17 @@ export default function ResetPasswordPage({ searchParams }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
+    setError("");
+
+    // クライアントサイドのバリデーション
+    if (password.length < 6) {
+      setError("パスワードは6文字以上である必要があります。");
+      return;
+    }
+    if (password !== passwordConfirmation) {
+      setError("パスワードと確認用パスワードが一致しません。");
+      return;
+    }
 
     try {
       const response = await axiosInstance.put(`/api/v1/auth/password`, {
@@ -28,18 +41,26 @@ export default function ResetPasswordPage({ searchParams }) {
         alert("パスワードがリセットされました。ログインしてください。");
         router.push("/login");
       } else {
-        const errorData = await response.json();
-        setMessage("エラー: " + errorData.error);
+        setMessage("エラー: サーバーからのリクエストが失敗しました。");
       }
     } catch (error) {
       console.error("エラーが発生しました:", error);
-      setMessage("リクエストに失敗しました。");
+
+      // サーバーエラーがある場合はメッセージを設定
+      if (error.response?.data?.errors) {
+        setMessage(error.response.data.errors.join(", "));
+      } else {
+        setMessage("リクエストに失敗しました。");
+      }
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
-      <form onSubmit={handleSubmit} className="max-w-md w-full bg-customBackground p-6 rounded-lg shadow-md">
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-md w-full bg-customBackground p-6 rounded-lg shadow-md"
+      >
         <div className="flex justify-center">
           <h1 className="text-2xl text-heading font-bold mb-4">新しいパスワードの設定</h1>
         </div>
@@ -63,6 +84,7 @@ export default function ResetPasswordPage({ searchParams }) {
             required
           />
         </div>
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <div className="flex justify-center">
           <button
             type="submit"
