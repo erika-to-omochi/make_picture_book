@@ -16,21 +16,15 @@ export default function ResetPasswordPage({ searchParams }) {
     setMessage("");
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/password`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await axiosInstance.put(`/api/v1/auth/password`, {
+        user: {
+          reset_password_token: token,
+          password: password,
+          password_confirmation: passwordConfirmation,
         },
-        body: JSON.stringify({
-          user: {
-            reset_password_token: token,
-            password: password,
-            password_confirmation: passwordConfirmation,
-          },
-        }),
       });
 
-      if (response.ok) {
+      if (response.status === 200) {
         alert("パスワードがリセットされました。ログインしてください。");
         router.push("/login");
       } else {
@@ -44,11 +38,13 @@ export default function ResetPasswordPage({ searchParams }) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md">
-        <h1 className="text-2xl font-bold mb-4">新しいパスワードの設定</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center">
+      <form onSubmit={handleSubmit} className="max-w-md w-full bg-customBackground p-6 rounded-lg shadow-md">
+        <div className="flex justify-center">
+          <h1 className="text-2xl text-heading font-bold mb-4">新しいパスワードの設定</h1>
+        </div>
         <div className="mb-4">
-          <label className="block text-sm font-bold mb-2">新しいパスワード</label>
+          <label className="block text-bodyText mb-2">新しいパスワード</label>
           <input
             type="password"
             value={password}
@@ -58,7 +54,7 @@ export default function ResetPasswordPage({ searchParams }) {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-sm font-bold mb-2">パスワード確認</label>
+          <label className="block text-bodyText mb-2">パスワード確認</label>
           <input
             type="password"
             value={passwordConfirmation}
@@ -67,12 +63,14 @@ export default function ResetPasswordPage({ searchParams }) {
             required
           />
         </div>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          パスワードをリセット
-        </button>
+        <div className="flex justify-center">
+          <button
+            type="submit"
+            className="bg-customButton text-white px-4 py-2 rounded-md hover:bg-opacity-80"
+          >
+            パスワードを再設定
+          </button>
+        </div>
         {message && <p className="mt-4 text-sm text-red-500">{message}</p>}
       </form>
     </div>
