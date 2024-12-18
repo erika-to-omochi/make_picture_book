@@ -45,7 +45,6 @@ group :development do
   # gem "spring"
 end
 
-
 gem "dockerfile-rails", ">= 1.6", :group => :development
 
 # 認証機能の基盤
@@ -60,8 +59,7 @@ gem 'devise-i18n'
 # JSON API形式のレスポンス生成
 gem 'jsonapi-serializer'
 
-gem 'dotenv-rails', groups: [:development, :test]
-
+gem 'dotenv-rails'
 gem 'kaminari'
 
 gem 'rmagick'
