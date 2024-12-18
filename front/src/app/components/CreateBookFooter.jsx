@@ -7,6 +7,7 @@ import TextInputCanvas from "./TextInputCanvas";
 import PeopleImages from "./PeopleImages";
 import NatureImages from "./NatureImages";
 import ObjectImages from "./ObjectImages";
+import HumanImages from "./HumanImages";
 import useCanvasStore from "../../stores/canvasStore";
 import useIsMobile from "@/hooks/useIsMobile";
 import Sidebar from "./Sidebar";
@@ -56,6 +57,8 @@ export default function CreateBookFooter({
         return <PeopleImages onImageSelect={(src) => handleImageSelect(src, '人物')} />;
       case "もの":
         return <ObjectImages onImageSelect={(src) => handleImageSelect(src, 'もの')} />;
+      case "ひと":
+          return <HumanImages onImageSelect={(src) => handleImageSelect(src, "ひと")} />;
       case "背景色":
         return (
           <div className="flex flex-col p-4 gap-4 overflow-y-scroll max-h-[125px] md:max-h-[800px] lg:max-h-[1000px]">
@@ -104,6 +107,7 @@ export default function CreateBookFooter({
 
   // アイコンデータ
   const iconData = [
+    { name: "ひと", icon: <FaUser size={isMobile ? 24 : 32} />, panel: "ひと" },
     { name: "人物", icon: <FaUser size={isMobile ? 24 : 32} />, panel: "人物" },
     { name: "自然", icon: <FaTree size={isMobile ? 24 : 32} />, panel: "自然" },
     { name: "もの", icon: <FaBriefcase size={isMobile ? 24 : 32} />, panel: "もの" },
