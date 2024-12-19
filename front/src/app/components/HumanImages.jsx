@@ -79,7 +79,7 @@ export default function HumanImageSelector({ onImageSelect }) {
     <div className="p-4">
       {/* プレビューエリア */}
       <div
-        className="relative w-64 h-64 border bg-background mx-auto mb-8 cursor-pointer"
+        className="relative w-64 h-64 border bg-background mx-auto mb-8 cursor-pointer hover:opacity-75 hover:-translate-y-1"
         onClick={handlePreviewClick} // プレビューエリアクリック時の処理
       >
         {renderPreview()}
