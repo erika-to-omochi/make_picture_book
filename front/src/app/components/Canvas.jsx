@@ -314,12 +314,7 @@ function Canvas({
               });
           } else if (elementToPaste.elementType === 'character') {
             const characterData = {
-              parts: elementToPaste.parts,
-              positionX: elementToPaste.positionX,
-              positionY: elementToPaste.positionY,
-              scaleX: elementToPaste.scaleX,
-              scaleY: elementToPaste.scaleY,
-              rotation: elementToPaste.rotation,
+              ...elementToPaste,
             };
             addCharacter(characterData);
           }
@@ -338,7 +333,7 @@ function Canvas({
             deleteImage(selectedImageIndex);
             setSelectedImageIndex(null);
           } else if (selectedCharacterIndex !== null) {
-            deleteCharacter(currentPage.pageCharacters[selectedCharacterIndex].id);
+            deleteCharacter(selectedCharacterIndex);
             setSelectedCharacterIndex(null);
           }
         }
@@ -357,6 +352,7 @@ function Canvas({
     selectedCharacterIndex,
     deleteText,
     deleteImage,
+    deleteCharacter,
     setSelectedTextIndex,
     setSelectedImageIndex,
     setSelectedCharacterIndex,
@@ -364,6 +360,7 @@ function Canvas({
     editingTextIndex,
     isReadOnly,
     currentPage.pageElements,
+    currentPage.pageCharacters,
     handleAddText,
     handleAddImage,
     addCharacter,
