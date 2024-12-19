@@ -7,6 +7,7 @@ import TextInputCanvas from "./TextInputCanvas";
 import PeopleImages from "./PeopleImages";
 import NatureImages from "./NatureImages";
 import ObjectImages from "./ObjectImages";
+import HumanImages from "./HumanImages";
 import useCanvasStore from "../../stores/canvasStore";
 import useIsMobile from "@/hooks/useIsMobile";
 import Sidebar from "./Sidebar";
@@ -19,6 +20,7 @@ export default function CreateBookFooter({
   setBackgroundColor,
 }) {
   const handleAddImage = useCanvasStore((state) => state.handleAddImage);
+  const addCharacter = useCanvasStore((state) => state.addCharacter);
   const pages = useCanvasStore((state) => state.pages);
   const isMobile = useIsMobile(); // デバイス判定
 
@@ -56,6 +58,8 @@ export default function CreateBookFooter({
         return <PeopleImages onImageSelect={(src) => handleImageSelect(src, '人物')} />;
       case "もの":
         return <ObjectImages onImageSelect={(src) => handleImageSelect(src, 'もの')} />;
+      case "ひと":
+          return <HumanImages onImageSelect={handleCharacterSelected} />;
       case "背景色":
         return (
           <div className="flex flex-col p-4 gap-4 overflow-y-scroll max-h-[125px] md:max-h-[800px] lg:max-h-[1000px]">
@@ -102,8 +106,22 @@ export default function CreateBookFooter({
     handleAddImage(imageData);
   };
 
+  const handleCharacterSelected = (parts) => {
+    const characterData = {
+      parts: parts,
+      positionX: 100,
+      positionY: 100,
+      scaleX: 1,
+      scaleY: 1,
+      rotation: 0,
+    };
+    console.log("Adding character:", characterData);
+    addCharacter(characterData);
+  };
+
   // アイコンデータ
   const iconData = [
+    { name: "ひと", icon: <FaUser size={isMobile ? 24 : 32} />, panel: "ひと" },
     { name: "人物", icon: <FaUser size={isMobile ? 24 : 32} />, panel: "人物" },
     { name: "自然", icon: <FaTree size={isMobile ? 24 : 32} />, panel: "自然" },
     { name: "もの", icon: <FaBriefcase size={isMobile ? 24 : 32} />, panel: "もの" },

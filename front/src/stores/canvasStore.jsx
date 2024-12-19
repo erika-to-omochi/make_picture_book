@@ -133,8 +133,10 @@ const useCanvasStore = create((set, get) => ({
       }
       const element = currentPage.pageElements[index];
       if (element && element.id) {
-        // 既存の要素を削除対象リストに追加
-        const updatedElementsToDelete = [...currentPage.elementsToDelete, { id: element.id }];
+        const updatedElementsToDelete = [
+          ...(currentPage.elementsToDelete || []), // 配列でない場合に空配列をデフォルト値とする
+          { id: element.id },
+        ];
         currentPage.elementsToDelete = updatedElementsToDelete; // ページに直接設定
       }
       const updatedElements = currentPage.pageElements.filter((el, i) => !(i === index && el.elementType === 'image'));
@@ -233,6 +235,82 @@ const useCanvasStore = create((set, get) => ({
 
   setSelectedTextIndex: (index) => set({ selectedTextIndex: index }),
 
+  // キャラクターを追加
+  addCharacter: (characterData) => {
+    get().pushToHistory(); // 履歴に追加
+    let newIndex;
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
+      if (!currentPage) {
+        console.error("現在のページが見つかりません。");
+        return {};
+      }
+      const newCharacter = {
+        elementType: 'character',
+        id: get().generateUniqueId(),
+        parts: characterData.parts || [],
+        positionX: characterData.positionX || 100,
+        positionY: characterData.positionY || 100,
+        scaleX: characterData.scaleX || 1,
+        scaleY: characterData.scaleY || 1,
+        rotation: characterData.rotation || 0,
+      };
+      const updatedCharacters = [...currentPage.pageCharacters, newCharacter];
+      newIndex = updatedCharacters.length - 1;
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageCharacters: updatedCharacters,
+      };
+      return { pages: updatedPages };
+    });
+  },
+
+  // キャラクターを更新
+  updateCharacter: (index, newProperties) => {
+    get().pushToHistory();
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
+      if (!currentPage) return {};
+      const updatedCharacters = currentPage.pageCharacters.map((character, i) =>
+        i === index && character.elementType === 'character'
+          ? { ...character, ...newProperties }
+          : character
+      );
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageCharacters: updatedCharacters,
+      };
+      return { pages: updatedPages };
+    });
+  },
+
+  // キャラクターを削除
+  deleteCharacter: (index) => {
+    get().pushToHistory();
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
+      if (!currentPage) return {};
+      const updatedCharacters = currentPage.pageCharacters.filter(
+        (char, i) => !(i === index && char.elementType === 'character')
+      );
+      const characterToDelete = currentPage.pageCharacters[index];
+      if (!characterToDelete) {
+        console.error("削除対象のキャラクターが見つかりません。");
+        return {};
+      }
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageCharacters: updatedCharacters,
+      };
+      return { pages: updatedPages };
+    });
+  },
+
+  setSelectedCharacterIndex: (index) => set({ selectedCharacterIndex: index }),
+
   // ページの追加
   addPage: () => {
     get().pushToHistory();
@@ -275,7 +353,10 @@ const useCanvasStore = create((set, get) => ({
             scaleX: element.scale_x,
             scaleY: element.scale_y,
           })),
-          pageCharacters: page.page_characters || [],
+          pageCharacters: (page.page_characters || []).map((character) => ({
+            ...character,
+            elementType: 'character', // 修正: elementTypeを追加
+          })),
           elementsToDelete: [],
         }));
         set({ pages: formattedPages, bookData: response.data });
