@@ -69,7 +69,7 @@ export default function HumanImageSelector() {
   return (
     <div className="p-4">
       {/* プレビューエリア */}
-      <div className="relative w-64 h-64 border bg-white mx-auto mb-8">
+      <div className="relative w-64 h-64 border bg-background mx-auto mb-8">
         {renderPreview()}
       </div>
 
@@ -99,7 +99,7 @@ export default function HumanImageSelector() {
           {getImageList().map((imagePath, index) => (
             <div
               key={index}
-              className="w-24 h-24 border border-background rounded overflow-hidden"
+              className="w-24 h-24 border bg-background rounded overflow-hidden"
             >
               <img
                 src={imagePath}
