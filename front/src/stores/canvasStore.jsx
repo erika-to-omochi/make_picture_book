@@ -235,6 +235,77 @@ const useCanvasStore = create((set, get) => ({
 
   setSelectedTextIndex: (index) => set({ selectedTextIndex: index }),
 
+  // キャラクターを追加するアクション
+  addCharacter: (characterData) => {
+    get().pushToHistory(); // 履歴に追加
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
+      if (!currentPage) {
+        console.error("現在のページが見つかりません。");
+        return {};
+      }
+      const newCharacter = {
+        id: get().generateUniqueId(),
+        parts: characterData.parts || [], // [{src: ..., x, y, ...}, ...]
+        positionX: characterData.positionX || 100,
+        positionY: characterData.positionY || 100,
+        scaleX: characterData.scaleX || 1,
+        scaleY: characterData.scaleY || 1,
+        rotation: characterData.rotation || 0,
+      };
+      console.log("Adding character:", newCharacter);
+      const updatedCharacters = [...currentPage.pageCharacters, newCharacter];
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageCharacters: updatedCharacters,
+      };
+      return { pages: updatedPages };
+    });
+  },
+
+  // キャラクターを更新するアクション（idで特定する想定）
+  updateCharacter: (characterId, newProperties) => {
+    get().pushToHistory();
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
+      if (!currentPage) return {};
+      const updatedCharacters = currentPage.pageCharacters.map(char => {
+        if (char.id === characterId) {
+          return { ...char, ...newProperties };
+        }
+        return char;
+      });
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageCharacters: updatedCharacters,
+      };
+      return { pages: updatedPages };
+    });
+  },
+
+  // キャラクターを削除するアクション
+  deleteCharacter: (characterId) => {
+    get().pushToHistory();
+
+    set((state) => {
+      const currentPage = state.pages[state.currentPageIndex];
+      if (!currentPage) return {};
+
+      const updatedCharacters = currentPage.pageCharacters.filter((char) => char.id !== characterId);
+
+      const updatedPages = [...state.pages];
+      updatedPages[state.currentPageIndex] = {
+        ...currentPage,
+        pageCharacters: updatedCharacters,
+      };
+      return { pages: updatedPages };
+    });
+  },
+
+  setSelectedCharacterIndex: (index) => set({ selectedCharacterIndex: index }),
+
   // ページの追加
   addPage: () => {
     get().pushToHistory();

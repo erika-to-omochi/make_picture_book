@@ -34,12 +34,14 @@ export default function HumanImageSelector({ onImageSelect }) {
 
   const handlePreviewClick = () => {
     const baseImagePath = "/human/childe/base.png";
+    const parts = [
+      { src: baseImagePath },
+      ...Object.entries(selectedImages).map(([category, imagePath]) => ({
+        src: imagePath
+      }))
+    ];
     if (onImageSelect) {
-      onImageSelect(baseImagePath, "base");
-
-      Object.entries(selectedImages).forEach(([category, imagePath]) => {
-        onImageSelect(imagePath, category);
-      });
+      onImageSelect(parts);
     }
   };
 

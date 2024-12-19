@@ -1,9 +1,11 @@
+// Canvas.jsx
+
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage,} from 'react-konva';
+import { Stage, Layer, Rect, Text, Transformer, Image as KonvaImage, Group } from 'react-konva';
 import useCanvasStore from '../../stores/canvasStore';
-import { FaChevronCircleLeft, FaChevronCircleRight, FaUndo, FaPlus,} from 'react-icons/fa';
+import { FaChevronCircleLeft, FaChevronCircleRight, FaUndo, FaPlus } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import ModalManager from './ModalManager';
 import useIsMobile from '../../hooks/useIsMobile';
@@ -19,8 +21,10 @@ function Canvas({
   const {
     selectedTextIndex,
     selectedImageIndex,
+    selectedCharacterIndex,
     setSelectedTextIndex,
     setSelectedImageIndex,
+    setSelectedCharacterIndex,
     resetSelection,
     pages,
     currentPageIndex,
@@ -34,12 +38,16 @@ function Canvas({
     handleAddImage,
     undo,
     history,
+    addCharacter,
+    updateCharacter,
+    deleteCharacter,
   } = useCanvasStore();
 
   const transformerRef = useRef(null);
   const stageRef = useRef(null);
   const textRefs = useRef([]);
   const imageRefs = useRef([]);
+  const characterRefs = useRef([]); // 新たにキャラクターの参照を追加
 
   // 仮想キャンバスの寸法を定義
   const VIRTUAL_CANVAS_WIDTH = 800;
@@ -53,6 +61,7 @@ function Canvas({
 
   // ローカルステートとして loadedImages を管理
   const [loadedImages, setLoadedImages] = useState([]);
+  const [loadedCharacterImages, setLoadedCharacterImages] = useState({}); // キャラクター画像のステート
 
   const router = useRouter();
 
@@ -65,6 +74,7 @@ function Canvas({
       pageElements: [],
       pageCharacters: [],
       id: null,
+      elementsToDelete: [],
     };
 
   // カスタムフックを使用してモバイル判定
@@ -148,6 +158,52 @@ function Canvas({
     };
   }, [currentPage.pageElements]);
 
+  // キャラクター画像の読み込み
+  useEffect(() => {
+    let isMounted = true;
+    const loadCharacterImages = async () => {
+      const characterElements = currentPage.pageCharacters;
+      const imagePromises = characterElements.flatMap((char) =>
+        char.parts.map((part) => {
+          return new Promise((resolve) => {
+            const img = new window.Image();
+            img.src = part.src;
+            img.onload = () => resolve({ src: part.src, image: img });
+            img.onerror = () => resolve({ src: part.src, image: null });
+          });
+        })
+      );
+
+      try {
+        const results = await Promise.all(imagePromises);
+        const imagesMap = {};
+        results.forEach((result) => {
+          if (result.image) {
+            imagesMap[result.src] = result.image;
+          }
+        });
+        if (isMounted) {
+          setLoadedCharacterImages(imagesMap);
+        }
+      } catch (error) {
+        console.error("Error loading character images:", error);
+        if (isMounted) {
+          setLoadedCharacterImages({});
+        }
+      }
+    };
+
+    if (currentPage.pageCharacters && currentPage.pageCharacters.length > 0) {
+      loadCharacterImages();
+    } else {
+      setLoadedCharacterImages({});
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentPage.pageCharacters]);
+
   // Transformerの更新
   useEffect(() => {
     if (transformerRef.current) {
@@ -158,12 +214,17 @@ function Canvas({
         imageRefs.current[selectedImageIndex]
       ) {
         transformerRef.current.nodes([imageRefs.current[selectedImageIndex]]);
+      } else if (
+        selectedCharacterIndex !== null &&
+        characterRefs.current[selectedCharacterIndex]
+      ) {
+        transformerRef.current.nodes([characterRefs.current[selectedCharacterIndex]]);
       } else {
         transformerRef.current.nodes([]);
       }
       transformerRef.current.getLayer().batchDraw();
     }
-  }, [selectedTextIndex, selectedImageIndex, currentPage.pageElements, loadedImages]);
+  }, [selectedTextIndex, selectedImageIndex, selectedCharacterIndex, currentPage.pageElements, loadedImages, loadedCharacterImages]);
 
   // キーボードイベントの処理
   useEffect(() => {
@@ -200,6 +261,14 @@ function Canvas({
               data: { ...imageElement },
             };
           }
+        } else if (selectedCharacterIndex !== null) {
+          const characterElement = currentPage.pageCharacters[selectedCharacterIndex];
+          if (characterElement) {
+            copiedElement.current = {
+              type: 'character',
+              data: { ...characterElement },
+            };
+          }
         }
         return;
       }
@@ -223,12 +292,13 @@ function Canvas({
               ...elementToPaste,
               text: elementToPaste.text || '',
             };
-            const newIndex = handleAddText(newText);
+            const newIndex = handleAddText(newText); // インデックスを取得
+
             if (newIndex !== undefined) {
               setSelectedTextIndex(newIndex);
               setEditingTextIndex(newIndex);
               setEditingTextValue(newText.text);
-              setPanel('文字');
+              setPanel("文字");
             }
           } else if (elementToPaste.elementType === 'image') {
             const newImage = {
@@ -242,6 +312,16 @@ function Canvas({
               .catch((error) => {
                 console.error("画像のペーストに失敗しました:", error);
               });
+          } else if (elementToPaste.elementType === 'character') {
+            const characterData = {
+              parts: elementToPaste.parts,
+              positionX: elementToPaste.positionX,
+              positionY: elementToPaste.positionY,
+              scaleX: elementToPaste.scaleX,
+              scaleY: elementToPaste.scaleY,
+              rotation: elementToPaste.rotation,
+            };
+            addCharacter(characterData);
           }
         } else {
           console.warn('ペーストする要素がありません。');
@@ -257,6 +337,9 @@ function Canvas({
           } else if (selectedImageIndex !== null) {
             deleteImage(selectedImageIndex);
             setSelectedImageIndex(null);
+          } else if (selectedCharacterIndex !== null) {
+            deleteCharacter(currentPage.pageCharacters[selectedCharacterIndex].id);
+            setSelectedCharacterIndex(null);
           }
         }
       }
@@ -271,16 +354,19 @@ function Canvas({
   }, [
     selectedTextIndex,
     selectedImageIndex,
+    selectedCharacterIndex,
     deleteText,
     deleteImage,
     setSelectedTextIndex,
     setSelectedImageIndex,
+    setSelectedCharacterIndex,
     undo,
     editingTextIndex,
     isReadOnly,
     currentPage.pageElements,
     handleAddText,
     handleAddImage,
+    addCharacter,
     setPanel,
   ]);
 
@@ -298,6 +384,18 @@ function Canvas({
     } else if (type === 'image') {
       updateImage(index, update);
     }
+  };
+
+  // キャラクターのドラッグ終了時の処理
+  const handleCharacterDragEnd = (charIndex, e) => {
+    if (isReadOnly) return;
+    const node = e.target;
+    const newPos = node.position();
+    const update = {
+      positionX: newPos.x,
+      positionY: newPos.y,
+    };
+    updateCharacter(charIndex, update);
   };
 
   // 変形終了時の処理
@@ -336,11 +434,26 @@ function Canvas({
     }
   };
 
+  // キャラクターの変形終了時の処理
+  const handleCharacterTransformEnd = (charIndex, e) => {
+    if (isReadOnly) return;
+    const node = e.target;
+    const newProps = {
+      positionX: node.x(),
+      positionY: node.y(),
+      rotation: node.rotation(),
+      scaleX: node.scaleX(),
+      scaleY: node.scaleY(),
+    };
+    updateCharacter(charIndex, newProps);
+  };
+
   // テキストクリック時の処理
   const handleTextClick = (index) => {
     if (isReadOnly) return;
     setSelectedTextIndex(index);
     setSelectedImageIndex(null);
+    setSelectedCharacterIndex(null);
     setPanel("文字");
   };
 
@@ -349,6 +462,7 @@ function Canvas({
     if (isReadOnly) return;
     setSelectedImageIndex(index);
     setSelectedTextIndex(null);
+    setSelectedCharacterIndex(null);
 
     const imageCategory = currentPage.pageElements[index].imageCategory;
     if (
@@ -360,10 +474,20 @@ function Canvas({
     }
   };
 
+  // キャラクタークリック時の処理
+  const handleCharacterClick = (charIndex) => {
+    if (isReadOnly) return;
+    setSelectedCharacterIndex(charIndex);
+    setSelectedTextIndex(null);
+    setSelectedImageIndex(null);
+    setPanel("ひと"); // 「ひと」パネルを開く
+  };
+
   // ステージクリック時の処理
   const handleStageMouseDown = (e) => {
     if (e.target.name() === 'background') {
       resetSelection();
+      setSelectedCharacterIndex(null);
       setEditingTextIndex(null); // 編集モードを終了
     }
   };
@@ -511,10 +635,43 @@ function Canvas({
                 }
                 return null;
               })}
+              {/* キャラクターの描画 */}
+              {currentPage.pageCharacters.map((character, charIndex) => {
+                const { id, parts, positionX, positionY, scaleX, scaleY, rotation } = character;
+                return (
+                  <Group
+                    key={`character-${id}`}
+                    ref={(el) => (characterRefs.current[charIndex] = el)}
+                    x={positionX}
+                    y={positionY}
+                    scaleX={scaleX}
+                    scaleY={scaleY}
+                    rotation={rotation}
+                    draggable={!isReadOnly}
+                    onDragEnd={(e) => handleCharacterDragEnd(charIndex, e)}
+                    onTransformEnd={(e) => handleCharacterTransformEnd(charIndex, e)}
+                    onClick={() => handleCharacterClick(charIndex)}
+                  >
+                    {parts.map((part, partIndex) => {
+                      const image = loadedCharacterImages[part.src];
+                      if (!image) return null;
+                      return (
+                        <KonvaImage
+                          key={`character-${id}-part-${partIndex}`}
+                          image={image}
+                          x={0} // パーツの相対位置に応じて調整
+                          y={0}
+                          draggable={false}
+                        />
+                      );
+                    })}
+                  </Group>
+                );
+              })}
               {/*
                 Show Transformer only when not read-only and an element is selected
               */}
-              {!isReadOnly && (selectedTextIndex !== null || selectedImageIndex !== null) && (
+              {!isReadOnly && (selectedTextIndex !== null || selectedImageIndex !== null || selectedCharacterIndex !== null) && (
                 <Transformer
                   ref={transformerRef}
                   anchorSize={8}

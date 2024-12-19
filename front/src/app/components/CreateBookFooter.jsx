@@ -20,6 +20,7 @@ export default function CreateBookFooter({
   setBackgroundColor,
 }) {
   const handleAddImage = useCanvasStore((state) => state.handleAddImage);
+  const addCharacter = useCanvasStore((state) => state.addCharacter);
   const pages = useCanvasStore((state) => state.pages);
   const isMobile = useIsMobile(); // デバイス判定
 
@@ -58,7 +59,7 @@ export default function CreateBookFooter({
       case "もの":
         return <ObjectImages onImageSelect={(src) => handleImageSelect(src, 'もの')} />;
       case "ひと":
-          return <HumanImages onImageSelect={(src) => handleImageSelect(src, "ひと")} />;
+          return <HumanImages onImageSelect={handleCharacterSelected} />;
       case "背景色":
         return (
           <div className="flex flex-col p-4 gap-4 overflow-y-scroll max-h-[125px] md:max-h-[800px] lg:max-h-[1000px]">
@@ -103,6 +104,19 @@ export default function CreateBookFooter({
       scaleY: 0.5,
     };
     handleAddImage(imageData);
+  };
+
+  const handleCharacterSelected = (parts) => {
+    const characterData = {
+      parts: parts,
+      positionX: 100,
+      positionY: 100,
+      scaleX: 1,
+      scaleY: 1,
+      rotation: 0,
+    };
+    console.log("Adding character:", characterData);
+    addCharacter(characterData);
   };
 
   // アイコンデータ
