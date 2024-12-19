@@ -103,6 +103,7 @@ export default function CreateBookPage() {
           showActionButtons={true}
           showUndoButton={true}
           allowAddPage={true}
+          setPanel={togglePanel}
           togglePanel={togglePanel} // togglePanel を直接渡す
           activePanel={activePanel}
         />

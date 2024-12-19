@@ -133,8 +133,10 @@ const useCanvasStore = create((set, get) => ({
       }
       const element = currentPage.pageElements[index];
       if (element && element.id) {
-        // 既存の要素を削除対象リストに追加
-        const updatedElementsToDelete = [...currentPage.elementsToDelete, { id: element.id }];
+        const updatedElementsToDelete = [
+          ...(currentPage.elementsToDelete || []), // 配列でない場合に空配列をデフォルト値とする
+          { id: element.id },
+        ];
         currentPage.elementsToDelete = updatedElementsToDelete; // ページに直接設定
       }
       const updatedElements = currentPage.pageElements.filter((el, i) => !(i === index && el.elementType === 'image'));
