@@ -4,8 +4,7 @@ import { GiUnderwearShorts, GiLips } from "react-icons/gi";
 import { PiHairDryer } from "react-icons/pi";
 import { RiEyeCloseLine } from "react-icons/ri";
 
-export default function HumanImageSelector() {
-  // 項目名を設定（日本語ラベルと英語キーのペア）
+export default function HumanImageSelector({ onImageSelect }) {
   const categories = [
     { key: "hair", count: 3, icon: <PiHairDryer /> },
     { key: "eye", count: 5, icon: <RiEyeCloseLine /> },
@@ -14,13 +13,9 @@ export default function HumanImageSelector() {
     { key: "bottomwear", count: 5, icon: <GiUnderwearShorts /> },
   ];
 
-  // 現在選択中のカテゴリ
   const [selectedCategory, setSelectedCategory] = useState("hair");
-
-  // 各カテゴリで選択された画像の状態を管理
   const [selectedImages, setSelectedImages] = useState({});
 
-  // 選択されたカテゴリの画像リストを生成
   const getImageList = () => {
     if (!selectedCategory) return [];
     const category = categories.find((cat) => cat.key === selectedCategory);
@@ -31,59 +26,72 @@ export default function HumanImageSelector() {
     );
   };
 
-  // プレビューエリアの要素を生成
-  const renderPreview = () => {
-    return (
-      <>
-        {/* ベース画像を最初に表示 */}
-        <img
-          key="base"
-          src="/human/childe/base.png"
-          alt="Base preview"
-          className="absolute w-full h-full"
-        />
-        {/* カテゴリごとの選択済み画像を表示 */}
-        {categories.map(({ key }) => {
-          if (!selectedImages[key]) return null; // 選択されていない場合はスキップ
-
-          return (
-            <img
-              key={key}
-              src={selectedImages[key]}
-              alt={`${key} preview`}
-              className={`absolute ${getPreviewStyle(key)}`} // 各パーツの位置スタイルを追加
-            />
-          );
-        })}
-      </>
-    );
-  };
-
-  // プレビューエリアに表示するスタイル（カテゴリごとの位置調整）
   const getPreviewStyle = (category) => {
     const styles = {
     };
     return styles[category] || "";
   };
 
+  const handlePreviewClick = () => {
+    const baseImagePath = "/human/childe/base.png";
+    if (onImageSelect) {
+      onImageSelect(baseImagePath, "base");
+
+      Object.entries(selectedImages).forEach(([category, imagePath]) => {
+        onImageSelect(imagePath, category);
+      });
+    }
+  };
+
+  const handleThumbnailClick = (imagePath) => {
+    setSelectedImages((prev) => ({
+      ...prev,
+      [selectedCategory]: imagePath,
+    }));
+  };
+
+  const renderPreview = () => (
+    <>
+      <img
+        key="base"
+        src="/human/childe/base.png"
+        alt="Base preview"
+        className="absolute w-full h-full"
+      />
+      {categories.map(({ key }) => {
+        const imagePath = selectedImages[key];
+        if (!imagePath) return null;
+        return (
+          <img
+            key={key}
+            src={imagePath}
+            alt={`${key} preview`}
+            className={`absolute ${getPreviewStyle(key)}`}
+          />
+        );
+      })}
+    </>
+  );
+
   return (
     <div className="p-4">
       {/* プレビューエリア */}
-      <div className="relative w-64 h-64 border bg-background mx-auto mb-8">
+      <div
+        className="relative w-64 h-64 border bg-background mx-auto mb-8 cursor-pointer"
+        onClick={handlePreviewClick} // プレビューエリアクリック時の処理
+      >
         {renderPreview()}
       </div>
 
-      {/* カテゴリーの選択 */}
+      {/* カテゴリー選択 */}
       <div className="flex gap-4 justify-center mb-8">
-        {categories.map(({ key,icon }) => (
+        {categories.map(({ key, icon }) => (
           <button
             key={key}
             className={`px-4 py-2 rounded flex items-center justify-center gap-2 transition-transform duration-200 group ${
-              selectedCategory === key
-                ? "bg-background"
-                : "border-background"
+              selectedCategory === key ? "bg-background" : "border-background"
             }`}
-            onClick={() => setSelectedCategory(key)} // カテゴリ変更
+            onClick={() => setSelectedCategory(key)}
           >
             <span className="transform transition-transform duration-200 group-hover:-translate-y-1">
               {icon}
@@ -92,30 +100,22 @@ export default function HumanImageSelector() {
         ))}
       </div>
 
-
-      {/* 選択肢を表示 */}
-      {selectedCategory && (
-        <div className="flex flex-wrap gap-4 justify-center">
-          {getImageList().map((imagePath, index) => (
-            <div
-              key={index}
-              className="w-24 h-24 border bg-background rounded overflow-hidden"
-            >
-              <img
-                src={imagePath}
-                alt={`${selectedCategory} option ${index + 1}`}
-                className="w-full h-full object-contain cursor-pointer hover:opacity-75"
-                onClick={() =>
-                  setSelectedImages((prev) => ({
-                    ...prev,
-                    [selectedCategory]: imagePath,
-                  }))
-                } // 選択時に選択状態を更新
-              />
-            </div>
-          ))}
-        </div>
-      )}
+      {/* サムネイル選択 */}
+      <div className="flex flex-wrap gap-4 justify-center">
+        {getImageList().map((imagePath, index) => (
+          <div
+            key={index}
+            className="w-24 h-24 border bg-background rounded overflow-hidden cursor-pointer"
+            onClick={() => handleThumbnailClick(imagePath)} // サムネイルクリック
+          >
+            <img
+              src={imagePath}
+              alt={`${selectedCategory} option ${index + 1}`}
+              className="w-full h-full object-contain hover:opacity-75"
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
