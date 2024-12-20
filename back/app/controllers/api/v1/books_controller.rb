@@ -87,7 +87,7 @@ class Api::V1::BooksController < ApplicationController
         pages: {
           only: [:id, :page_number, :background_color],
           include: {
-            page_characters: { only: [:character_type, :position_x, :position_y] },
+            page_characters: { only: [:position_x, :position_y] },
             page_elements: {
               only: [:id, :element_type, :text, :src, :font_size, :font_color, :position_x, :position_y, :rotation, :scale_x, :scale_y] 
             }

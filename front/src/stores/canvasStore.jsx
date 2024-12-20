@@ -336,7 +336,7 @@ const useCanvasStore = create((set, get) => ({
   fetchBookData: async (bookId) => {
     if (get().bookData) return;
     try {
-      const response = await axiosInstance.get(`/api/v1/books/${bookId}/`);
+      const response = await axiosInstance.get(`/api/v1/books/${bookId}/pages`);
       if (response.data && Array.isArray(response.data.pages)) {
         const formattedPages = response.data.pages.map((page) => ({
           pageNumber: page.page_number,
@@ -355,7 +355,14 @@ const useCanvasStore = create((set, get) => ({
           })),
           pageCharacters: (page.page_characters || []).map((character) => ({
             ...character,
-            elementType: 'character', // 修正: elementTypeを追加
+            id: character.id || get().generateUniqueId(),
+            elementType: 'character',
+            parts: character.parts || [],
+            positionX: character.position_x || 0,
+            positionY: character.position_y || 0,
+            rotation: character.rotation || 0,
+            scaleX: character.scale_x || 1,
+            scaleY: character.scale_y || 1,
           })),
           elementsToDelete: [],
         }));
