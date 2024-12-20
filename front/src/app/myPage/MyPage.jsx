@@ -6,8 +6,9 @@ import useBooksStore from '../../stores/booksStore';
 import useAuthStore from '../../stores/authStore';
 import BookList from "../components/BookList";
 import Pagination from "../components/Pagination";
+import PropTypes from "prop-types";
 
-function MyPage() {
+function MyPage({ rowStyles = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
@@ -101,13 +102,14 @@ function MyPage() {
     );
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 space-y-4 pb-32">
+    <div className="flex flex-col items-center justify-center p-4 space-y-4 pb-32">
       <BookList
         books={myBooks}
         pageType="myPage"
         isAuthor={true}
         handleEdit={handleEdit} // 編集ハンドラを渡す
         handleDelete={handleDelete} // 削除ハンドラを渡す
+        rowStyles={rowStyles}
       />
       {/* Paginationコンポーネント */}
       <div className="mt-4">

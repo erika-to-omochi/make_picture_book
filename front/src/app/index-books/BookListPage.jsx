@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import useBooksStore from "@/stores/booksStore";
 import BookList from "../components/BookList";
 import Pagination from "../components/Pagination";
+import PropTypes from "prop-types";
 
-function BookListPage() {
+function BookListPage({ rowStyles = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
@@ -54,14 +55,22 @@ function BookListPage() {
 
   // コンテンツの表示
   return (
-    <div className="flex flex-col items-center justify-center p-6 space-y-4 pb-32">
-      <BookList books={publishedBooks} pageType="bookListPage" />
-      {/* Paginationコンポーネント */}
+    <div className="flex flex-col items-center justify-center p-4 space-y-4 pb-32">
+      <BookList
+        books={publishedBooks}
+        pageType="bookListPage"
+        rowStyles={rowStyles}
+      />
       <div className="mt-4">
         <Pagination pagination={pagination} onPageChange={handlePageChange} />
       </div>
     </div>
   );
 }
+
+// `rowStyles` をプロパティとして定義
+BookListPage.propTypes = {
+  rowStyles: PropTypes.array, // 列ごとのスタイルを受け取るためのプロップ
+};
 
 export default BookListPage;
