@@ -23,6 +23,7 @@ export default function DefaultFooter() {
         position: "fixed",
         bottom: 0,
         width: "100%",
+        zIndex: 10,
       }}
     >
       <Link href="/index-books" className="flex flex-col items-center mx-2">
