@@ -116,7 +116,24 @@ export default function ModalManager() {
         // 全ての要素を統合（削除要素は既存IDを持つはず）
         const allPageElements = [...pageElements, ...elementsToDelete];
         // page_characters の構築（今後本リリースで修正予定）
-        const pageCharacters = page.page_characters || [];
+        const pageCharacters = (page.pageCharacters || []).map(char => {
+          const baseChar = {
+            element_type: 'character',
+            position_x: char.positionX || 100,
+            position_y: char.positionY || 100,
+            rotation: char.rotation || 0,
+            scale_x: char.scaleX || 1,
+            scale_y: char.scaleY || 1,
+            parts: char.parts || [],
+            _destroy: false,
+          };
+          // 既存キャラクター更新用のID設定
+          if (char.id && typeof char.id === 'number') {
+            baseChar.id = char.id;
+          }
+          return baseChar;
+        });
+
         const payload = {
           page: {
             book_id: newBookId,

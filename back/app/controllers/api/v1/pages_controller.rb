@@ -58,7 +58,12 @@ class Api::V1::PagesController < ApplicationController
         :element_type, :text, :src, :font_size, :font_color,
         :position_x, :position_y, :rotation, :scale_x, :scale_y
       ],
-      page_characters_attributes: []
+      page_characters_attributes: [
+        :id, :_destroy,
+        :element_type,
+        :position_x, :position_y, :rotation, :scale_x, :scale_y,
+        { parts: [:src] }
+      ]
     )
   end
 end

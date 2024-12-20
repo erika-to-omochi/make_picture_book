@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_12_11_132316) do
+ActiveRecord::Schema[7.1].define(version: 2024_12_20_012534) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -54,15 +54,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_11_132316) do
 
   create_table "page_characters", force: :cascade do |t|
     t.bigint "page_id", null: false
-    t.integer "character_type", default: 0, null: false
-    t.string "simple_path"
-    t.string "body_path"
-    t.string "hair_path"
-    t.string "eye_path"
-    t.string "mouth_path"
-    t.string "hand_path"
-    t.string "foot_path"
-    t.string "outfit_path"
     t.integer "position_x", null: false
     t.integer "position_y", null: false
     t.integer "rotation", default: 0
@@ -70,7 +61,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_11_132316) do
     t.float "scale_y", default: 1.0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["character_type"], name: "index_page_characters_on_character_type"
+    t.string "element_type"
+    t.jsonb "parts"
     t.index ["page_id"], name: "index_page_characters_on_page_id"
   end
 

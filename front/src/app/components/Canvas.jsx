@@ -1,5 +1,3 @@
-// Canvas.jsx
-
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -162,9 +160,9 @@ function Canvas({
   useEffect(() => {
     let isMounted = true;
     const loadCharacterImages = async () => {
-      const characterElements = currentPage.pageCharacters;
+      const characterElements = currentPage.pageCharacters || [];
       const imagePromises = characterElements.flatMap((char) =>
-        char.parts.map((part) => {
+        (char.parts || []).map((part) => {
           return new Promise((resolve) => {
             const img = new window.Image();
             img.src = part.src;
@@ -173,7 +171,6 @@ function Canvas({
           });
         })
       );
-
       try {
         const results = await Promise.all(imagePromises);
         const imagesMap = {};
@@ -192,13 +189,7 @@ function Canvas({
         }
       }
     };
-
-    if (currentPage.pageCharacters && currentPage.pageCharacters.length > 0) {
-      loadCharacterImages();
-    } else {
-      setLoadedCharacterImages({});
-    }
-
+    loadCharacterImages();
     return () => {
       isMounted = false;
     };
@@ -634,29 +625,29 @@ function Canvas({
               })}
               {/* キャラクターの描画 */}
               {currentPage.pageCharacters.map((character, charIndex) => {
-                const { id, parts, positionX, positionY, scaleX, scaleY, rotation } = character;
+                const uniqueKey = character.id || `temp-${charIndex}`;
                 return (
                   <Group
-                    key={`character-${id}`}
+                    key={`character-${uniqueKey}`}
                     ref={(el) => (characterRefs.current[charIndex] = el)}
-                    x={positionX}
-                    y={positionY}
-                    scaleX={scaleX}
-                    scaleY={scaleY}
-                    rotation={rotation}
+                    x={character.positionX}
+                    y={character.positionY}
+                    scaleX={character.scaleX}
+                    scaleY={character.scaleY}
+                    rotation={character.rotation}
                     draggable={!isReadOnly}
                     onDragEnd={(e) => handleCharacterDragEnd(charIndex, e)}
                     onTransformEnd={(e) => handleCharacterTransformEnd(charIndex, e)}
                     onClick={() => handleCharacterClick(charIndex)}
                   >
-                    {parts.map((part, partIndex) => {
+                    {(character.parts || []).map((part, partIndex) => {
                       const image = loadedCharacterImages[part.src];
                       if (!image) return null;
                       return (
                         <KonvaImage
-                          key={`character-${id}-part-${partIndex}`}
+                          key={`character-${uniqueKey}-part-${partIndex}`}
                           image={image}
-                          x={0} // パーツの相対位置に応じて調整
+                          x={0}
                           y={0}
                           draggable={false}
                         />
