@@ -9,8 +9,8 @@ export default function HumanImageSelector({ onImageSelect }) {
     { key: "hair", count: 3, icon: <PiHairDryer /> },
     { key: "eye", count: 5, icon: <RiEyeCloseLine /> },
     { key: "mouth", count: 5, icon: <GiLips /> },
-    { key: "topwear", count: 5, icon: <FaTshirt /> },
-    { key: "bottomwear", count: 5, icon: <GiUnderwearShorts /> },
+    { key: "topwear", count: 15, icon: <FaTshirt /> },
+    { key: "bottomwear", count: 15, icon: <GiUnderwearShorts /> },
   ];
 
   const [selectedCategory, setSelectedCategory] = useState("hair");
@@ -103,7 +103,7 @@ export default function HumanImageSelector({ onImageSelect }) {
       </div>
 
       {/* サムネイル選択 */}
-      <div className="flex flex-wrap gap-4 justify-center">
+      <div className="flex flex-wrap gap-4 justify-center overflow-y-auto max-h-80">
         {getImageList().map((imagePath, index) => (
           <div
             key={index}

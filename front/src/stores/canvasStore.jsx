@@ -336,36 +336,44 @@ const useCanvasStore = create((set, get) => ({
   fetchBookData: async (bookId) => {
     if (get().bookData) return;
     try {
-      const response = await axiosInstance.get(`/api/v1/books/${bookId}/pages`);
+      const response = await axiosInstance.get(`/api/v1/books/${bookId}`);
+      console.log("API Response:", response.data);
       if (response.data && Array.isArray(response.data.pages)) {
-        const formattedPages = response.data.pages.map((page) => ({
-          pageNumber: page.page_number,
-          bookId: page.book_id || 1,
-          id: page.id || null,
-          backgroundColor: page.background_color || "#ffffff",
-          pageElements: (page.page_elements || []).map((element) => ({
-            ...element,
-            elementType: element.element_type,
-            fontSize: element.font_size,
-            fontColor: element.font_color,
-            positionX: element.position_x,
-            positionY: element.position_y,
-            scaleX: element.scale_x,
-            scaleY: element.scale_y,
-          })),
-          pageCharacters: (page.page_characters || []).map((character) => ({
-            ...character,
-            id: character.id || get().generateUniqueId(),
-            elementType: 'character',
-            parts: character.parts || [],
-            positionX: character.position_x || 0,
-            positionY: character.position_y || 0,
-            rotation: character.rotation || 0,
-            scaleX: character.scale_x || 1,
-            scaleY: character.scale_y || 1,
-          })),
-          elementsToDelete: [],
-        }));
+        const formattedPages = response.data.pages.map((page) => {
+          console.log("Processing Page:", page);
+          return {
+            pageNumber: page.page_number,
+            bookId: page.book_id || 1,
+            id: page.id || null,
+            backgroundColor: page.background_color || "#ffffff",
+            pageElements: (page.page_elements || []).map((element) => ({
+              ...element,
+              elementType: element.element_type,
+              fontSize: element.font_size,
+              fontColor: element.font_color,
+              positionX: element.position_x,
+              positionY: element.position_y,
+              scaleX: element.scale_x,
+              scaleY: element.scale_y,
+            })),
+            pageCharacters: (page.page_characters || []).map((character) => {
+              console.log("Character:", character);
+              return {
+                ...character,
+                id: character.id || get().generateUniqueId(),
+                elementType: 'character',
+                parts: character.parts || [],
+                positionX: character.position_x || 0,
+                positionY: character.position_y || 0,
+                rotation: character.rotation || 0,
+                scaleX: character.scale_x || 1,
+                scaleY: character.scale_y || 1,
+              };
+            }),
+            elementsToDelete: [],
+          };
+        });
+        console.log("Formatted Pages:", formattedPages);
         set({ pages: formattedPages, bookData: response.data });
       } else {
         console.error("取得したページデータが無効です:", response.data.pages);
