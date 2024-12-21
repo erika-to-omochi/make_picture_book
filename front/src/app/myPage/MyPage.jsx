@@ -6,7 +6,7 @@ import useBooksStore from '../../stores/booksStore';
 import useAuthStore from '../../stores/authStore';
 import BookList from "../components/BookList";
 import Pagination from "../components/Pagination";
-import PropTypes from "prop-types";
+import axiosInstance from '../../api/axios';
 
 function MyPage({ rowStyles = [] }) {
   const router = useRouter();
