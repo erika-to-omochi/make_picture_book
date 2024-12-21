@@ -27,3 +27,6 @@ destination = "/rails/public/ogp"
 [env]
   RAILS_ENV = "production"
   PORT = "3000"
+
+[deploy]
+  release_command = "bundle exec rails db:migrate"
