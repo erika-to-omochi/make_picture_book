@@ -79,7 +79,7 @@ function CharacterImageSelector({ onImageSelect, characterType }) {
       {/* プレビューエリア */}
       <div
         className="relative border bg-background mx-auto mb-8 cursor-pointer hover:opacity-75 hover:-translate-y-1
-        w-full max-w-[80%] aspect-square sm:max-w-[90%] lg:max-w-[100%]"
+        w-full max-w-[80%] aspect-square sm:max-w-[90%]  lg:max-w-[350px]"
         onClick={handlePreviewClick}
       >
         {renderPreview()}
