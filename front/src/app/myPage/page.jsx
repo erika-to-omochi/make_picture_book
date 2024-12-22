@@ -2,7 +2,8 @@
 
 import React, { Suspense, useEffect } from 'react';
 import MyPage from './MyPage';
-import useAuthStore from '../../stores/authStore';
+import useAuthStore from '@/stores/authStore';
+import useBooksStore from "@/stores/booksStore";
 
 export default function Page() {
   const rowStyles = [
@@ -14,6 +15,8 @@ export default function Page() {
   const userName = useAuthStore((state) => state.userName);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const setUserName = useAuthStore((state) => state.setUserName);
+
+  const loading = useBooksStore((state) => state.loading);
 
   // クライアントサイドで userName を初期化
   useEffect(() => {
@@ -53,11 +56,23 @@ export default function Page() {
           className="absolute top-[-92px] left-1/2 transform -translate-x-1/2 w-[824px] h-[824px] object-contain pointer-events-none max-w-none max-h-none"
           style={{ zIndex: 1 }}
         />
+
+        {/* BookListPageを特定のレイヤーに挟む */}
         <div className="relative">
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={null}>
             <MyPage rowStyles={rowStyles} />
           </Suspense>
         </div>
+
+        {/* ローディングオーバーレイ */}
+        {loading && (
+          <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-70 z-50">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-800">絵本を読込中</p>
+              <span className="loading loading-dots loading-lg mt-2 animate-pulse"></span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

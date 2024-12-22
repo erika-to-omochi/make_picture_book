@@ -34,17 +34,6 @@ function BookListPage({ rowStyles = [] }) {
     }
   };
 
-  // ローディング状態
-  if (loading)
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <span className="loading loading-dots loading-lg"></span>
-          <p className="mt-4 text-lg font-semibold">ページを読み込んでいます...</p>
-        </div>
-      </div>
-    );
-
   // エラー状態
   if (error)
     return (

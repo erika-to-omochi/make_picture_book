@@ -84,15 +84,8 @@ function MyPage({ rowStyles = [] }) {
     );
   }
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <span className="loading loading-dots loading-lg"></span>
-          <p className="mt-4 text-lg font-semibold">ページを読み込んでいます...</p>
-        </div>
-      </div>
-    );
+  // ローディング状態（pageの方で管理）
+  if (loading) return null;
 
   if (error)
     return (
