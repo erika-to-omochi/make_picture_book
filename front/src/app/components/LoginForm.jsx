@@ -4,6 +4,7 @@ import { useState } from 'react';
 import axiosInstance from '../../api/axios';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '../../stores/authStore';
+import { FcGoogle } from "react-icons/fc";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -52,6 +53,11 @@ export default function LoginForm() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    window.location.href = `${apiBaseUrl}/api/v1/auth/google_oauth2`;
+  };
+
   return (
     <div>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -86,6 +92,21 @@ export default function LoginForm() {
           </button>
         </div>
       </form>
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={handleGoogleLogin}
+          className="w-1/2 py-2 px-4 bg-white text-black font-semibold rounded-md hover:bg-gray-100 flex items-center justify-center"
+        >
+          <FcGoogle className="mr-2" size={24} />
+          Googleでログイン
+        </button>
+      </div>
+      {debugInfo && (
+        <div className="mt-4">
+          <h3 className="text-lg font-bold">デバッグ情報:</h3>
+          <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
+        </div>
+      )}
     </div>
   );
 }
