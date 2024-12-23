@@ -15,6 +15,8 @@ module App
     config.active_record.default_timezone = :local
     config.i18n.default_locale = :ja
     config.i18n.available_locales = [:en, :ja]
-    require 'devise'
+    config.session_store :cookie_store, key: '_ehon_ga_pon_session'
+    config.middleware.insert_before 0, ActionDispatch::Cookies
+    config.middleware.insert_before 1, ActionDispatch::Session::CookieStore, key: '_ehon_ga_pon_session'
   end
 end

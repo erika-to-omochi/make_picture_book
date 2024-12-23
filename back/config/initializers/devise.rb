@@ -30,4 +30,18 @@ Devise.setup do |config|
     jwt.expiration_time = 1.day.to_i
     #jwt.revocation_strategy = JwtDenylist
   end
+
+  # 非HTMLリクエストを弾いてしまうので、以下のように緩める
+  config.navigational_formats = ['*/*', :html]
+
+  # OmniAuthのパスプレフィックスを設定
+  config.omniauth_path_prefix = '/api/v1/auth'
+
+  # OmniAuthの設定
+  config.omniauth :google_oauth2, ENV['GOOGLE_CLIENT_ID'], ENV['GOOGLE_CLIENT_SECRET'], {
+    scope: 'userinfo.email, userinfo.profile',
+    prompt: 'select_account',
+    redirect_uri: 'http://localhost:3000/api/v1/auth/google_oauth2/callback',
+    redirect_uri: 'https://ehon-ga-pon.com//api/v1/auth/google_oauth2/callback'
+  }
 end
