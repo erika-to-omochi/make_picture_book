@@ -25,7 +25,7 @@ export const metadata = {
     url: process.env.NEXT_PUBLIC_API_BASE_URL,
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/default-ogp.png`,
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/default-og-image.png`,
         width: 1200,
         height: 630,
         alt: "デフォルトOGP画像",

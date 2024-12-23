@@ -1,5 +1,4 @@
 class FormsController < ApplicationController
-  skip_before_action :verify_authenticity_token, only: [:create]
 
   require 'net/http'
   require 'uri'
