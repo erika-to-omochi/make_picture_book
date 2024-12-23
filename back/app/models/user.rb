@@ -15,15 +15,20 @@ class User < ApplicationRecord
     id
   end
 
-  # from_omniauthメソッドが正しく定義されていることを確認
+  # from_omniauthメソッド
   def self.from_omniauth(auth)
-    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
+    user = where(provider: auth.provider, uid: auth.uid).first_or_initialize
+    if user.new_record?
       user.email = auth.info.email
       user.password = Devise.friendly_token[0, 20]
       user.name = auth.info.name
+      # 他の必要な属性もここに追加
+      unless user.save
+        Rails.logger.error "User creation failed: #{user.errors.full_messages.join(", ")}"
+      end
     end
+    user
   end
-
 
   # JWTトークン生成メソッドが正しく定義されていることを確認
   def generate_jwt
