@@ -1,14 +1,11 @@
 class ApplicationController < ActionController::API
   include Devise::Controllers::Helpers # Deviseのヘルパーを利用可能にする
-  include ActionController::RequestForgeryProtection
 
-  protect_from_forgery with: :null_session
-  before_action :configure_permitted_parameters, if: :devise_controller?
-
+  before_action :authenticate_user!
   protected
 
   def current_user
-    @current_user ||= User.find_by(id: decoded_auth_token['sub'])
+    @current_user ||= User.find_by(id: decoded_auth_token['user_id'])
   end
 
   def configure_permitted_parameters
@@ -25,7 +22,7 @@ class ApplicationController < ActionController::API
     begin
       decoded_token = decoded_auth_token
       Rails.logger.debug("Decoded token: #{decoded_token}")
-      user_id = decoded_token['sub']
+      user_id = decoded_token['user_id']
       Rails.logger.debug("User ID from token: #{user_id}")
       @current_user = User.find_by(id: user_id)
       Rails.logger.debug("Current user: #{@current_user.inspect}")
