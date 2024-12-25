@@ -27,6 +27,8 @@ destination = "/rails/public/ogp"
 [env]
   RAILS_ENV = "production"
   PORT = "3000"
+  FRONTEND_URL = "https://ehon-ga-pon.com"
+  API_URL = "https://api.ehon-ga-pon.com"
 
 [deploy]
   release_command = "bundle exec rails db:migrate"
