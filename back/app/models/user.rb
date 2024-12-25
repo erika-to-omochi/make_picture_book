@@ -32,12 +32,6 @@ class User < ApplicationRecord
     user
   end
 
-  # JWTトークン生成メソッドが正しく定義されていることを確認
-  def generate_jwt
-    # JWT生成ロジック（例）
-    JWT.encode({ user_id: id, exp: 24.hours.from_now.to_i }, Rails.application.credentials.dig(:jwt, :secret), 'HS256')
-  end
-
   private
 
   def password_required?

@@ -19,6 +19,7 @@ const useAuthStore = create(
 
       logout: () => {
         set({ userName: null, isLoggedIn: false, accessToken: null, refreshToken: null });
+        localStorage.clear();
       },
 
       showLoginMessage: (name) => {

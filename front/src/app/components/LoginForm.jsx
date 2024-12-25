@@ -91,7 +91,23 @@ export default function LoginForm() {
             ログイン
           </button>
         </div>
+        <div className="mt-4 text-center">
+          <p className="text-sm text-bodyText">
+            まだアカウントをお持ちでない方
+            <a href="/signup" className="text-blue-500 hover:underline ml-1">新規登録</a>
+          </p>
+          <p className="text-sm text-bodyText mt-2">
+            パスワードを忘れた方
+            <a href="/forgot-password" className="text-blue-500 hover:underline ml-1">こちら</a>
+          </p>
+        </div>
       </form>
+      {/* 区切り線 */}
+      <div className="flex items-center my-4">
+        <hr className="flex-grow border-gray-300" />
+        <span className="px-2 text-gray-500 text-sm">または</span>
+        <hr className="flex-grow border-gray-300" />
+      </div>
       <div className="flex justify-center mt-4">
         <button
           onClick={handleGoogleLogin}
@@ -101,12 +117,6 @@ export default function LoginForm() {
           Googleでログイン
         </button>
       </div>
-      {debugInfo && (
-        <div className="mt-4">
-          <h3 className="text-lg font-bold">デバッグ情報:</h3>
-          <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
-        </div>
-      )}
     </div>
   );
 }
