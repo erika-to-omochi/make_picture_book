@@ -5,7 +5,7 @@ class ApplicationController < ActionController::API
   protected
 
   def current_user
-    @current_user ||= User.find_by(id: decoded_auth_token['user_id'])
+    @current_user ||= User.find_by(id: decoded_auth_token['sub'])
   end
 
   def configure_permitted_parameters
@@ -19,18 +19,26 @@ class ApplicationController < ActionController::API
 
 
   def authenticate_user!
-    begin
-      decoded_token = decoded_auth_token
-      Rails.logger.debug("Decoded token: #{decoded_token}")
-      user_id = decoded_token['user_id']
+    decoded_token = decoded_auth_token
+    Rails.logger.debug("Decoded token: #{decoded_token.inspect}")
+
+    if decoded_token && decoded_token['sub']
+      user_id = decoded_token['sub']
       Rails.logger.debug("User ID from token: #{user_id}")
       @current_user = User.find_by(id: user_id)
       Rails.logger.debug("Current user: #{@current_user.inspect}")
-      render json: { error: 'Unauthorized' }, status: :unauthorized unless @current_user
-    rescue JWT::DecodeError => e
-      Rails.logger.debug("JWT Decode Error: #{e.message}")
-      render json: { error: 'Invalid token' }, status: :unauthorized
+
+      unless @current_user
+        Rails.logger.warn "User not found with ID: #{user_id}"
+        render json: { error: 'Unauthorized' }, status: :unauthorized
+      end
+    else
+      Rails.logger.warn "Invalid or missing token"
+      render json: { error: 'Unauthorized' }, status: :unauthorized
     end
+  rescue JWT::DecodeError => e
+    Rails.logger.debug("JWT Decode Error: #{e.message}")
+    render json: { error: 'Invalid token' }, status: :unauthorized
   end
 
   private
