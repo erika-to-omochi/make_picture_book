@@ -6,84 +6,47 @@ import axios from "axios";
 export async function generateMetadata({ params }) {
   const { bookId } = params;
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  // デフォルトOGP画像のURL
   const defaultOgpUrl = `${baseUrl}/default-og-image.png`;
 
-  let bookData = null;
-  let ogpUrl = defaultOgpUrl;
-
   try {
-    // 絵本データの取得
     const bookResponse = await axios.get(`${baseUrl}/api/v1/books/${bookId}`);
-    bookData = bookResponse.data;
+    const bookData = bookResponse.data;
 
-    // OGP画像の取得
-    try {
-      const ogpResponse = await axios.get(`${baseUrl}/ogp`, {
-        params: {
-          title: bookData.title,
-          author: bookData.author_name,
-        },
-      });
+    const ogpResponse = await axios.get(`${baseUrl}/ogp`, {
+      params: { title: bookData.title, author: bookData.author_name },
+    });
 
-      if (ogpResponse.data && ogpResponse.data.url) {
-        ogpUrl = `${baseUrl}${ogpResponse.data.url}`;
-      }
-    } catch (ogpError) {
-      console.error("OGP画像の取得中にエラーが発生しました:", ogpError);
-      // ogpUrlはデフォルトのまま
-    }
+    const ogpUrl = ogpResponse.data?.url
+      ? `${baseUrl}${ogpResponse.data.url}`
+      : defaultOgpUrl;
+
+    return {
+      title: `${bookData.title} - 絵本がぽんっ`,
+      description: `${bookData.title} を見にいく`,
+      openGraph: {
+        title: bookData.title,
+        description: `${bookData.title} を見にいく`,
+        url: `${window.location.origin}/books/${bookId}`,
+        images: [{ url: ogpUrl, width: 1200, height: 630, alt: `${bookData.title} のOGP画像` }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: bookData.title,
+        description: `${bookData.title} を見にいく`,
+        images: [ogpUrl],
+      },
+    };
   } catch (error) {
-    console.error("絵本データの取得中にエラーが発生しました:", error);
-    // 必要に応じて404ページを返す
+    console.error("Metadata生成中にエラーが発生しました:", error);
     return {
       title: "絵本が見つかりません",
       description: "指定された絵本が見つかりませんでした。",
+      openGraph: { images: [{ url: defaultOgpUrl, width: 1200, height: 630 }] },
     };
   }
-
-  return {
-    title: `${bookData.title} - 絵本がぽんっ`,
-    description: `${bookData.title} を見にいく`,
-    openGraph: {
-      title: bookData.title,
-      description: `${bookData.title} を見にいく`,
-      url: `${baseUrl}/books/${bookId}`,
-      images: [
-        {
-          url: ogpUrl,
-          width: 1200,
-          height: 630,
-          alt: `${bookData.title} のOGP画像`,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: bookData.title,
-      description: `${bookData.title} を見にいく`,
-      images: [ogpUrl],
-    },
-  };
 }
 
-export default async function Page({ params }) {
+export default function Page({ params }) {
   const { bookId } = params;
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  let bookData = null;
-
-  try {
-    // 絵本データの取得
-    const bookResponse = await axios.get(`${baseUrl}/api/v1/books/${bookId}`);
-    bookData = bookResponse.data;
-  } catch (error) {
-    console.error("絵本データの取得中にエラーが発生しました:", error);
-    // 必要に応じてエラーメッセージを表示
-  }
-
-  return (
-    <BookDetailPage bookId={bookId} bookData={bookData} />
-  );
+  return <BookDetailPage bookId={bookId} />;
 }
