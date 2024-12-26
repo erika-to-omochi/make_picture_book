@@ -337,10 +337,8 @@ const useCanvasStore = create((set, get) => ({
     if (get().bookData) return;
     try {
       const response = await axiosInstance.get(`/api/v1/books/${bookId}`);
-      console.log("API Response:", response.data);
       if (response.data && Array.isArray(response.data.pages)) {
         const formattedPages = response.data.pages.map((page) => {
-          console.log("Processing Page:", page);
           return {
             pageNumber: page.page_number,
             bookId: page.book_id || 1,
@@ -373,7 +371,6 @@ const useCanvasStore = create((set, get) => ({
             elementsToDelete: [],
           };
         });
-        console.log("Formatted Pages:", formattedPages);
         set({ pages: formattedPages, bookData: response.data });
       } else {
         console.error("取得したページデータが無効です:", response.data.pages);

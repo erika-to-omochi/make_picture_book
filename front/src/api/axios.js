@@ -14,11 +14,9 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const { accessToken } = useAuthStore.getState();
-    console.log('Access Token from store:', accessToken);
     const excludeUrls = ['/api/v1/auth/sign_in', '/api/v1/auth/sign_up', '/api/v1/auth/refresh'];
     if (accessToken && !excludeUrls.includes(config.url)) {
       config.headers['Authorization'] = `Bearer ${accessToken}`;
-      console.log('Authorization Header Set:', config.headers['Authorization']);
     } else {
       console.log('No Authorization Header Set for:', config.url);
     }
