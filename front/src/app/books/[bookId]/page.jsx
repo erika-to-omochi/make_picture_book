@@ -26,7 +26,7 @@ export async function generateMetadata({ params }) {
       openGraph: {
         title: bookData.title,
         description: `${bookData.title} を見にいく`,
-        url: `${window.location.origin}/books/${bookId}`,
+        url: `${baseUrl}/books/${bookId}`,
         images: [{ url: ogpUrl, width: 1200, height: 630, alt: `${bookData.title} のOGP画像` }],
       },
       twitter: {
