@@ -1,4 +1,6 @@
 class OgpController < ApplicationController
+  skip_before_action :authenticate_user!, only: [:show]
+
   def show
     title = params[:title] || "unknown"
     author = params[:author] || "anonymous"
