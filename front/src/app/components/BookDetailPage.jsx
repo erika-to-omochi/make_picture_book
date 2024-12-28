@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import axiosInstance from '../../api/axios';
-import { FaRegCommentDots, FaPrint, FaEdit, FaTrash, FaRegFilePdf } from 'react-icons/fa';
+import { FaRegCommentDots, FaEdit, FaTrash, FaRegFilePdf } from 'react-icons/fa';
 import { FaXTwitter } from "react-icons/fa6";
 import useCanvasStore from '../../stores/canvasStore';
 import useIsMobile from "@/hooks/useIsMobile";
@@ -79,10 +79,6 @@ function BookDetailPage() {
       console.error("コメントの投稿に失敗しました:", error);
       alert("コメントの投稿中にエラーが発生しました。");
     }
-  };
-
-  const handlePrint = () => {
-    window.print();
   };
 
   const handleEdit = () => {
@@ -279,14 +275,7 @@ function BookDetailPage() {
                 className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-10 h-10 md:w-16 md:h-16"
               >
                 <FaRegFilePdf className="text-gray-700" size={24} />
-                <span className="mt-1 text-[0.6rem] hidden md:inline">PDF化</span>
-              </button>
-              <button
-                onClick={handlePrint}
-                className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-10 h-10 md:w-16 md:h-16"
-              >
-                <FaPrint className="text-gray-700" size={24} />
-                <span className="mt-1 text-[0.6rem] hidden md:inline">印刷する</span>
+                <span className="mt-1 text-[0.5rem] hidden md:inline">PDF/印刷</span>
               </button>
             </div>
           </div>
