@@ -9,6 +9,7 @@ import ModalManager from './ModalManager';
 import useIsMobile from '../../hooks/useIsMobile';
 
 function Canvas({
+  stageRef,
   showActionButtons,
   isReadOnly,
   allowAddPage,
@@ -42,7 +43,6 @@ function Canvas({
   } = useCanvasStore();
 
   const transformerRef = useRef(null);
-  const stageRef = useRef(null);
   const textRefs = useRef([]);
   const imageRefs = useRef([]);
   const characterRefs = useRef([]); // 新たにキャラクターの参照を追加

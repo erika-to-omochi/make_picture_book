@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import useCanvasStore from "../../../../stores/canvasStore";
@@ -12,6 +12,7 @@ const Canvas = dynamic(() => import("../../../components/Canvas"), { ssr: false 
 function EditBookPage() {
   const { bookId } = useParams();
   const isMobile = useIsMobile();
+  const stageRef = useRef(null);
 
   const {
     setBackgroundColor,
@@ -51,6 +52,7 @@ function EditBookPage() {
       <div className={`max-w-none ${isMobile ? 'mx-auto' : 'mr-10'}`}>
         {pages.length > 0 && pages[currentPageIndex] && (
           <Canvas
+          stageRef={stageRef}
             pageElements={pages[currentPageIndex].pageElements}
             pageData={pages[currentPageIndex]}
             backgroundColor={pages[currentPageIndex]?.backgroundColor || "#ffffff"}
