@@ -163,43 +163,39 @@ function BookDetailPage() {
 
    // PDFエクスポートハンドラ
   const handleExportPDF = async () => {
-  const pdf = new jsPDF({
-    orientation: 'landscape',
-    unit: 'px',
-    format: [800, 568],
-  });
-
-  for (let i = 0; i < pages.length; i++) {
-    useCanvasStore.getState().setCurrentPageIndex(i);
-
-    // 再描画を待つ
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    if (!stageRef.current || stageRef.current.width() === 0 || stageRef.current.height() === 0) {
-      console.error("stageRef が正しく設定されていません。");
-      continue;
-    }
-
-    // スケールをリセット
-    stageRef.current.scale({ scaleX: 1, scaleY: 1 });
-    stageRef.current.batchDraw();
-
-    // 現在のページを画像データとして取得
-    const dataURL = stageRef.current.toDataURL({
-      pixelRatio: 2,
-      mimeType: "image/png",
+    // A4サイズの設定（横向き）
+    const A4_WIDTH = 841.89; // ピクセル
+    const A4_HEIGHT = 595.28; // ピクセル
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [A4_WIDTH, A4_HEIGHT],
     });
-
-    if (i === 0) {
-      pdf.addImage(dataURL, "PNG", 0, 0, 800, 568);
-    } else {
-      pdf.addPage([800, 568]);
-      pdf.addImage(dataURL, "PNG", 0, 0, 800, 568);
+    for (let i = 0; i < pages.length; i++) {
+      useCanvasStore.getState().setCurrentPageIndex(i);
+      // 再描画を待つ
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (!stageRef.current || stageRef.current.width() === 0 || stageRef.current.height() === 0) {
+        console.error("stageRef が正しく設定されていません。");
+        continue;
+      }
+      // スケールをリセット
+      stageRef.current.scale({ scaleX: 1, scaleY: 1 });
+      stageRef.current.batchDraw();
+      // 現在のページを画像データとして取得
+      const dataURL = stageRef.current.toDataURL({
+        pixelRatio: 2,
+        mimeType: "image/png",
+      });
+      if (i === 0) {
+        pdf.addImage(dataURL, "PNG", 0, 0, A4_WIDTH, A4_HEIGHT);
+      } else {
+        pdf.addPage([A4_WIDTH, A4_HEIGHT]);
+        pdf.addImage(dataURL, "PNG", 0, 0, A4_WIDTH, A4_HEIGHT);
+      }
     }
-  }
-
-  pdf.save("storybook.pdf");
-}
+    pdf.save("storybook.pdf");
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4">
