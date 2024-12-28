@@ -162,26 +162,44 @@ function BookDetailPage() {
   );
 
    // PDFエクスポートハンドラ
-  const handleExportPDF = () => {
-    if (stageRef.current) {
-      const dataURL = stageRef.current.toDataURL({
-        // 任意設定
-        pixelRatio: 2, // 高解像度の場合
-        mimeType: 'image/png'
-      });
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'px',
-        format: [stageRef.current.width(), stageRef.current.height()]
-      });
-      // PDFに画像を追加
-      pdf.addImage(dataURL, 'PNG', 0, 0, stageRef.current.width(), stageRef.current.height());
-      // PDFをダウンロード
-      pdf.save('storybook.pdf');
-    } else {
-      console.error("stageRefが参照できません");
+  const handleExportPDF = async () => {
+  const pdf = new jsPDF({
+    orientation: 'landscape',
+    unit: 'px',
+    format: [800, 568],
+  });
+
+  for (let i = 0; i < pages.length; i++) {
+    useCanvasStore.getState().setCurrentPageIndex(i);
+
+    // 再描画を待つ
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    if (!stageRef.current || stageRef.current.width() === 0 || stageRef.current.height() === 0) {
+      console.error("stageRef が正しく設定されていません。");
+      continue;
     }
-  };
+
+    // スケールをリセット
+    stageRef.current.scale({ scaleX: 1, scaleY: 1 });
+    stageRef.current.batchDraw();
+
+    // 現在のページを画像データとして取得
+    const dataURL = stageRef.current.toDataURL({
+      pixelRatio: 2,
+      mimeType: "image/png",
+    });
+
+    if (i === 0) {
+      pdf.addImage(dataURL, "PNG", 0, 0, 800, 568);
+    } else {
+      pdf.addPage([800, 568]);
+      pdf.addImage(dataURL, "PNG", 0, 0, 800, 568);
+    }
+  }
+
+  pdf.save("storybook.pdf");
+}
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4">
