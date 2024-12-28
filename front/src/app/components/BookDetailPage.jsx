@@ -179,22 +179,37 @@ function BookDetailPage() {
         console.error("stageRef が正しく設定されていません。");
         continue;
       }
-      // スケールをリセット
-      stageRef.current.scale({ scaleX: 1, scaleY: 1 });
-      stageRef.current.batchDraw();
+      // 現在のキャンバスの幅と高さ
+      const canvasWidth = stageRef.current.width();
+      const canvasHeight = stageRef.current.height();
+      // キャンバスのアスペクト比
+      const canvasAspectRatio = canvasWidth / canvasHeight
+      // A4のアスペクト比
+      const A4AspectRatio = A4_WIDTH / A4_HEIGHT;
+      // 画像を縮小してA4に収める
+      let scaledWidth, scaledHeight;
+      if (canvasAspectRatio > A4AspectRatio) {
+        // キャンバスが横に広い場合
+        scaledWidth = A4_WIDTH;
+        scaledHeight = (A4_WIDTH / canvasWidth) * canvasHeight;
+      } else {
+        // キャンバスが縦に広い場合
+        scaledHeight = A4_HEIGHT;
+        scaledWidth = (A4_HEIGHT / canvasHeight) * canvasWidth;
+      }
       // 現在のページを画像データとして取得
       const dataURL = stageRef.current.toDataURL({
-        pixelRatio: 2,
+        pixelRatio: 2, // 高解像度化
         mimeType: "image/png",
       });
       if (i === 0) {
-        pdf.addImage(dataURL, "PNG", 0, 0, A4_WIDTH, A4_HEIGHT);
+        pdf.addImage(dataURL, "PNG", 0, 0, scaledWidth, scaledHeight);
       } else {
         pdf.addPage([A4_WIDTH, A4_HEIGHT]);
-        pdf.addImage(dataURL, "PNG", 0, 0, A4_WIDTH, A4_HEIGHT);
+        pdf.addImage(dataURL, "PNG", 0, 0, scaledWidth, scaledHeight);
       }
     }
-    pdf.save("storybook.pdf");
+    pdf.save("絵本ぽんっ.pdf");
   };
 
   return (
