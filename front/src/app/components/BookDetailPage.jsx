@@ -4,11 +4,12 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import axiosInstance from '../../api/axios';
-import { FaRegCommentDots, FaPrint, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaRegCommentDots, FaPrint, FaEdit, FaTrash, FaRegFilePdf } from 'react-icons/fa';
 import { FaXTwitter } from "react-icons/fa6";
 import useCanvasStore from '../../stores/canvasStore';
 import useIsMobile from "@/hooks/useIsMobile";
 import useAuthStore from '../../stores/authStore';
+import { jsPDF } from 'jspdf';
 
 const Canvas = dynamic(() => import("./Canvas"), { ssr: false });
 
@@ -30,6 +31,8 @@ function BookDetailPage() {
   const [comments, setComments] = useState([]);
   const [editingComment, setEditingComment] = useState(null);
   const [editContent, setEditContent] = useState("");
+
+  const stageRef = useRef(null);
 
   useEffect(() => {
     if (bookId) {
@@ -158,6 +161,46 @@ function BookDetailPage() {
     </div>
   );
 
+   // PDFエクスポートハンドラ
+  const handleExportPDF = async () => {
+  const pdf = new jsPDF({
+    orientation: 'landscape',
+    unit: 'px',
+    format: [800, 568],
+  });
+
+  for (let i = 0; i < pages.length; i++) {
+    useCanvasStore.getState().setCurrentPageIndex(i);
+
+    // 再描画を待つ
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    if (!stageRef.current || stageRef.current.width() === 0 || stageRef.current.height() === 0) {
+      console.error("stageRef が正しく設定されていません。");
+      continue;
+    }
+
+    // スケールをリセット
+    stageRef.current.scale({ scaleX: 1, scaleY: 1 });
+    stageRef.current.batchDraw();
+
+    // 現在のページを画像データとして取得
+    const dataURL = stageRef.current.toDataURL({
+      pixelRatio: 2,
+      mimeType: "image/png",
+    });
+
+    if (i === 0) {
+      pdf.addImage(dataURL, "PNG", 0, 0, 800, 568);
+    } else {
+      pdf.addPage([800, 568]);
+      pdf.addImage(dataURL, "PNG", 0, 0, 800, 568);
+    }
+  }
+
+  pdf.save("storybook.pdf");
+}
+
   return (
     <div className="flex flex-col items-center min-h-screen p-4">
       {pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length && (
@@ -169,6 +212,7 @@ function BookDetailPage() {
           <div className="relative flex justify-center">
             {/* Canvas */}
             <Canvas
+              stageRef={stageRef}
               showActionButtons={false}
               isReadOnly={true}
               allowAddPage={false}
@@ -218,6 +262,13 @@ function BookDetailPage() {
               >
                 <FaRegCommentDots className="text-gray-700" size={24} />
                 <span className="mt-1 text-[0.6rem] hidden md:inline">コメント</span>
+              </button>
+              <button
+                onClick={handleExportPDF}
+                className="flex flex-col items-center justify-center p-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition w-10 h-10 md:w-16 md:h-16"
+              >
+                <FaRegFilePdf className="text-gray-700" size={24} />
+                <span className="mt-1 text-[0.6rem] hidden md:inline">PDF化</span>
               </button>
               <button
                 onClick={handlePrint}

@@ -36,12 +36,7 @@ export default function SignupForm() {
       const accessToken = response.data.access_token;
       const refreshToken = response.data.refresh_token;
 
-      localStorage.setItem('access_token', accessToken);
-      localStorage.setItem('refresh_token', refreshToken);
-      localStorage.setItem('userName', name);
-
-      // 状態を更新してヘッダーを即座に切り替える
-      login(name); // 新規登録と同時にログイン状態にする
+      login(name, accessToken, refreshToken);
       showLoginMessage(name); // ようこそメッセージを表示
 
       router.push('/');
