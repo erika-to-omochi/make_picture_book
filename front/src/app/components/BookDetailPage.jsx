@@ -279,6 +279,9 @@ function BookDetailPage() {
               </button>
             </div>
           </div>
+          <p className="text-gray-800 text-sm mt-2 text-center">
+            タグ: {bookData.tags.map(tag => tag.name).join(', ')}
+          </p>
         </>
       )}
       {/* コメントセクションはキャンバスとアイコンを包むコンテナの下に配置 */}
