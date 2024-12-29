@@ -33,7 +33,7 @@ export default function ModalManager() {
       setModalData({
         title: bookData.title || "",
         author: bookData.author_name || "",
-        tags: bookData.tags || "",
+        tags: bookData.tags.map(tag => tag.name).join(", ") || "",
         visibility: bookData.visibility === 0 ? "public" : "private",
       });
     } else {
@@ -61,7 +61,7 @@ export default function ModalManager() {
       const bookDataPayload = {
         title: modalData.title,
         author_name: modalData.author,
-        tags: modalData.tags,
+        tags: modalData.tags.split(",").map(tag => tag.trim()),
         visibility: modalData.visibility === 'public' ? 0 : 1,
         is_draft: modalType === 'draft',
       };
