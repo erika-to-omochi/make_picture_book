@@ -36,6 +36,25 @@ function MyPage({ rowStyles = [] }) {
     }
   }, [setUserName]);
 
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const params = {
+          page: currentPage,
+          per_page: perPage,
+        };
+        if (tagsQuery) {
+          params.tags = tagsQuery;
+        }
+        const response = await axiosInstance.get("/api/v1/books", { params });
+        setBooks(response.data);
+      } catch (error) {
+        console.error("書籍の取得に失敗しました:", error);
+      }
+    };
+    fetchBooks();
+  }, [tagsQuery, currentPage, perPage]);
+
   // currentPage または isLoggedIn が変更されたときにデータをフェッチ
   useEffect(() => {
     if (isLoggedIn) {
@@ -95,44 +114,6 @@ function MyPage({ rowStyles = [] }) {
         <p className="text-red-500 text-lg">絵本の読み込み中にエラーが発生しました。</p>
       </div>
     );
-
-
-  useEffect(() => {
-    async function fetchFilteredBooks() {
-      try {
-        const response = await axiosInstance.get("/api/v1/books", {
-          params: {
-            tags: tagsQuery,
-            page: 1,
-            per_page: 9,
-          },
-        });
-        setBooks(response.data);
-      } catch (error) {
-        console.error("書籍の取得に失敗しました:", error);
-      }
-    }
-
-    async function fetchAllBooks() {
-      try {
-        const response = await axiosInstance.get("/api/v1/books", {
-          params: {
-            page: 1,
-            per_page: 9,
-          },
-        });
-        setBooks(response.data);
-      } catch (error) {
-        console.error("書籍の取得に失敗しました:", error);
-      }
-    }
-
-    if (tagsQuery) {
-      fetchFilteredBooks();
-    } else {
-      fetchAllBooks();
-    }
-  }, [tagsQuery]);
 
   return (
     <div className="flex flex-col items-center justify-center p-4 space-y-4 pb-32">

@@ -57,7 +57,6 @@ export default function ModalManager() {
   const handleModalSave = async () => {
     setIsLoading(true);
     try {
-      // 書籍データのペイロード
       const bookDataPayload = {
         book: {
           title: modalData.title,
@@ -69,27 +68,30 @@ export default function ModalManager() {
       };
       let newBookId = bookData?.id || null;
       let isUpdate = false;
-      // 書籍の更新または新規作成
+
       if (newBookId) {
-        // 更新
         await axiosInstance.put(`/api/v1/books/${newBookId}`, bookDataPayload);
         isUpdate = true;
       } else {
-        // 新規作成
         const createBookResponse = await axiosInstance.post('/api/v1/books', bookDataPayload);
         newBookId = createBookResponse.data.book.id;
         console.log(`New book created with id: ${newBookId}`);
       }
-      // ページの更新または新規作成
+
       for (const page of pages) {
-        // 削除対象の要素に _destroy フラグを付与
+        // 削除対象のキャラクターを取得
+        const charactersToDelete = (page.charactersToDelete || []).map(char => ({
+          id: typeof char.id === 'number' ? char.id : parseInt(char.id, 10),
+          _destroy: true,
+        }));
+
+        // 削除対象のページ要素を取得
         const elementsToDelete = (page.elementsToDelete || []).map(el => ({
           id: typeof el.id === 'number' ? el.id : parseInt(el.id, 10),
           _destroy: true,
         }));
-        // page_elements の構築
+
         const pageElements = page.pageElements
-          // 空のテキスト要素を除外
           .filter(el => !(el.elementType === 'text' && (!el.text || el.text.trim() === "")))
           .map(el => {
             const baseAttrs = {
@@ -105,47 +107,35 @@ export default function ModalManager() {
               scale_y: el.scaleY || 1,
               _destroy: false,
             };
-            // IDが存在し、かつ一時的なIDでない場合はIDを整数化して付与
             if (el.id && typeof el.id === 'string' && !el.id.startsWith('_')) {
               baseAttrs.id = parseInt(el.id, 10);
             } else if (typeof el.id === 'number') {
               baseAttrs.id = el.id;
             }
-            // 新規要素にはidを付与しない
             return baseAttrs;
-          })
-          .filter(el => el !== null); // 不要な null を除外
-        // 全ての要素を統合（削除要素は既存IDを持つはず）
-        const allPageElements = [...pageElements, ...elementsToDelete];
-        // page_characters の構築（今後本リリースで修正予定）
-        const pageCharacters = (page.pageCharacters || []).map(char => {
-          const baseChar = {
-            element_type: 'character',
-            position_x: char.positionX || 100,
-            position_y: char.positionY || 100,
-            rotation: char.rotation || 0,
-            scale_x: char.scaleX || 1,
-            scale_y: char.scaleY || 1,
-            parts: char.parts || [],
-            _destroy: false,
-          };
-          // 既存キャラクター更新用のID設定
-          if (char.id && typeof char.id === 'number') {
-            baseChar.id = char.id;
-          }
-          return baseChar;
-        });
+          });
+
+        const pageCharacters = page.pageCharacters.map(char => ({
+          element_type: 'character',
+          position_x: char.positionX || 100,
+          position_y: char.positionY || 100,
+          rotation: char.rotation || 0,
+          scale_x: char.scaleX || 1,
+          scale_y: char.scaleY || 1,
+          parts: char.parts || [],
+          _destroy: false,
+          id: typeof char.id === 'number' ? char.id : undefined,
+        }));
 
         const payload = {
           page: {
             book_id: newBookId,
             page_number: page.pageNumber,
             background_color: page.backgroundColor || '#ffffff',
-            page_elements_attributes: allPageElements,
-            page_characters_attributes: pageCharacters,
+            page_elements_attributes: [...pageElements, ...elementsToDelete],
+            page_characters_attributes: [...pageCharacters, ...charactersToDelete],
           },
         };
-        // 既存ページは更新、新規ページは作成
         if (page.id) {
           await axiosInstance.put(`/api/v1/books/${newBookId}/pages/${page.id}`, payload);
         } else {
@@ -157,12 +147,13 @@ export default function ModalManager() {
       } else {
         alert('保存が完了しました');
       }
+
       resetCanvas();
       closeModal();
-      // 下書き保存の場合はリロードせずにデータを再取得
+
       if (modalType === 'draft') {
-        await fetchMyBooks(); // 最新のユーザーの本を取得
-        await fetchBookData(newBookId); // 現在の本のデータを再取得
+        await fetchMyBooks();
+        await fetchBookData(newBookId);
       } else {
         router.push('/myPage');
       }

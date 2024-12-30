@@ -34,7 +34,6 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
 
   // リセット関数
   const handleResetSearch = () => {
-    console.log("handleResetSearchが呼び出されました");
     setSearchTags("");
     setFilteredBooks(books);
   };
