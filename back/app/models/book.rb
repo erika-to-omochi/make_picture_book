@@ -21,4 +21,12 @@ class Book < ApplicationRecord
   scope :my_books, ->(user_id) { where(user_id: user_id) }
 
   paginates_per 9
+
+  # カスタムの tags= メソッド
+  def tags=(tag_names)
+    tag_objects = tag_names.map do |name|
+      Tag.find_or_create_by(name: name.strip)
+    end
+    super(tag_objects)
+  end
 end

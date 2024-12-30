@@ -13,8 +13,8 @@ const useCanvasStore = create((set, get) => ({
       pageElements: [],
       pageCharacters: [],
       elementsToDelete: [],
+      charactersToDelete: [],
       id: null,
-      elementsToDelete: [],
     },
   ],
   currentPageIndex: 0,
@@ -219,7 +219,10 @@ const useCanvasStore = create((set, get) => ({
       const element = currentPage.pageElements[index];
       if (element && element.id) {
         // 既存の要素を削除対象リストに追加
-        const updatedElementsToDelete = [...currentPage.elementsToDelete, { id: element.id }];
+        const updatedElementsToDelete = [
+          ...(Array.isArray(currentPage.elementsToDelete) ? currentPage.elementsToDelete : []),
+          { id: element.id },
+        ];
         currentPage.elementsToDelete = updatedElementsToDelete; // ページに直接設定
       }
       const updatedElements = currentPage.pageElements.filter((el, i) => !(i === index && el.elementType === 'text'));
@@ -227,7 +230,7 @@ const useCanvasStore = create((set, get) => ({
       updatedPages[state.currentPageIndex] = {
         ...currentPage,
         pageElements: updatedElements,
-        elementsToDelete: currentPage.elementsToDelete, // 更新済み
+        elementsToDelete: currentPage.elementsToDelete,
       };
       return { pages: updatedPages };
     });
@@ -291,19 +294,28 @@ const useCanvasStore = create((set, get) => ({
     get().pushToHistory();
     set((state) => {
       const currentPage = state.pages[state.currentPageIndex];
-      if (!currentPage) return {};
-      const updatedCharacters = currentPage.pageCharacters.filter(
-        (char, i) => !(i === index && char.elementType === 'character')
-      );
+      if (!currentPage) {
+        console.error("現在のページが見つかりません。");
+        return {};
+      }
       const characterToDelete = currentPage.pageCharacters[index];
       if (!characterToDelete) {
         console.error("削除対象のキャラクターが見つかりません。");
         return {};
       }
+      const updatedCharactersToDelete = [
+        ...(Array.isArray(currentPage.charactersToDelete) ? currentPage.charactersToDelete : []),
+        { id: characterToDelete.id },
+      ];
+      currentPage.charactersToDelete = updatedCharactersToDelete;
+      const updatedCharacters = currentPage.pageCharacters.filter(
+        (char, i) => !(i === index && char.elementType === 'character')
+      );
       const updatedPages = [...state.pages];
       updatedPages[state.currentPageIndex] = {
         ...currentPage,
         pageCharacters: updatedCharacters,
+        charactersToDelete: currentPage.charactersToDelete,
       };
       return { pages: updatedPages };
     });
@@ -323,6 +335,7 @@ const useCanvasStore = create((set, get) => ({
         pageCharacters: [],
         id: null,
         elementsToDelete: [],
+        charactersToDelete: [],
       };
       const updatedPages = [...state.pages, newPage];
       return {
@@ -355,7 +368,6 @@ const useCanvasStore = create((set, get) => ({
               scaleY: element.scale_y,
             })),
             pageCharacters: (page.page_characters || []).map((character) => {
-              console.log("Character:", character);
               return {
                 ...character,
                 id: character.id || get().generateUniqueId(),
@@ -369,6 +381,7 @@ const useCanvasStore = create((set, get) => ({
               };
             }),
             elementsToDelete: [],
+            charactersToDelete: [],
           };
         });
         set({ pages: formattedPages, bookData: response.data });

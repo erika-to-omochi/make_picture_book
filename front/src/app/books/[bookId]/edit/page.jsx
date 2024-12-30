@@ -52,7 +52,7 @@ function EditBookPage() {
       <div className={`max-w-none ${isMobile ? 'mx-auto' : 'mr-10'}`}>
         {pages.length > 0 && pages[currentPageIndex] && (
           <Canvas
-          stageRef={stageRef}
+            stageRef={stageRef}
             pageElements={pages[currentPageIndex].pageElements}
             pageData={pages[currentPageIndex]}
             backgroundColor={pages[currentPageIndex]?.backgroundColor || "#ffffff"}

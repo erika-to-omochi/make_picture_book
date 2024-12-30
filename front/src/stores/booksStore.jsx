@@ -17,11 +17,11 @@ const useBooksStore = create((set) => ({
   setPublishedBooks: (books) => set({ publishedBooks: books }),
 
   // 公開済みの絵本をフェッチ
-  fetchPublishedBooks: async (page = 1, perPage = 10) => {
+  fetchPublishedBooks: async (page = 1, perPage = 10, tags = null) => {
     set({ loading: true, error: null });
     try {
       const response = await axiosInstance.get('/api/v1/books/public_books', {
-        params: { page, per_page: perPage }, // ページネーションパラメータを送信
+        params: { page, per_page: perPage, tags }, // ページネーションパラメータを送信
       });
       if (response.data.books && Array.isArray(response.data.books) && response.data.pagination) {
         const sortedBooks = response.data.books.sort(

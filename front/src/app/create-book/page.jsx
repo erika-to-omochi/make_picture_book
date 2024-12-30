@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CreateBookFooter from '../components/CreateBookFooter';
 import useCanvasStore from '../../stores/canvasStore';
 import useAuthStore from '../../stores/authStore';
@@ -53,6 +53,7 @@ export default function CreateBookPage() {
   const { isLoggedIn, isHydrated } = useAuthStore();
   const router = useRouter();
   const isMobile = useIsMobile();
+  const stageRef = useRef(null);
 
   useEffect(() => {
     // 作成ページに遷移したらストアをリセット
@@ -97,6 +98,7 @@ export default function CreateBookPage() {
     <div className={`flex flex-col overflow-y-auto ${isMobile ? 'items-center' : 'items-end'}`}>
       <div className={`max-w-none ${isMobile ? 'mx-auto' : 'mr-10'}`}>
         <Canvas
+          stageRef={stageRef}
           backgroundColor={currentPage.backgroundColor}
           onComplete={onComplete}
           onSaveDraft={onSaveDraft}
