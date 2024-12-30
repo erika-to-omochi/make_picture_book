@@ -12,7 +12,14 @@ class Api::V1::BooksController < ApplicationController
 
   def public_books
     books = Book.published
-                .order(created_at: :desc)
+    # タグ検索処理を追加
+    if params[:tags].present?
+      tags = params[:tags].split(',').map(&:strip)
+      books = books.joins(:tags)
+                  .where('tags.name ILIKE ANY (ARRAY[?])', tags.map { |tag| "%#{tag}%" })
+                  .distinct
+    end
+    books = books.order(created_at: :desc)
                 .page(params[:page])
                 .per(params[:per_page] || 9)
     render json: {

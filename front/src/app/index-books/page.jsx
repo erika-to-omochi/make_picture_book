@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import BookListPage from './BookListPage';
 import useBooksStore from "@/stores/booksStore";
 

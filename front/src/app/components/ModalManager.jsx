@@ -59,11 +59,13 @@ export default function ModalManager() {
     try {
       // 書籍データのペイロード
       const bookDataPayload = {
-        title: modalData.title,
-        author_name: modalData.author,
-        tags: modalData.tags.split(",").map(tag => tag.trim()),
-        visibility: modalData.visibility === 'public' ? 0 : 1,
-        is_draft: modalType === 'draft',
+        book: {
+          title: modalData.title,
+          author_name: modalData.author,
+          tags: modalData.tags.split(",").map(tag => tag.trim()),
+          visibility: modalData.visibility === 'public' ? 0 : 1,
+          is_draft: modalType === 'draft',
+        },
       };
       let newBookId = bookData?.id || null;
       let isUpdate = false;

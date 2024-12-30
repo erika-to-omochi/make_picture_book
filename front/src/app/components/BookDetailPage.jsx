@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import Link from 'next/link';
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import axiosInstance from '../../api/axios';
@@ -33,6 +34,8 @@ function BookDetailPage() {
   const [editContent, setEditContent] = useState("");
 
   const stageRef = useRef(null);
+
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     if (bookId) {
@@ -208,6 +211,25 @@ function BookDetailPage() {
     pdf.save("絵本ぽんっ.pdf");
   };
 
+  const handleTagSearch = async (tag) => {
+    setIsSearching(true);
+    try {
+      const response = await axiosInstance.get('/api/v1/books', {
+        params: {
+          tags: tag,
+          page: 1,
+          per_page: 9
+        }
+      });
+      router.push(`/index-books?tags=${encodeURIComponent(tag)}`);
+    } catch (error) {
+      console.error("タグ検索中にエラーが発生しました:", error);
+      alert("タグ検索中にエラーが発生しました");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center min-h-screen p-4">
       {pages.length > 0 && currentPageIndex >= 0 && currentPageIndex < pages.length && (
@@ -279,8 +301,20 @@ function BookDetailPage() {
               </button>
             </div>
           </div>
+          {/* #のタグ機能 */}
           <p className="text-gray-800 text-sm mt-2 text-center">
-            タグ: {bookData.tags.map(tag => tag.name).join(', ')}
+            {bookData.tags.map((tag, index) => (
+              <span key={tag.id || `tag-${index}`} className="inline-block mr-2">
+                <button
+                  onClick={() => handleTagSearch(tag.name)}
+                  className="text-blue-500 hover:underline"
+                  aria-label={`${tag.name}で絞り込む`}
+                >
+                  #{tag.name}
+                </button>
+                {index < bookData.tags.length - 1 && ","}
+              </span>
+            ))}
           </p>
         </>
       )}

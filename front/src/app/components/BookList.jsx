@@ -13,11 +13,9 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
 
   // 検索関数
   const handleSearch = async () => {
-    console.log("handleSearchが呼び出されました");
     setIsSearching(true);
     try {
       const tagsQuery = searchTags.split(',').map(tag => tag.trim()).join(',');
-      console.log("検索クエリ:", tagsQuery);
       const response = await axiosInstance.get('/api/v1/books', {
         params: {
           tags: tagsQuery,

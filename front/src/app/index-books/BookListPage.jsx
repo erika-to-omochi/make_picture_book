@@ -1,16 +1,21 @@
 'use client';
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useBooksStore from "@/stores/booksStore";
 import BookList from "../components/BookList";
 import Pagination from "../components/Pagination";
 import PropTypes from "prop-types";
+import axiosInstance from '@/api/axios';
+
 
 function BookListPage({ rowStyles = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
+  const [books, setBooks] = useState([]);
+  const tagsQuery = searchParams.get("tags");
+  const tagsParam = searchParams.get("tags");
 
   const perPage = 9;
 
@@ -24,15 +29,53 @@ function BookListPage({ rowStyles = [] }) {
   // URLの `page` パラメータが変更されたときにデータを取得
   useEffect(() => {
     const page = parseInt(pageParam, 9) || 1;
-    fetchPublishedBooks(page, perPage);
-  }, [fetchPublishedBooks, pageParam, perPage]);
+    fetchPublishedBooks(page, perPage, tagsParam);
+  }, [fetchPublishedBooks, pageParam, perPage, tagsParam]);
 
   // ページ変更時のハンドラー
   const handlePageChange = (page) => {
     if (page) {
-      router.push(`/index-books?page=${page}`);
+      router.push(`/index-books?page=${page}${tagsParam ? `&tags=${tagsParam}` : ""}`);
     }
   };
+
+  useEffect(() => {
+    async function fetchFilteredBooks() {
+      try {
+        const response = await axiosInstance.get("/api/v1/books", {
+          params: {
+            tags: tagsQuery,
+            page: 1,
+            per_page: 9,
+          },
+        });
+        setBooks(response.data);
+      } catch (error) {
+        console.error("書籍の取得に失敗しました:", error);
+      }
+    }
+
+    async function fetchAllBooks() {
+      try {
+        const response = await axiosInstance.get("/api/v1/books", {
+          params: {
+            page: 1,
+            per_page: 9,
+          },
+        });
+        setBooks(response.data);
+      } catch (error) {
+        console.error("書籍の取得に失敗しました:", error);
+      }
+    }
+
+    if (tagsQuery) {
+      fetchFilteredBooks();
+    } else {
+      fetchAllBooks();
+    }
+  }, [tagsQuery]);
+
 
   // エラー状態
   if (error)
