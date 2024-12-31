@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { FaLock, FaLockOpen, FaEdit, FaCheckCircle, FaTrash } from "react-icons/fa";
+import { FaLock, FaLockOpen, FaEdit, FaCheckCircle, FaTrash, FaSearch, FaTimes } from "react-icons/fa";
 import axiosInstance from '../../api/axios';
 
 function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyles = [] }) {
   const columnsPerRow = 3; // 1行あたりの列数
   const [searchTags, setSearchTags] = useState("");
+  const [searchTitle, setSearchTitle] = useState("");
+  const [searchAuthor, setSearchAuthor] = useState("");
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -16,17 +18,18 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
     setIsSearching(true);
     try {
       const tagsQuery = searchTags.split(',').map(tag => tag.trim()).join(',');
-      const response = await axiosInstance.get('/api/v1/books', {
-        params: {
-          tags: tagsQuery,
-          page: 1,
-          per_page: 9
-        }
-      });
-      setFilteredBooks(response.data);
+      const params = {
+        page: 1,
+        per_page: 9
+      };
+      if (tagsQuery) params.tags = tagsQuery;
+      if (searchTitle.trim()) { params.title = searchTitle.trim(); }
+      if (searchAuthor.trim()) { params.author = searchAuthor.trim(); }
+      const response = await axiosInstance.get('/api/v1/books', { params });
+      setFilteredBooks(response.data.books);
     } catch (error) {
-      console.error("タグ検索中にエラーが発生しました:", error);
-      alert("タグ検索中にエラーが発生しました");
+      console.error("検索中にエラーが発生しました:", error);
+      alert("検索中にエラーが発生しました");
     } finally {
       setIsSearching(false);
     }
@@ -35,6 +38,8 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
   // リセット関数
   const handleResetSearch = () => {
     setSearchTags("");
+    setSearchTitle("");
+    setSearchAuthor("");
     setFilteredBooks(books);
   };
 
@@ -46,31 +51,58 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
   return (
     <div>
       {/* 検索フォーム */}
-      <div className="mb-8 flex items-center">
-        <input
-          type="text"
-          value={searchTags}
-          onChange={(e) => setSearchTags(e.target.value)}
-          placeholder="タグで検索（カンマ区切り）"
-          className="flex-grow p-2 border rounded-l-md"
-        />
+      <div className="mb-8 flex flex-row items-center gap-2 overflow-x-auto">
+        {/* タグ検索 */}
+        <div className="flex items-center flex-shrink-0">
+          <input
+            type="text"
+            value={searchTags}
+            onChange={(e) => setSearchTags(e.target.value)}
+            placeholder="タグで検索（カンマ区切り）"
+            className="flex-grow min-w-[150px] p-2 border rounded-md"
+          />
+        </div>
+        {/* タイトル検索 */}
+        <div className="flex items-center flex-shrink-0">
+          <input
+            type="text"
+            value={searchTitle}
+            onChange={(e) => setSearchTitle(e.target.value)}
+            placeholder="タイトルで検索"
+            className="flex-grow min-w-[150px] p-2 border rounded-md"
+          />
+        </div>
+        {/* 作者名検索 */}
+        <div className="flex items-center flex-shrink-0">
+          <input
+            type="text"
+            value={searchAuthor}
+            onChange={(e) => setSearchAuthor(e.target.value)}
+            placeholder="作者名で検索"
+            className="flex-grow min-w-[150px] p-2 border rounded-md"
+          />
+        </div>
+        {/* 検索ボタン */}
         <button
-          onClick={() => {
-            handleSearch();
-          }}
-          className="p-2 bg-customButton text-white rounded-r-md hover:bg-opacity-80"
+          onClick={handleSearch}
+          className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 flex-shrink-0"
           disabled={isSearching}
+          aria-label={isSearching ? "検索中" : "検索"}
+          title={isSearching ? "検索中" : "検索"}
         >
-          {isSearching ? "検索中..." : "検索"}
+          {isSearching ? "検索中..." : <FaSearch className="w-5 h-5" />}
         </button>
-        {searchTags && (
-          <button
-            onClick={handleResetSearch}
-            className="ml-2 p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-          >
-            リセット
-          </button>
-        )}
+        {/* クリアボタンを常にレンダリングし、表示・非表示を制御 */}
+        <button
+          onClick={handleResetSearch}
+          className={`p-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 flex-shrink-0 ${
+            searchTags || searchTitle || searchAuthor ? "visible" : "invisible"
+          }`}
+          aria-label="クリア"
+          title="クリア"
+        >
+          <FaTimes className="w-5 h-5" />
+        </button>
       </div>
 
       {/* 絞り込みされた書籍の表示 */}
@@ -126,7 +158,7 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
               <div
                 key={book.id}
                 onClick={() => (window.location.href = `/books/${book.id}`)}
-                className="relative w-[192px] h-[216px] flex flex-col justify-between p-4 bg-customBackground rounded-lg shadow-md cursor-pointer transform transition-transform hover:translate-y-[-64px]"
+                className="relative w-[192px] h-[216px] flex flex-col justify-between p-4 bg-customBackground rounded-lg shadow-md cursor-pointer transform transition-transform hover:translate-y-[-16px] overflow-hidden"
                 style={{ zIndex: rowStyle.zIndex }}
               >
                 {/* 上部左側: ステータスと公開情報 */}
@@ -197,7 +229,7 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
             );
           })
         ) : (
-          <p className="col-span-3 text-center text-gray-500">該当する絵本がありません。</p>
+          <p className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-4 text-center text-gray-500">該当する絵本がありません。</p>
         )}
       </div>
     </div>

@@ -1,5 +1,5 @@
 class Api::V1::BooksController < ApplicationController
-  before_action :authenticate_user!, only: [:create,:author_status]
+  before_action :authenticate_user!, except: [:index, :show, :public_books]
 
   def author_status
     book = Book.find(params[:id]) # IDから絵本を取得
@@ -12,13 +12,7 @@ class Api::V1::BooksController < ApplicationController
 
   def public_books
     books = Book.published
-    # タグ検索処理を追加
-    if params[:tags].present?
-      tags = params[:tags].split(',').map(&:strip)
-      books = books.joins(:tags)
-                  .where('tags.name ILIKE ANY (ARRAY[?])', tags.map { |tag| "%#{tag}%" })
-                  .distinct
-    end
+    books = apply_filters(books)
     books = books.order(created_at: :desc)
                 .page(params[:page])
                 .per(params[:per_page] || 9)
@@ -26,20 +20,14 @@ class Api::V1::BooksController < ApplicationController
       books: books.as_json(
         include: [:tags, :pages]
       ),
-      pagination: {
-        current_page: books.current_page,
-        next_page: books.next_page,
-        prev_page: books.prev_page,
-        total_pages: books.total_pages,
-        total_count: books.total_count,
-        limit_value: books.limit_value
-      }
+      pagination: pagination_meta(books)
     }, status: :ok
   end
 
   def my_books
     books = Book.my_books(current_user.id)
                 .order(created_at: :desc)
+    books = apply_filters(books)
                 .page(params[:page])
                 .per(params[:per_page] || 9)
     render json: {
@@ -50,47 +38,24 @@ class Api::V1::BooksController < ApplicationController
           tags: { only: [:name] }
         }
       ),
-      meta: {
-        current_page: books.current_page,
-        next_page: books.next_page,
-        prev_page: books.prev_page,
-        total_pages: books.total_pages,
-        total_count: books.total_count
-      }
+      meta: pagination_meta(books)
     }, status: :ok
   end
 
   def index
     books = Book.published
-    # タグ検索処理
-    if params[:tags].present?
-      tags = params[:tags].split(',').map(&:strip) # カンマ区切りで複数のタグを取得
-      books = books.joins(:tags).where('tags.name ILIKE ANY (ARRAY[?])', tags.map { |tag| "%#{tag}%" }).distinct
-    end
+    books = apply_filters(books)
     books = books.page(params[:page]).per(params[:per_page] || 9)
-    render json: books.as_json(
-      only: [:id, :title, :author_name, :created_at],
-      include: {
-        pages: { only: [:page_number] },
-        tags: { only: [:name] }
-      },
-      meta: {
-        current_page: books.current_page,
-        next_page: books.next_page,
-        prev_page: books.prev_page,
-        total_pages: books.total_pages,
-        total_count: books.total_count
-      }
-    ), status: :ok
-  end
-
-  def create
-    book = current_user.books.build(book_params)
-    if book.save
-      render json: { message: 'Book created successfully', book: book }, status: :created
-    else
-      render json: { errors: book.errors.full_messages }, status: :unprocessable_entity
-    end
+    render json: {
+      books: books.as_json(
+        only: [:id, :title, :author_name, :created_at],
+        include: {
+          pages: { only: [:page_number] },
+          tags: { only: [:name] }
+        }
+      ),
+      meta: pagination_meta(books)
+    }, status: :ok
   end
 
   def show
@@ -135,9 +100,34 @@ class Api::V1::BooksController < ApplicationController
     render json: { message: 'Book deleted successfully' }, status: :ok
     rescue ActiveRecord::RecordNotFound
       render json:{ error: "Book not found or not authorized" }, status: :not_found
-    end
+  end
 
   private
+
+  def apply_filters(books)
+    if params[:tags].present?
+      tags = params[:tags].split(',').map(&:strip)
+      books = books.search_by_tags(tags)
+    end
+    if params[:title].present?
+      books = books.search_by_title(params[:title].strip)
+    end
+    if params[:author].present?
+      books = books.search_by_author(params[:author].strip)
+    end
+    books
+  end
+
+  def pagination_meta(books)
+    {
+      current_page: books.current_page,
+      next_page: books.next_page,
+      prev_page: books.prev_page,
+      total_pages: books.total_pages,
+      total_count: books.total_count,
+      limit_value: books.limit_value
+    }
+  end
 
   def book_params
     params.require(:book).permit(:title, :author_name, :visibility, :is_draft, tags: [])
