@@ -8,6 +8,7 @@ import axiosInstance from '../../api/axios';
 function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyles = [] }) {
   const columnsPerRow = 3; // 1行あたりの列数
   const [searchTags, setSearchTags] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -16,17 +17,18 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
     setIsSearching(true);
     try {
       const tagsQuery = searchTags.split(',').map(tag => tag.trim()).join(',');
-      const response = await axiosInstance.get('/api/v1/books', {
-        params: {
-          tags: tagsQuery,
+      const params = {
           page: 1,
           per_page: 9
-        }
-      });
-      setFilteredBooks(response.data);
-    } catch (error) {
-      console.error("タグ検索中にエラーが発生しました:", error);
-      alert("タグ検索中にエラーが発生しました");
+        };
+        if (tagsQuery) params.tags = tagsQuery;
+
+        if (searchQuery.trim()) params.query = searchQuery.trim();
+        const response = await axiosInstance.get('/api/v1/books', { params });
+        setFilteredBooks(response.data.books);
+      } catch (error) {
+      console.error("検索中にエラーが発生しました:", error);
+      alert("検索中にエラーが発生しました");
     } finally {
       setIsSearching(false);
     }
@@ -35,6 +37,7 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
   // リセット関数
   const handleResetSearch = () => {
     setSearchTags("");
+    setSearchQuery("");
     setFilteredBooks(books);
   };
 
@@ -46,14 +49,28 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
   return (
     <div>
       {/* 検索フォーム */}
-      <div className="mb-8 flex items-center">
-        <input
-          type="text"
-          value={searchTags}
-          onChange={(e) => setSearchTags(e.target.value)}
-          placeholder="タグで検索（カンマ区切り）"
-          className="flex-grow p-2 border rounded-l-md"
-        />
+      <div className="mb-8 flex flex-col md:flex-row items-center gap-4">
+        {/* タグ検索 */}
+        <div className="flex items-center flex-grow">
+          <input
+            type="text"
+            value={searchTags}
+            onChange={(e) => setSearchTags(e.target.value)}
+            placeholder="タグで検索（カンマ区切り）"
+            className="flex-grow p-2 border rounded-l-md"
+          />
+        </div>
+        {/* タイトル・作者名検索 */}
+        <div className="flex items-center flex-grow">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="タイトルまたは作者名で検索"
+            className="flex-grow p-2 border rounded-md"
+          />
+        </div>
+        {/* 検索ボタン */}
         <button
           onClick={() => {
             handleSearch();
@@ -63,10 +80,10 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
         >
           {isSearching ? "検索中..." : "検索"}
         </button>
-        {searchTags && (
+        {(searchTags || searchQuery) && (
           <button
             onClick={handleResetSearch}
-            className="ml-2 p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+            className="ml-2 p-2 bg-gray-400 text-white rounded-md hover:bg-gray-500"
           >
             リセット
           </button>

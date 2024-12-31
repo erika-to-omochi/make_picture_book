@@ -19,6 +19,12 @@ class Book < ApplicationRecord
   scope :published, -> { where(is_draft: false, visibility: 0) }
   scope :drafts, -> { where(is_draft: true) }
   scope :my_books, ->(user_id) { where(user_id: user_id) }
+  scope :search_by_tags, ->(tags) {
+    joins(:tags).where('tags.name ILIKE ANY (ARRAY[?])', tags.map { |tag| "%#{tag}%" }).distinct
+  }
+  scope :search_by_query, ->(query) {
+    where('books.title ILIKE ? OR books.author_name ILIKE ?', "%#{query}%", "%#{query}%")
+  }
 
   paginates_per 9
 
