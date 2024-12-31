@@ -22,8 +22,11 @@ class Book < ApplicationRecord
   scope :search_by_tags, ->(tags) {
     joins(:tags).where('tags.name ILIKE ANY (ARRAY[?])', tags.map { |tag| "%#{tag}%" }).distinct
   }
-  scope :search_by_query, ->(query) {
-    where('books.title ILIKE ? OR books.author_name ILIKE ?', "%#{query}%", "%#{query}%")
+  scope :search_by_title, ->(title) {
+    where('books.title ILIKE ?', "%#{title}%") if title.present?
+  }
+  scope :search_by_author, ->(author) {
+    where('books.author_name ILIKE ?', "%#{author}%") if author.present?
   }
 
   paginates_per 9

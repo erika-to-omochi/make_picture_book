@@ -105,8 +105,16 @@ class Api::V1::BooksController < ApplicationController
   private
 
   def apply_filters(books)
-    books = books.search_by_tags(params[:tags].split(',').map(&:strip)) if params[:tags].present?
-    books = books.search_by_query(params[:query].strip) if params[:query].present?
+    if params[:tags].present?
+      tags = params[:tags].split(',').map(&:strip)
+      books = books.search_by_tags(tags)
+    end
+    if params[:title].present?
+      books = books.search_by_title(params[:title].strip)
+    end
+    if params[:author].present?
+      books = books.search_by_author(params[:author].strip)
+    end
     books
   end
 
