@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import Link from 'next/link';
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import axiosInstance from '../../api/axios';
