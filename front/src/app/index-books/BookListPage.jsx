@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation"; // ここがポイント
+import { useRouter, useSearchParams } from "next/navigation";
 import useBooksStore from "@/stores/booksStore";
 import BookList from "../components/BookList";
 import Pagination from "../components/Pagination";
@@ -10,7 +10,7 @@ import { FaSearch, FaTimes } from "react-icons/fa";
 
 function BookListPage({ rowStyles = [] }) {
   const router = useRouter();
- const searchParams = useSearchParams(); // 追加
+  const searchParams = useSearchParams();
 
   const perPage = 9;
 
@@ -37,12 +37,14 @@ function BookListPage({ rowStyles = [] }) {
   useEffect(() => {
     const page = parseInt(pageParam, 10) || 1;
     fetchPublishedBooks(page, perPage, tagsParam);
+    if (tagsParam) {
+      setSearchParams({ tags: tagsParam });
+    }
   }, [fetchPublishedBooks, pageParam, perPage, tagsParam]);
 
   // ページ変更時のハンドラー
   const handlePageChange = (page) => {
     if (page) {
-      // タグがあれば &tags=... を付与
       router.push(
         `/index-books?page=${page}${tagsParam ? `&tags=${encodeURIComponent(tagsParam)}` : ""}`
       );
@@ -106,7 +108,7 @@ function BookListPage({ rowStyles = [] }) {
             name="tags"
             value={storeSearchParams.tags}
             onChange={handleInputChange}
-            placeholder="タグで検索（カンマ区切り）"
+            placeholder={tagsParam ? `#${tagsParam}` : "タグで検索（カンマ区切り）"}
             className="flex-grow min-w-[150px] p-2 border rounded-md"
           />
         </div>
