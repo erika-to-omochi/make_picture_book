@@ -1,6 +1,21 @@
 class Api::V1::BooksController < ApplicationController
   before_action :authenticate_user!, except: [:index, :show, :public_books]
 
+  def create
+    book = current_user.books.new(book_params)
+
+    if book.save
+      render json: {
+        message: 'Book created successfully',
+        book: book
+      }, status: :created
+    else
+      render json: {
+        errors: book.errors.full_messages
+      }, status: :unprocessable_entity
+    end
+  end
+
   def author_status
     book = Book.find(params[:id]) # IDから絵本を取得
     is_author = book.user_id == current_user.id # 作者かどうかを判定
