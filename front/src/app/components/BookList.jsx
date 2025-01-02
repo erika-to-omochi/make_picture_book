@@ -1,114 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { FaLock, FaLockOpen, FaEdit, FaCheckCircle, FaTrash, FaSearch, FaTimes } from "react-icons/fa";
-import axiosInstance from '../../api/axios';
 
 function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyles = [] }) {
   const columnsPerRow = 3; // 1行あたりの列数
-  const [searchTags, setSearchTags] = useState("");
-  const [searchTitle, setSearchTitle] = useState("");
-  const [searchAuthor, setSearchAuthor] = useState("");
-  const [filteredBooks, setFilteredBooks] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-
-  // 検索関数
-  const handleSearch = async () => {
-    setIsSearching(true);
-    try {
-      const tagsQuery = searchTags.split(',').map(tag => tag.trim()).join(',');
-      const params = {
-        page: 1,
-        per_page: 9
-      };
-      if (tagsQuery) params.tags = tagsQuery;
-      if (searchTitle.trim()) { params.title = searchTitle.trim(); }
-      if (searchAuthor.trim()) { params.author = searchAuthor.trim(); }
-      const response = await axiosInstance.get('/api/v1/books', { params });
-      setFilteredBooks(response.data.books);
-    } catch (error) {
-      console.error("検索中にエラーが発生しました:", error);
-      alert("検索中にエラーが発生しました");
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // リセット関数
-  const handleResetSearch = () => {
-    setSearchTags("");
-    setSearchTitle("");
-    setSearchAuthor("");
-    setFilteredBooks(books);
-  };
-
-  // 初期表示時やbooksの更新時にfilteredBooksを更新
-  useEffect(() => {
-    setFilteredBooks(books);
-  }, [books]);
 
   return (
     <div>
-      {/* 検索フォーム */}
-      <div className="mb-8 flex flex-row items-center gap-2 overflow-x-auto">
-        {/* タグ検索 */}
-        <div className="flex items-center flex-shrink-0">
-          <input
-            type="text"
-            value={searchTags}
-            onChange={(e) => setSearchTags(e.target.value)}
-            placeholder="タグで検索（カンマ区切り）"
-            className="flex-grow min-w-[150px] p-2 border rounded-md"
-          />
-        </div>
-        {/* タイトル検索 */}
-        <div className="flex items-center flex-shrink-0">
-          <input
-            type="text"
-            value={searchTitle}
-            onChange={(e) => setSearchTitle(e.target.value)}
-            placeholder="タイトルで検索"
-            className="flex-grow min-w-[150px] p-2 border rounded-md"
-          />
-        </div>
-        {/* 作者名検索 */}
-        <div className="flex items-center flex-shrink-0">
-          <input
-            type="text"
-            value={searchAuthor}
-            onChange={(e) => setSearchAuthor(e.target.value)}
-            placeholder="作者名で検索"
-            className="flex-grow min-w-[150px] p-2 border rounded-md"
-          />
-        </div>
-        {/* 検索ボタン */}
-        <button
-          onClick={handleSearch}
-          className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 flex-shrink-0"
-          disabled={isSearching}
-          aria-label={isSearching ? "検索中" : "検索"}
-          title={isSearching ? "検索中" : "検索"}
-        >
-          {isSearching ? "検索中..." : <FaSearch className="w-5 h-5" />}
-        </button>
-        {/* クリアボタンを常にレンダリングし、表示・非表示を制御 */}
-        <button
-          onClick={handleResetSearch}
-          className={`p-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 flex-shrink-0 ${
-            searchTags || searchTitle || searchAuthor ? "visible" : "invisible"
-          }`}
-          aria-label="クリア"
-          title="クリア"
-        >
-          <FaTimes className="w-5 h-5" />
-        </button>
-      </div>
-
       {/* 絞り込みされた書籍の表示 */}
       <div className="grid gap-4 grid-cols-3 auto-rows-[216px]">
-        {Array.isArray(filteredBooks) && filteredBooks.length > 0 ? (
-          filteredBooks.map((book, index) => {
+        {Array.isArray(books) && books.length > 0 ? (
+          books.map((book, index) => {
             const rowIndex = Math.floor(index / columnsPerRow);
             const rowStyle = rowStyles[rowIndex % rowStyles.length] || {};
             const getVisibilityDetails = (book) => {
@@ -133,7 +37,6 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
                 };
               }
             };
-
             const getStatusDetails = (book) => {
               if (pageType !== "myPage") {
                 return null;
@@ -150,10 +53,8 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
                     icon: <FaCheckCircle className="mr-1" aria-label="完成" />,
                   };
             };
-
             const visibility = getVisibilityDetails(book);
             const status = getStatusDetails(book);
-
             return (
               <div
                 key={book.id}
@@ -182,7 +83,6 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
                     </span>
                   )}
                 </div>
-
                 {/* 上部右側: 編集と削除ボタン */}
                 {isAuthor && (
                   <div className="absolute top-2 right-2 flex gap-2">
@@ -208,7 +108,6 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
                     </button>
                   </div>
                 )}
-
                 {/* 書籍情報 */}
                 <div className="text-center flex-grow">
                   <h2 className="text-xl font-bold mt-4 overflow-hidden text-ellipsis whitespace-nowrap">
@@ -218,7 +117,6 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
                 <p className="text-bodyText text-sm mt-auto text-center">
                   作者: {book.author_name}
                 </p>
-
                 {/* ファビコン画像 */}
                 <img
                   src="/home/favicon.png"
@@ -239,14 +137,17 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
 BookList.propTypes = {
   books: PropTypes.array.isRequired,
   pageType: PropTypes.oneOf(["myPage", "bookListPage"]).isRequired,
-  isAuthor: PropTypes.bool.isRequired, // 作者かどうかの判定
-  handleEdit: PropTypes.func.isRequired, // 編集ボタンのハンドラ
-  handleDelete: PropTypes.func.isRequired, // 削除ボタンのハンドラ
+  isAuthor: PropTypes.bool,
+  handleEdit: PropTypes.func,
+  handleDelete: PropTypes.func,
   rowStyles: PropTypes.array, // 行ごとのスタイルを受け取るプロップ
 };
 
 BookList.defaultProps = {
   rowStyles: [],
+  isAuthor: false,
+  handleEdit: () => {},
+  handleDelete: () => {},
 };
 
 export default BookList;

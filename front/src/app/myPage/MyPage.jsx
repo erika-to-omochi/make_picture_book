@@ -37,22 +37,6 @@ function MyPage({ rowStyles = [] }) {
   }, [setUserName]);
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const params = {
-          page: currentPage,
-          per_page: perPage,
-        };
-        if (tagsQuery) {
-          params.tags = tagsQuery;
-        }
-        const response = await axiosInstance.get("/api/v1/books", { params });
-        setBooks(response.data);
-      } catch (error) {
-        console.error("書籍の取得に失敗しました:", error);
-      }
-    };
-    fetchBooks();
   }, [tagsQuery, currentPage, perPage]);
 
   // currentPage または isLoggedIn が変更されたときにデータをフェッチ
