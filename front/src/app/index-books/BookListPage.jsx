@@ -50,15 +50,18 @@ function BookListPage({ rowStyles = [] }) {
   };
 
   const handleSearch = () => {
+    const { tags, title, author } = storeSearchParams;
+    // 検索条件が空の場合は何もしない
+    if (!tags.trim() && !title.trim() && !author.trim()) {
+      return;
+    }
     searchBooks();
     // 必要に応じて URL を更新
     router.push(
       `/index-books?page=1${
-        storeSearchParams.tags ? `&tags=${encodeURIComponent(storeSearchParams.tags)}` : ""
-      }${
-        storeSearchParams.title ? `&title=${encodeURIComponent(storeSearchParams.title)}` : ""
-      }${
-        storeSearchParams.author ? `&author=${encodeURIComponent(storeSearchParams.author)}` : ""
+        tags ? `&tags=${encodeURIComponent(tags)}` : ""
+      }${title ? `&title=${encodeURIComponent(title)}` : ""}${
+        author ? `&author=${encodeURIComponent(author)}` : ""
       }`
     );
   };
@@ -132,8 +135,14 @@ function BookListPage({ rowStyles = [] }) {
         {/* 検索ボタン */}
         <button
           onClick={handleSearch}
-          className="p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 flex-shrink-0"
-          disabled={isSearching}
+          className={`p-2 bg-customButton text-white rounded-md hover:bg-opacity-80 flex-shrink-0 ${
+            !storeSearchParams.tags.trim() &&
+            !storeSearchParams.title.trim() &&
+            !storeSearchParams.author.trim()
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
+          disabled={!storeSearchParams.tags.trim() && !storeSearchParams.title.trim() && !storeSearchParams.author.trim()}
           aria-label="検索"
           title="検索"
         >
