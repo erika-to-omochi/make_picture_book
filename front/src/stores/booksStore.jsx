@@ -2,9 +2,9 @@ import { create } from 'zustand';
 import axiosInstance from '../api/axios';
 
 const useBooksStore = create((set, get) => ({
-  publishedBooks: [], // 公開済みの絵本
+  publishedBooks: [],
   myBooks: [],
-  filteredBooks: [], // フィルタリングされた書籍
+  filteredBooks: [],
   pagination: {
     current_page: 1,
     next_page: null,

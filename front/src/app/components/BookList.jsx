@@ -10,7 +10,7 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
   return (
     <div>
       {/* 絞り込みされた書籍の表示 */}
-      <div className="grid gap-4 grid-cols-3 auto-rows-[216px]">
+      <div className="grid gap-4 grid-cols-3 auto-rows-[214px]">
         {Array.isArray(books) && books.length > 0 ? (
           books.map((book, index) => {
             const rowIndex = Math.floor(index / columnsPerRow);
@@ -59,7 +59,7 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
               <div
                 key={book.id}
                 onClick={() => (window.location.href = `/books/${book.id}`)}
-                className="relative w-[192px] h-[216px] flex flex-col justify-between p-4 bg-customBackground rounded-lg shadow-md cursor-pointer transform transition-transform hover:translate-y-[-16px] overflow-hidden"
+                className="relative w-[192px] h-[216px] flex flex-col justify-between p-4 bg-customBackground rounded-lg shadow-md cursor-pointer transform transition-transform hover:translate-y-[-80px] overflow-hidden"
                 style={{ zIndex: rowStyle.zIndex }}
               >
                 {/* 上部左側: ステータスと公開情報 */}

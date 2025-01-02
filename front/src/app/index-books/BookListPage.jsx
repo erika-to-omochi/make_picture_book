@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useBooksStore from "@/stores/booksStore";
 import BookList from "../components/BookList";
 import Pagination from "../components/Pagination";
@@ -24,11 +24,10 @@ function BookListPage({ rowStyles = [] }) {
   const resetSearch = useBooksStore((state) => state.resetSearch);
   const filteredBooks = useBooksStore((state) => state.filteredBooks);
   const isSearching = useBooksStore((state) => state.isSearching);
-  const searchParams = useBooksStore((state) => state.searchParams);
 
-  // ページ番号の取得（例として、1ページ目をデフォルトとする）
-  const pageParam = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("page") : 1;
-  const tagsParam = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("tags") : "";
+  const searchParams = useSearchParams();
+  const pageParam = searchParams.get("page") || "1";
+  const tagsParam = searchParams.get("tags") || "";
 
   // URLの `page` パラメータが変更されたときにデータを取得
   useEffect(() => {
@@ -143,7 +142,7 @@ function BookListPage({ rowStyles = [] }) {
         pageType="bookListPage"
         rowStyles={rowStyles}
       />
-      <div className="mt-4">
+      <div className="mt-4 z-10">
         <Pagination pagination={pagination} onPageChange={handlePageChange} />
       </div>
     </div>

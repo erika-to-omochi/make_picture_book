@@ -23,7 +23,7 @@ export default function Page() {
         <img
           src="/home/bookSherf1.png"
           alt="Book Shelf Bottom"
-          className={`absolute top-[-8px] left-1/2 transform -translate-x-1/2 w-[824px] h-[824px] object-contain pointer-events-none max-w-none max-h-none transition-opacity duration-300 ${loading ? 'opacity-50' : 'opacity-100'}`}
+          className={`absolute top-[-16px] left-1/2 transform -translate-x-1/2 w-[824px] h-[824px] object-contain pointer-events-none max-w-none max-h-none transition-opacity duration-300 ${loading ? 'opacity-50' : 'opacity-100'}`}
           style={{ zIndex: 7 }}
         />
         <img
