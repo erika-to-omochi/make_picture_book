@@ -32,30 +32,6 @@ export default function Page() {
         <h1 className="text-center text-3xl font-bold mb-2">{userName}さんの絵本</h1>
       </header>
       <div className="relative flex justify-center">
-        <img
-          src="/home/bookSherf1.png"
-          alt="Book Shelf Bottom"
-          className="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-[824px] h-[824px] object-contain pointer-events-none max-w-none max-h-none"
-          style={{ zIndex: 7 }}
-        />
-        <img
-          src="/home/bookSherf2.png"
-          alt="Book Shelf Middle"
-          className="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-[824px] h-[824px] object-contain pointer-events-none max-w-none max-h-none"
-          style={{ zIndex: 5 }}
-        />
-        <img
-          src="/home/bookSherf3.png"
-          alt="Book Shelf Top"
-          className="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-[824px] h-[824px] object-contain pointer-events-none max-w-none max-h-none"
-          style={{ zIndex: 3 }}
-        />
-        <img
-          src="/home/bookSherf4.png"
-          alt="Book Shelf Highest"
-          className="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-[824px] h-[824px] object-contain pointer-events-none max-w-none max-h-none"
-          style={{ zIndex: 1 }}
-        />
 
         {/* BookListPageを特定のレイヤーに挟む */}
         <div className="relative">

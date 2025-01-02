@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import React, { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; // ここがポイント
 import useBooksStore from "@/stores/booksStore";
 import BookList from "../components/BookList";
 import Pagination from "../components/Pagination";
@@ -10,6 +10,7 @@ import { FaSearch, FaTimes } from "react-icons/fa";
 
 function BookListPage({ rowStyles = [] }) {
   const router = useRouter();
+ const searchParams = useSearchParams(); // 追加
 
   const perPage = 9;
 
@@ -24,12 +25,15 @@ function BookListPage({ rowStyles = [] }) {
   const resetSearch = useBooksStore((state) => state.resetSearch);
   const filteredBooks = useBooksStore((state) => state.filteredBooks);
   const isSearching = useBooksStore((state) => state.isSearching);
+  const storeSearchParams = useBooksStore((state) => state.searchParams);
 
-  const searchParams = useSearchParams();
+  // useSearchParams() でクエリパラメータを取得
   const pageParam = searchParams.get("page") || "1";
   const tagsParam = searchParams.get("tags") || "";
+  const titleParam = searchParams.get("title") || "";
+  const authorParam = searchParams.get("author") || "";
 
-  // URLの `page` パラメータが変更されたときにデータを取得
+  // URLの `page` or `tags` パラメータが変更されたときにデータを取得
   useEffect(() => {
     const page = parseInt(pageParam, 10) || 1;
     fetchPublishedBooks(page, perPage, tagsParam);
@@ -38,14 +42,25 @@ function BookListPage({ rowStyles = [] }) {
   // ページ変更時のハンドラー
   const handlePageChange = (page) => {
     if (page) {
-      router.push(`/index-books?page=${page}${tagsParam ? `&tags=${tagsParam}` : ""}`);
+      // タグがあれば &tags=... を付与
+      router.push(
+        `/index-books?page=${page}${tagsParam ? `&tags=${encodeURIComponent(tagsParam)}` : ""}`
+      );
     }
   };
 
   const handleSearch = () => {
     searchBooks();
     // 必要に応じて URL を更新
-    router.push(`/index-books?page=1${searchParams.tags ? `&tags=${searchParams.tags}` : ""}${searchParams.title ? `&title=${searchParams.title}` : ""}${searchParams.author ? `&author=${searchParams.author}` : ""}`);
+    router.push(
+      `/index-books?page=1${
+        storeSearchParams.tags ? `&tags=${encodeURIComponent(storeSearchParams.tags)}` : ""
+      }${
+        storeSearchParams.title ? `&title=${encodeURIComponent(storeSearchParams.title)}` : ""
+      }${
+        storeSearchParams.author ? `&author=${encodeURIComponent(storeSearchParams.author)}` : ""
+      }`
+    );
   };
 
   const handleResetSearch = () => {
@@ -86,7 +101,7 @@ function BookListPage({ rowStyles = [] }) {
           <input
             type="text"
             name="tags"
-            value={searchParams.tags}
+            value={storeSearchParams.tags}
             onChange={handleInputChange}
             placeholder="タグで検索（カンマ区切り）"
             className="flex-grow min-w-[150px] p-2 border rounded-md"
@@ -97,7 +112,7 @@ function BookListPage({ rowStyles = [] }) {
           <input
             type="text"
             name="title"
-            value={searchParams.title}
+            value={storeSearchParams.title}
             onChange={handleInputChange}
             placeholder="タイトルで検索"
             className="flex-grow min-w-[150px] p-2 border rounded-md"
@@ -108,7 +123,7 @@ function BookListPage({ rowStyles = [] }) {
           <input
             type="text"
             name="author"
-            value={searchParams.author}
+            value={storeSearchParams.author}
             onChange={handleInputChange}
             placeholder="作者名で検索"
             className="flex-grow min-w-[150px] p-2 border rounded-md"
@@ -128,7 +143,9 @@ function BookListPage({ rowStyles = [] }) {
         <button
           onClick={handleResetSearch}
           className={`p-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 flex-shrink-0 ${
-            searchParams.tags || searchParams.title || searchParams.author ? "visible" : "invisible"
+            storeSearchParams.tags || storeSearchParams.title || storeSearchParams.author
+              ? "visible"
+              : "invisible"
           }`}
           aria-label="クリア"
           title="クリア"
@@ -142,6 +159,7 @@ function BookListPage({ rowStyles = [] }) {
         pageType="bookListPage"
         rowStyles={rowStyles}
       />
+
       <div className="mt-4 z-10">
         <Pagination pagination={pagination} onPageChange={handlePageChange} />
       </div>
@@ -149,9 +167,8 @@ function BookListPage({ rowStyles = [] }) {
   );
 }
 
-// `rowStyles` をプロパティとして定義
 BookListPage.propTypes = {
-  rowStyles: PropTypes.array, // 列ごとのスタイルを受け取るためのプロップ
+  rowStyles: PropTypes.array,
 };
 
 export default BookListPage;
