@@ -108,6 +108,7 @@ function MyPage({ rowStyles = [] }) {
         handleEdit={handleEdit} // 編集ハンドラを渡す
         handleDelete={handleDelete} // 削除ハンドラを渡す
         rowStyles={rowStyles}
+        hoverTranslateYClass="hover:translate-y-[-8px]"
       />
       {/* Paginationコンポーネント */}
       <div className="mt-4">

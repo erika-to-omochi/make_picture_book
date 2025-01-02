@@ -4,7 +4,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { FaLock, FaLockOpen, FaEdit, FaCheckCircle, FaTrash, FaSearch, FaTimes } from "react-icons/fa";
 
-function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyles = [] }) {
+function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyles = [], hoverTranslateYClass = "hover:translate-y-[-80px]" }) {
   const columnsPerRow = 3; // 1行あたりの列数
 
   return (
@@ -59,7 +59,7 @@ function BookList({ books, pageType, isAuthor, handleEdit, handleDelete, rowStyl
               <div
                 key={book.id}
                 onClick={() => (window.location.href = `/books/${book.id}`)}
-                className="relative w-[192px] h-[216px] flex flex-col justify-between p-4 bg-customBackground rounded-lg shadow-md cursor-pointer transform transition-transform hover:translate-y-[-80px] overflow-hidden"
+                className={`relative w-[192px] h-[216px] flex flex-col justify-between p-4 bg-customBackground rounded-lg shadow-md cursor-pointer transform transition-transform overflow-hidden ${hoverTranslateYClass}`}
                 style={{ zIndex: rowStyle.zIndex }}
               >
                 {/* 上部左側: ステータスと公開情報 */}
