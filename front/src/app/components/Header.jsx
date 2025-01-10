@@ -48,7 +48,7 @@ const Header = () => {
       <header className="fixed top-0 left-0 w-full flex items-center justify-between p-4 bg-[#494444] text-white z-50 shadow-md">
         <div className="logo">
           <Link href="/">
-            <img src="/home/logo2.png" alt="App Logo" className="h-8" />
+            <img src="/home/logo.png" alt="App Logo" className="h-8" />
           </Link>
         </div>
 
