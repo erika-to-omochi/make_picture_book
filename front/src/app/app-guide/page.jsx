@@ -5,18 +5,18 @@ import React from 'react';
 const sections = [
   {
     title: '基本操作',
-    src: 'https://gyazo.com/your-fourth-video-id', // 実際の動画URLに置き換えてください
-    iframeTitle: '基本操作',
+    src: 'https://i.gyazo.com/2300b7aebdcda944b06e6d4665fbe298.mp4',
+    alt: '基本操作の動画',
   },
   {
     title: '「文字」について',
-    src: 'https://gyazo.com/your-second-video-id', // 実際の動画URLに置き換えてください
-    iframeTitle: '文字について',
+    src: 'https://i.gyazo.com/cf48a15a14be09806265b60210df2a31.mp4',
+    alt: '文字についての動画',
   },
   {
     title: '「ひと」について',
-    src: 'https://gyazo.com/your-third-video-id', // 実際の動画URLに置き換えてください
-    iframeTitle: 'ひとについて',
+    src: 'https://i.gyazo.com/073f659968f6b345721c72fa5097cec5.mp4',
+    alt: 'ひとについての動画',
   },
 ];
 
@@ -29,14 +29,14 @@ export default function GuidePage() {
             {section.title}
           </h2>
           <div className="flex justify-center">
-            <iframe
+            <video
               src={section.src}
-              className="w-full h-64 md:h-96 rounded-lg"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              title={section.iframeTitle}
-            ></iframe>
+              controls
+              className="w-full h-auto rounded-lg"
+              title={section.alt}
+            >
+              お使いのブラウザは動画タグに対応していません。
+            </video>
           </div>
         </div>
       ))}
