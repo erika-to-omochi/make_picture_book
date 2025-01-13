@@ -3,7 +3,7 @@
 import Image from "next/image";
 
 export default function ObjectImages({ onImageSelect }) {
-  const images = Array.from({ length: 12 }, (_, i) => `/object/${i + 10}.png`);
+  const images = Array.from({ length: 35 }, (_, i) => `/object/${i + 11}.png`);
 
   return (
     <div
