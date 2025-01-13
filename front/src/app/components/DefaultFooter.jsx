@@ -4,14 +4,20 @@ import Link from "next/link";
 import { FaBook, FaEdit, FaInfoCircle, FaUser } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 import useAuthStore from "../../stores/authStore";
+import useIsMobile from "../../hooks/useIsMobile";
 
 export default function DefaultFooter() {
   const pathname = usePathname();
   const { userName, isLoggedIn } = useAuthStore();
+  const isMobile = useIsMobile();
 
   const isEditOrCreatePage =
     pathname === "/create-book" ||
     (pathname.startsWith("/books/") && pathname.endsWith("/edit"));
+
+  if (isMobile) {
+    return null;
+  }
 
   return (
     <footer
